@@ -1,0 +1,30 @@
+<div class="form-container">
+    <form class="form-position" action="">
+        <div class="form-card">
+            <div class="inputs-form">
+                <img class="logotype" [src]="imagePath" alt="infinity">
+                <p-floatlabel variant="in">
+                    <p-iconfield>
+                            <p-inputicon>
+                                <i class="pi pi-user"></i>
+                            </p-inputicon>
+                        <input pInputText formControlName="username"/>
+                        <label>Введите логин</label>
+                    </p-iconfield>
+                </p-floatlabel>
+                <p-floatlabel variant="in">
+                    <p-iconfield>
+                        <p-inputicon>
+                            <i class="pi pi-lock"></i>
+                        </p-inputicon>
+                        <p-password formControlName="password" [toggleMask]="true" />
+                        <label for="password">Пароль</label>
+                    </p-iconfield>
+                </p-floatlabel>
+            </div>
+            <p-button type="submit" label="Войти" />
+            <p class="notreg">Ещё не зарегистрированы</p>
+            <p-button class="go-login" routerLink="/registration" label="Зарегистрироваться" link />
+        </div>
+    </form>
+</div>

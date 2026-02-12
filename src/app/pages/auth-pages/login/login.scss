@@ -1,0 +1,37 @@
+.form-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 98vh;
+    width: 100%;
+}
+.form-card {
+    display: grid;
+    justify-content: center;
+    max-width: 400px;
+    padding: 50px;
+    border-radius: 18px;
+    border-color: var(--border-color-card);
+    border-width: 1px;
+    border-style: groove;
+}
+:host ::ng-deep .p-button {
+    width: 95%;
+    margin: 0.5rem;
+    margin-top: 30px;
+}
+:host ::ng-deep .p-floatlabel{
+    display: grid;
+    justify-content: center;
+    padding-top: 15px;
+}
+.logotype{
+    width: 300px;
+    padding: 30px;
+}
+.notreg{
+    margin: auto;
+    margin-top: 40px;
+    font-size: 16px;
+    color: var(--shadow-color-text);
+}
