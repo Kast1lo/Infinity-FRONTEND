@@ -4,16 +4,36 @@
     align-items: center;
     height: 98vh;
     width: 100%;
+    overflow: hidden;
 }
 .form-card {
     display: grid;
     justify-content: center;
     max-width: 400px;
     padding: 50px;
-    border-radius: 20px;
+    border-radius: 18px;
+    background-color: rgba(0, 0, 0, 0.250);
     border-color: var(--border-color-card);
     border-width: 1px;
     border-style: groove;
+    will-change: transform, opacity; 
+    animation: slideUpFade 1.5s cubic-bezier(0.15, 1.15, 0.35, 1) forwards;
+}
+@keyframes slideUpFade {
+    0% {
+        opacity: 0;
+        transform: translateY(550px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+.logotype{
+    width: 90%;
+    padding-left: 45px;
+    padding-top: 30px;
+    padding-bottom: 30px;
 }
 :host ::ng-deep .p-button {
     width: 95%;
@@ -24,10 +44,6 @@
     display: grid;
     justify-content: center;
     padding-top: 20px;
-}
-.logotype{
-    width: 300px;
-    padding: 30px;
 }
 .notreg{
     margin: auto;

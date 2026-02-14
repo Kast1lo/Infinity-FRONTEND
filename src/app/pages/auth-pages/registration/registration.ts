@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { FloatLabelModule } from 'primeng/floatlabel';
@@ -22,7 +22,8 @@ import { PasswordModule } from 'primeng/password';
 ],
   templateUrl: './registration.html',
   styleUrl: './registration.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class Registration {
-  imagePath = 'logo.png';
+  imagePath = 'infinityLogo.svg';
 }
