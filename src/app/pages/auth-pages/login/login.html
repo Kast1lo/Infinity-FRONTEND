@@ -1,14 +1,14 @@
 <div class="form-container">
-    <form class="form-position" action="">
+    <form class="form-position" (submit)="onSubmit($event)" novalidate>
         <div class="form-card">
+            <img class="logotype" [src]="imagePath" alt="infinity">
             <div class="inputs-form">
-                <img class="logotype" [src]="imagePath" alt="infinity">
                 <p-floatlabel variant="in">
                     <p-iconfield>
                             <p-inputicon>
                                 <i class="pi pi-user"></i>
                             </p-inputicon>
-                        <input pInputText formControlName="username"/>
+                        <input pInputText [formField]="loginForm.username"/>
                         <label>Введите логин</label>
                     </p-iconfield>
                 </p-floatlabel>
@@ -17,7 +17,7 @@
                         <p-inputicon>
                             <i class="pi pi-lock"></i>
                         </p-inputicon>
-                        <p-password formControlName="password" [toggleMask]="true" />
+                        <p-password [toggleMask]="true" [formField]="$any(loginForm.passwordHash)"/>
                         <label for="password">Пароль</label>
                     </p-iconfield>
                 </p-floatlabel>
