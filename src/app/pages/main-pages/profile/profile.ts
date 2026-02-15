@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
+import { SideBar } from "../../../common-ui/side-bar/side-bar";
 
 @Component({
   selector: 'app-profile',
-  imports: [],
+  imports: [SideBar],
   templateUrl: './profile.html',
   styleUrl: './profile.scss',
 })

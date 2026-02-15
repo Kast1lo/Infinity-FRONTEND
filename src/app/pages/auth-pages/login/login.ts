@@ -7,7 +7,7 @@ import { PasswordModule } from 'primeng/password';
 import { InputTextModule } from 'primeng/inputtext';
 import { Router, RouterLink } from '@angular/router';
 import { LoginRequest } from '../../../interfaces/auth-interfaces/login-request.model';
-import { form, FormField, maxLength, minLength, required, submit, } from '@angular/forms/signals';
+import { form, FormField, maxLength, minLength, required } from '@angular/forms/signals';
 import { AuthService } from '../../../services/auth';
 
 @Component({
@@ -19,13 +19,14 @@ import { AuthService } from '../../../services/auth';
   IconFieldModule,
   InputIconModule,
   PasswordModule, 
-  InputTextModule
+  InputTextModule,
 ],
   templateUrl: './login.html',
   styleUrl: './login.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class Login {
+  
   constructor(
     private router: Router,
     private readonly AuthService: AuthService
@@ -36,7 +37,6 @@ export class Login {
     passwordHash: '',
   });
   loginForm = form(this.loginModel, (schemaPath) => {
-    
     minLength(schemaPath.username, 3, {message: 'Логин должен содержать минимум 3 символа'})
     maxLength(schemaPath.username, 30, {message: 'Логин не должен превышать 30 символов'})
 

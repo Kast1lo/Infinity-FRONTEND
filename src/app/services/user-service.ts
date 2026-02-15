@@ -24,8 +24,8 @@ export class UserService {
   }
 
   getProfile(): Observable<UserProfile>{
-    this._isLoading.set(true),
-    this._error.set(null)
+    this._isLoading.set(true);
+    this._error.set(null);
 
     return this.http.get<UserProfile>(`${this.apiUrl}/profile`,{
       withCredentials: true
