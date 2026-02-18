@@ -1,0 +1,39 @@
+.updateForm{
+    display: flex;
+}
+.form{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 100%;
+    margin-left: 21.5px;
+    padding: 50px;
+    gap: 15px;
+    border-radius: 50px;
+    background-color: rgba(0, 0, 0, 0.250);
+    border-color: var(--border-color-card);
+    border-width: 1px;
+    border-style: groove;
+}
+.uploadAvatar{
+    display: flex;
+    justify-content: space-between;
+    border-color: var(--border-color-card);
+    border-radius: 15px;
+    border-width: 1px;
+    border-style: groove;
+    padding: 30px;
+}
+.infoEdit{
+    display: flex;
+    justify-content: center;
+    font-family: "Montserrat", sans-serif;
+    font-size: 3vh;
+}
+.actions{
+    padding-top: 30px;
+}
+.logotype{
+    width: 100px;
+    margin: auto;
+}

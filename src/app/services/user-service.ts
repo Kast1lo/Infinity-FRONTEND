@@ -2,6 +2,7 @@ import { computed, Injectable, signal } from '@angular/core';
 import { UserProfile } from '../interfaces/profile-interfaces/user-profile.model';
 import { HttpClient } from '@angular/common/http';
 import { catchError, Observable, tap, throwError } from 'rxjs';
+import { UpdateProfile } from '../interfaces/profile-interfaces/update-profile.model';
 
 @Injectable({
   providedIn: 'root',
@@ -10,7 +11,7 @@ export class UserService {
   private apiUrl = 'http://localhost:4400/user';
 
   // Состояние профиля
-  private _profile = signal<UserProfile | null>(null);
+  private _profile = signal<UserProfile | null | undefined>(undefined);
   private _isLoading = signal(false);
   private _error = signal<string | null>(null);
 
@@ -50,4 +51,43 @@ export class UserService {
     this._profile.set(null);
     this._error.set(null)
   }
+
+  updateProfile(updates: UpdateProfile): Observable<UserProfile> {
+    this._isLoading.set(true);
+    this._error.set(null);
+    return this.http.patch<UserProfile>(`${this.apiUrl}/updateProfile`, updates, {
+      withCredentials: true
+    }).pipe(
+      tap(updated => {
+        this._profile.set(updated);
+        this._isLoading.set(false);
+      }),
+      catchError(err => {
+        this._isLoading.set(false);
+        this._error.set(err.error?.message || 'Ошибка обновления профиля');
+        return throwError(() => err);
+      })
+    );
+  }
+
+  uploadAvatar(file: File): Observable<UserProfile>{
+    this._isLoading.set(true);
+    this._error.set(null);
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<UserProfile>(`${this.apiUrl}/createAvatar`, formData, {
+      withCredentials: true
+    }).pipe(
+      tap(updatedProfile => {
+        this._profile.set(updatedProfile);
+        this._isLoading.set(false);
+      }),
+      catchError(err => {
+        this._isLoading.set(false);
+        this._error.set(err.error?.message || 'Ошибка загрузки аватара');
+        return throwError(() => err);
+      })
+    );
+  }
+
 }

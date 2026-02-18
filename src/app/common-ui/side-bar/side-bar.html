@@ -1,8 +1,19 @@
-<div class="fone-side-bar">
-    <div>
-        <p-avatar label="P" class="mr-2" size="large" shape="circle" />
+<aside class="fone-side-bar">
+    <div class="up-link">
+        <p-avatar
+        [image]="avatarUrl()"
+        class="mr-2" 
+        size="large" 
+        shape="circle"
+        routerLink="/profile"/>
+        <div class="router">
+            <p-button routerLink="/infinity-life" icon="pi pi-book" [outlined]="true" [text]="true" [rounded]="true"size="large"/>
+            <p-button routerLink="/file-system" icon="pi pi-file" [outlined]="true" [text]="true" [rounded]="true" size="large"/>
+        </div>
     </div>
-    <div>
+    <div class="bottom-link">
+        <p-button class="setting" routerLink="/edit"  icon="pi pi-cog" class="mr2" [outlined]="true" [rounded]="true" size="large"/>
+        <hr style="border: 0; border-top: 1px solid #e0e0e068; width: 80%; margin: 0 auto; padding-bottom: 20px; margin-top: 20px;">
         <p-button (click)="authService.logout()" routerLink="/login" icon="pi pi-sign-out" [rounded]="true" size="large"/>
     </div>
-</div>
+</aside>
