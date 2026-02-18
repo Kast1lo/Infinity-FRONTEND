@@ -2,5 +2,6 @@ export interface UserProfile {
   userId: string;
   email: string;
   username: string;
-  avatarKey?: string
+  avatarKey?: string | null;
+  avatarUrl?: string | null;
 }

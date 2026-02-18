@@ -1,1 +1,44 @@
-<p>edit-profile works!</p>
+<div class="updateForm">
+    <app-side-bar></app-side-bar>
+    @if (userService.profile(); as user) {
+        <div class="form">
+            <p class="infoEdit">Изменение аватара</p>
+            <div class="uploadAvatar">
+                <p-fileUpload
+                #fu
+                mode="basic"
+                chooseLabel="Загрузить новый аватар"
+                chooseIcon="pi pi-upload"
+                name="demo[]"
+                maxFileSize="1000000"
+                accept="image/*"
+                (onSelect)="onFileSelected($event)"
+                (onClear)="selectedFile.set(null)"
+                />
+                <p-button 
+                label="Загрузить" 
+                icon="pi pi-cloud-upload"
+                severity="secondary"
+                [loading]="isUploading()"
+                [disabled]="!selectedFile() || isUploading()"
+                (onClick)="onAvatarUpload()"
+                />
+            </div>
+            <p class="infoEdit">Изменение основной информации</p>
+        <div class="field">
+            <input pInputText [(ngModel)]="newUsername" placeholder="Введите новый логин" fluid="true" />
+        </div>
+        <div class="field">
+            <input pInputText [(ngModel)]="newEmail" type="email" placeholder="Введите новый email" fluid/>
+        </div>
+            <div class="actions">
+                <p-button 
+                label="Сохранить изменения"
+                [disabled]="!hasChanges() || userService.isLoading()"
+                (onClick)="saveChanges()"
+                fluid
+                />
+            </div>
+        </div>
+    }
+</div>

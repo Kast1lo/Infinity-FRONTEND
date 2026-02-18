@@ -1,0 +1,21 @@
+.profile-card{
+    display: flex;
+    width: fit-content;
+    height: fit-content;
+    padding: 12.5px;
+    border-radius: 20px;
+    background-color: rgba(0, 0, 0, 0.250);
+    border-color: var(--border-color-card);
+    border-width: 1px;
+    border-style: groove;
+}
+.p-avatar{
+    margin: 13.5px;
+}
+.profileInfo{
+    margin-top: 4.5px;
+}
+.email{
+    margin-top: -13px;
+    color: rgba(255, 255, 255, 0.516);
+}

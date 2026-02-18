@@ -1,0 +1,13 @@
+@if (userService.profile(); as profile) {
+    <div class="profile-card">
+        <p-avatar
+        [image]="avatarUrl()"
+        class="mr-2" 
+        size="xlarge" 
+        shape="circle"/>
+        <div class="profileInfo">
+            <h3>{{profile.username}}</h3>
+            <p class="email">{{profile.email}}</p>
+        </div>
+    </div>
+}
