@@ -1,36 +1,27 @@
-.updateForm{
-    display: flex;
-}
-.form{
+.task-create-card{
     display: flex;
     flex-direction: column;
     justify-content: center;
-    width: 100%;
+    width: 98%;
+    height: fit-content;
+    padding: 30px;
     backdrop-filter: blur(10px);
-    margin-left: 21.5px;
-    padding: 100px;
+    margin-left: 16.5px;
     gap: 15px;
-    border-radius: 25px;
+    border-radius: 15px;
     background-color: rgba(0, 0, 0, 0.250);
     border-color: var(--border-color-card);
     border-width: 1px;
     border-style: groove;
 }
-.uploadAvatar{
+.form-tasks{
     display: flex;
+    gap: 30px;
+    align-items: center;
     justify-content: space-between;
-    border-color: var(--border-color-card);
-    border-radius: 15px;
-    border-width: 1px;
-    border-style: groove;
-    padding: 30px;
 }
-.infoEdit{
+.info{
     display: flex;
-    justify-content: center;
     font-family: "Montserrat", sans-serif;
     font-size: 3vh;
-}
-.actions{
-    padding-top: 30px;
 }

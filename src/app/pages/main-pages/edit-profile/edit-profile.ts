@@ -10,6 +10,7 @@ import { ToastModule } from 'primeng/toast';
 import { FileUpload, FileUploadModule } from 'primeng/fileupload';
 import { AvatarModule } from 'primeng/avatar';
 
+
 @Component({
   selector: 'app-edit-profile',
   imports: [SideBar, FormsModule, InputTextModule, Button, ToastModule, FileUploadModule, AvatarModule],
