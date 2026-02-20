@@ -1,0 +1,32 @@
+<div class="create-task">
+    @if (userService.profile(); as user) {
+        <div class="task-create-card">
+            <p class="info">создать задачу</p>
+            <div class="form-tasks">
+                <input 
+                pInputText 
+                type="text" 
+                placeholder="Название задачи" 
+                [(ngModel)]="newTask().title"
+                fluid/>
+                <p-select 
+                [options]="priorities()" 
+                [(ngModel)]="newTask().priority" 
+                optionLabel="label" 
+                optionValue="value"   
+                placeholder="Выберите приоритет"/>
+            </div>
+            <p-float-label variant="in">
+                <textarea rows="5" cols="30" pTextarea [(ngModel)]="newTask().notes" fluid></textarea>
+                <label for="in_label">Описание задачи</label>
+            </p-float-label>
+            <p-button class="create-task"
+            label="Создать задачу"
+            icon="pi pi-check"
+            [loading]="isLoading()" 
+            (click)="createTask()"
+            fluid/>
+            <p-toast></p-toast>
+        </div>
+    }
+</div>

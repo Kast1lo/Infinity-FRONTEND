@@ -1,0 +1,110 @@
+@if (isLoading()) {
+    <p-progressBar mode="indeterminate"></p-progressBar>
+} @else if (tasks().length === 0) {
+    <p class="info">У вас пока нет задач</p>
+} @else {
+    @for (task of tasks(); track task.id) {
+        <div class="tasks-card">
+            <div class="top-info">
+                <p class="title-task">{{task.title}}</p>
+                <div>
+                    <p-tag fluid>{{task.priority}}</p-tag>
+                </div>
+                <div class="buttons">
+                    <p-button 
+                        [label]="task.isCompleted ? 'Отменить' : 'Выполнено'" 
+                        [icon]="task.isCompleted ? 'pi pi-undo' : 'pi pi-check'"
+                        outlined
+                        severity="success"
+                        (onClick)="toggleCompletion(task)">
+                    </p-button>
+                    <p-button 
+                        label="Удалить" 
+                        icon="pi pi-trash" 
+                        severity="danger" 
+                        outlined
+                        (onClick)="confirmDelete(task.id)">
+                    </p-button>
+                </div>
+            </div>
+            <div>
+                <p-progress-bar
+                [value]="task.progress ?? 0"
+                [showValue]="true"
+                styleClass="h-1.5rem">
+            </p-progress-bar>
+            </div>
+            @if (task.notes?.trim()) {
+                <p class="notes">{{task.notes}}</p>
+            }
+            <p-button 
+              label="Подзадача" 
+              icon="pi pi-plus" 
+              text 
+              severity="secondary" 
+              (onClick)="openAddSubtaskDialog(task.id)">
+            </p-button>
+            @if ((task.subtasks ?? []).length > 0) {
+              <div class="sub-tasks">
+                @for (sub of task.subtasks ?? []; track sub.id) {
+                  <div class="components-sub">
+                    <p-checkbox 
+                      [binary]="true" 
+                      [ngModel]="sub.isCompleted" 
+                      (onChange)="toggleCompletion(sub)" 
+                      class="ml-2"></p-checkbox>
+                    <div>
+                      <p class="notes">{{sub.title}}</p>
+                    </div>
+                    <p-button 
+                        label="Удалить" 
+                        icon="pi pi-trash" 
+                        severity="danger" 
+                        outlined
+                        (onClick)="confirmDeleteSubtask(sub.id, $event)">
+                    </p-button>
+                  </div>
+                }
+              </div>
+            }
+        </div>
+    }
+}
+<p-dialog 
+  header="Новая подзадача" 
+  [visible]="showSubtaskDialog()"
+  (visibleChange)="showSubtaskDialog.set($event)"
+  [modal]="true"
+  [style]="{width: '400px'}">
+  <div class="p-fluid">
+    <div class="field">
+      <label for="subtask-title">Название</label>
+        <input 
+        pInputText 
+        id="subtask-title" 
+        [(ngModel)]="newSubtaskTitle" 
+        required 
+        autofocus 
+        class="w-full" 
+        placeholder="Введите название подзадачи" 
+        fluid/>
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <p-button 
+      label="Отмена" 
+      icon="pi pi-times" 
+      text 
+      (onClick)="closeSubtaskDialog()">
+    </p-button>
+    <p-button 
+      label="Создать" 
+      icon="pi pi-check" 
+      [disabled]="!newSubtaskTitle().trim()"
+      (onClick)="saveSubtask()">
+    </p-button>
+  </ng-template>
+</p-dialog>
+
+<p-toast></p-toast>
+<p-confirmDialog header="Удалить задачу?" icon="pi pi-exclamation-triangle"></p-confirmDialog>

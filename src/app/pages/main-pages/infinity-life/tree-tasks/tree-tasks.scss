@@ -1,0 +1,42 @@
+.tasks-card{    
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 98%;
+    height: fit-content;
+    padding: 50px;
+    backdrop-filter: blur(10px);
+    margin-left: 16.5px;
+    margin-top: 20px;
+    gap: 10px;
+    border-radius: 15px;
+    background-color: rgba(0, 0, 0, 0.250);
+    border-color: var(--border-color-card);
+    border-width: 1px;
+    border-style: groove;   
+}
+.title-task{
+    display: flex;
+    font-family: "Montserrat", sans-serif;
+    font-size: 3vh;
+}
+.top-info{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.p-tag{
+    width: 20vh
+}
+.notes{
+    font-size: 2vh;
+}
+.buttons{
+    display: flex;
+    gap: 30px;
+}
+.components-sub{
+    display: flex;
+    align-items: center;
+    gap: 30px;
+}

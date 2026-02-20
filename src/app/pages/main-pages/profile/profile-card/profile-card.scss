@@ -3,10 +3,11 @@
     width: fit-content;
     height: fit-content;
     padding: 12.5px;
-    border-radius: 20px;
+    border-radius: 15px;
     background-color: rgba(0, 0, 0, 0.250);
     border-color: var(--border-color-card);
     border-width: 1px;
+    backdrop-filter: blur(10px);
     border-style: groove;
 }
 .p-avatar{
