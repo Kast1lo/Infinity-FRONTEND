@@ -22,7 +22,6 @@ export const AuthInterceptor: HttpInterceptorFn = (req, next) => {
   return next(req).pipe(
     catchError(error => {
       if (error.status === 401 && !req.context.get(RETRY_TOKEN)) {
-        // Клонируем запрос с флагом retry = true
         const retryReq = req.clone({
           context: req.context.set(RETRY_TOKEN, true)
         });

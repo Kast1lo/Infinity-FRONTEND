@@ -8,7 +8,14 @@
             <div class="top-info">
                 <p class="title-task">{{task.title}}</p>
                 <div>
-                    <p-tag fluid>{{task.priority}}</p-tag>
+                    <p-tag 
+                    fluid>
+                      @switch (task.priority) {
+                        @case ('HIGH')   { Высокий }
+                        @case ('MEDIUM') { Средний }
+                        @case ('LOW')    { Низкий }
+                      }
+                    </p-tag>
                 </div>
                 <div class="buttons">
                     <p-button 
@@ -37,13 +44,13 @@
             @if (task.notes?.trim()) {
                 <p class="notes">{{task.notes}}</p>
             }
-            <p-button 
-              label="Подзадача" 
-              icon="pi pi-plus" 
-              text 
-              severity="secondary" 
-              (onClick)="openAddSubtaskDialog(task.id)">
-            </p-button>
+                  <p-button 
+                  class="sub-"
+                  label="Подзадача" 
+                  icon="pi pi-plus" 
+                  severity="secondary"
+                  variant="outlined" 
+                  (onClick)="openAddSubtaskDialog(task.id)"/>
             @if ((task.subtasks ?? []).length > 0) {
               <div class="sub-tasks">
                 @for (sub of task.subtasks ?? []; track sub.id) {

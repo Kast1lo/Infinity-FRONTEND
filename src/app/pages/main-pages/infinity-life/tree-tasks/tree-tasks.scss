@@ -4,11 +4,12 @@
     justify-content: center;
     width: 98%;
     height: fit-content;
-    padding: 50px;
+    padding-left: 30px;
+    padding-right: 30px;
+    padding-bottom: 20px;
     backdrop-filter: blur(10px);
     margin-left: 16.5px;
     margin-top: 20px;
-    gap: 10px;
     border-radius: 15px;
     background-color: rgba(0, 0, 0, 0.250);
     border-color: var(--border-color-card);
@@ -38,5 +39,5 @@
 .components-sub{
     display: flex;
     align-items: center;
-    gap: 30px;
+    gap: 30px
 }

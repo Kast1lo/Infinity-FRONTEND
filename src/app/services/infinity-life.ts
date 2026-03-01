@@ -8,6 +8,7 @@ import { UpdateTask } from '../interfaces/infinity-life/update-task.model';
 @Injectable({
   providedIn: 'root',
 })
+
 export class InfinityLife {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = 'http://localhost:4400/infinity-life';

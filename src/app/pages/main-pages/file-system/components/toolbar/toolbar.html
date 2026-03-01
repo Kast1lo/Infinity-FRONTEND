@@ -1,0 +1,36 @@
+<div class="car-toolbar">
+    <p-toolbar>
+        <ng-template #start>
+            <p-fileUpload
+                mode="basic"
+                name="files[]"
+                chooseIcon="pi pi-cloud-upload"
+                chooseLabel="Загрузить файл"
+                severity="secondary"            
+                maxFileSize="100000000"       
+                [auto]="true"                 
+                [customUpload]="true"         
+                (uploadHandler)="onUpload($event)"
+            />
+            <hr style="border: 0; border-left: 1px solid #e0e0e068; height: 25px; width: 1px; margin: 0 15px; display: inline-block;">
+            <p-button 
+            icon="pi pi-folder-plus"
+            class="mr-2" 
+            text 
+            severity="secondary" 
+            label="создать папку"/>
+        </ng-template>
+        <ng-template #center>
+            <p-iconfield iconPosition="left">
+                <p-inputicon class="pi pi-search" />
+                <input type="text" pInputText placeholder="поиск" />
+            </p-iconfield>
+        </ng-template>
+            <ng-template #end>
+                <p-button 
+                [disabled]="!selectedItem()"
+                label="переслать" 
+                icon="pi pi-share-alt"/>
+            </ng-template>
+    </p-toolbar>
+</div>

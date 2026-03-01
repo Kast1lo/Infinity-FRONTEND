@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { AuthService } from '../../../../services/auth';
 import { UserService } from '../../../../services/user-service';
 import { AvatarModule } from 'primeng/avatar';
@@ -9,6 +9,7 @@ import { AvatarGroupModule } from 'primeng/avatargroup';
   imports: [AvatarModule, AvatarGroupModule],
   templateUrl: './profile-card.html',
   styleUrl: './profile-card.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProfileCard {
   
