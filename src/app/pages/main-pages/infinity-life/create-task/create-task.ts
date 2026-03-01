@@ -33,7 +33,6 @@ export class CreateTask {
   ]);
   newTask = signal<CreateTaskDto>({
     title: '',
-    priority: 'MEDIUM',
     notes: '',
     parentId: null
   });
@@ -42,19 +41,23 @@ export class CreateTask {
   createTask(){
     const task = this.newTask();
     if (!task.title.trim()) {
-      this.messageService.add({ severity: 'warn', summary: 'Ошибка', detail: 'Название задачи не может быть пустым' });
+      this.messageService.add({ severity: 'secondary', summary: 'Ошибка', detail: 'Название задачи не может быть пустым' });
+      return;
+    }
+    if (!task.notes?.trim()) {
+      this.messageService.add({ severity: 'secondary', summary: 'Ошибка', detail: 'Описание задачи не может быть пустым' });
       return;
     }
     this.tasksService.createTask(task).subscribe({
       next: () => {
-        this.messageService.add({ severity: 'success', summary: 'Успех', detail: 'Задача создана' });
+        this.messageService.add({ severity: 'secondary', summary: 'Успех', detail: 'Задача создана' });
         this.newTask.set({
           title: '',
           priority: 'MEDIUM'
         });
       },
       error: () => {
-        this.messageService.add({ severity: 'error', summary: 'Ошибка', detail: 'Не удалось создать задачу' });
+        this.messageService.add({ severity: 'secondary', summary: 'Ошибка', detail: 'Не удалось создать задачу' });
       }
     });
   }

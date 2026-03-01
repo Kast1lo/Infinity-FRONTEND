@@ -82,14 +82,14 @@ export class TreeTasks {
       next: () => {
         this.tasksService.loadAllTasks().subscribe();
         this.messageService.add({
-          severity: 'success',
+          severity: 'secondary',
           summary: 'Успех',
           detail: task.isCompleted ? 'Задача отменена' : 'Задача выполнена'
         });
       },
       error: () => {
         this.messageService.add({
-          severity: 'error',
+          severity: 'secondary',
           summary: 'Ошибка',
           detail: 'Не удалось изменить статус'
         });
@@ -105,14 +105,14 @@ export class TreeTasks {
           next: () => {
             this.tasksService.loadAllTasks().subscribe();
             this.messageService.add({
-              severity: 'success',
+              severity: 'secondary',
               summary: 'Успех',
               detail: 'Задача удалена'
             });
           },
           error: () => {
             this.messageService.add({
-              severity: 'error',
+              severity: 'secondary',
               summary: 'Ошибка',
               detail: 'Не удалось удалить'
             });
@@ -141,14 +141,13 @@ export class TreeTasks {
     const dto: CreateTaskDto = {
       title,
       parentId: this.currentParentId()!,
-      priority: 'MEDIUM'
     };
 
     this.tasksService.createTask(dto).subscribe({
       next: () => {
         this.tasksService.loadAllTasks().subscribe();
         this.messageService.add({
-          severity: 'success',
+          severity: 'secondary',
           summary: 'Успех',
           detail: 'Подзадача создана'
         });
@@ -156,7 +155,7 @@ export class TreeTasks {
       },
       error: () => {
         this.messageService.add({
-          severity: 'error',
+          severity: 'secondary',
           summary: 'Ошибка',
           detail: 'Не удалось создать подзадачу'
         });
@@ -176,14 +175,14 @@ export class TreeTasks {
         next: () => {
           this.tasksService.loadAllTasks().subscribe();
           this.messageService.add({
-            severity: 'success',
+            severity: 'secondary',
             summary: 'Успех',
             detail: 'Подзадача удалена'
           });
         },
         error: () => {
           this.messageService.add({
-            severity: 'error',
+            severity: 'secondary',
             summary: 'Ошибка',
             detail: 'Не удалось удалить подзадачу'
           });
@@ -193,7 +192,12 @@ export class TreeTasks {
   });
 }
 
-  getPriorityClass(p: string): string {
-    return p?.toLowerCase() ?? 'low';
+  getPriorityClass(priority: string): string {
+    switch(priority){
+    case 'HIGH':   return 'danger';    
+    case 'MEDIUM': return 'warning';   
+    case 'LOW':    return 'info';      
+    default:       return 'secondary';
+    }
   }
 }
