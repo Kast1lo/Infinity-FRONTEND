@@ -1,4 +1,4 @@
-<div class="car-toolbar">
+<div class="card-toolbar">
     <p-toolbar>
         <ng-template #start>
             <p-fileUpload
@@ -18,7 +18,8 @@
             class="mr-2" 
             text 
             severity="secondary" 
-            label="создать папку"/>
+            label="создать папку"
+            (onClick)="showDialog()"/>
         </ng-template>
         <ng-template #center>
             <p-iconfield iconPosition="left">
