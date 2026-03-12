@@ -9,10 +9,11 @@ import { FileSystem } from '../../../../../services/file-system';
 import { FileUploadModule } from 'primeng/fileupload';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
+import { DialogModule } from 'primeng/dialog';
 
 @Component({
   selector: 'app-toolbar',
-  imports: [ToolbarModule, ButtonModule, IconFieldModule, InputIconModule, SplitButtonModule, InputTextModule, FileUploadModule, ToastModule],
+  imports: [ToolbarModule, ButtonModule, IconFieldModule, InputIconModule, SplitButtonModule, InputTextModule, FileUploadModule, ToastModule, DialogModule],
   templateUrl: './toolbar.html',
   styleUrl: './toolbar.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -21,8 +22,8 @@ import { MessageService } from 'primeng/api';
 })
 export class Toolbar {
   protected readonly fileSystem = inject(FileSystem)
-  private massageservice = inject(MessageService)
 
+  visible: boolean = false;
   files = this.fileSystem.files;
   folder = this.fileSystem.folders;
   selectedItem = this.fileSystem.selectedItem;
@@ -35,6 +36,11 @@ export class Toolbar {
       this.fileSystem.uploadFiles(files);
     }
   }
+
+  showDialog() {
+    this.visible = true;
+  }
+
 
 
 }

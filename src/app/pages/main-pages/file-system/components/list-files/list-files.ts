@@ -3,7 +3,7 @@ import { ScrollPanelModule } from 'primeng/scrollpanel';
 import { Table, TableModule } from 'primeng/table';
 import { FileSystem } from '../../../../../services/file-system';
 import { FileItem } from '../../../../../interfaces/file-system-interfeces/file-item.model';
-import { MenuItem, MessageService } from 'primeng/api';
+import { MenuItem, MessageService, PrimeIcons } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { ProgressSpinner } from "primeng/progressspinner";
 import { DatePipe } from '@angular/common';
@@ -42,7 +42,7 @@ export class ListFiles implements OnInit{
     this.items = [
       {
         label: 'скачать',
-        icon: 'pi pi-download',
+        icon: PrimeIcons.DOWNLOAD,
         command: () => {
           const item = this.selectedItem();
           if (item && 'downloadUrl' in item) {
@@ -52,12 +52,12 @@ export class ListFiles implements OnInit{
       },
       {
         label: 'удалить',
-        icon: 'pi pi-trash',
+        icon: PrimeIcons.TRASH,
         command: () => this.deleteSelected()
       },
       {
         label: 'переслать',
-        icon: 'pi pi-send',
+        icon: PrimeIcons.SEND,
         command: () => this.shareFile()
       }
       
@@ -102,12 +102,13 @@ export class ListFiles implements OnInit{
 
   shareFile() {
   const item = this.selectedItem();
-  if (!item || !('name' in item)) return;
-  const fileName = item.name;
-  const shareUrl = this.fileSystem.getShareLink(item.id, fileName);
-  const textToCopy = `${shareUrl}`;
-  navigator.clipboard.writeText(textToCopy)
-}
+    if (!item || !('downloadUrl' in item)) {
+      alert('Выберите файл для пересылки');
+      return;
+    }
+    const shareUrl = (item as FileItem).downloadUrl;
+    navigator.clipboard.writeText(shareUrl)
+  }
 
   downloadFile(file: FileItem) {
     this.fileSystem.downloadFile(file);

@@ -23,7 +23,6 @@ export class FileSystem {
   error = computed(() => this._error());
 
   hasContent = computed(() => this._files().length > 0 || this._folders().length > 0);
-
   constructor(
     private http: HttpClient,
   ) {
@@ -35,7 +34,6 @@ export class FileSystem {
 loadTree() {
   this._loading.set(true);
   this._error.set(null);
-
   this.http.get<{ files: FileItem[], folders: FolderItem[] }>(`${this.apiUrl}/tree`, {
     withCredentials: true
   }).subscribe({
@@ -53,9 +51,7 @@ loadTree() {
 loadFiles(folderId: string | null) {
   this._loading.set(true);
   this._error.set(null);
-
   const url = folderId ? `${this.apiUrl}/files/${folderId}` : `${this.apiUrl}/files`;
-
   this.http.get<FileItem[]>(url, {
     withCredentials: true  
   }).pipe(
@@ -75,41 +71,32 @@ loadFiles(folderId: string | null) {
   });
 }
 
-uploadFiles(files: FileList | File[], folderId?: string) {
-  this._loading.set(true);
-  this._error.set(null);
-
-  const formData = new FormData();
-  if (folderId) {
-    formData.append('folderId', folderId);
-  }
-
-  Array.from(files).forEach(file => {
-    formData.append('file', file);
-  });
-
-  this.http.post(`${this.apiUrl}/uploadFile`, formData, {
-    withCredentials: true  
-  }).pipe(
-    catchError(err => this.handleError(err, 'Ошибка загрузки файлов'))
-  ).subscribe({
-    next: () => {
-      setTimeout(() => {
-        this.loadFiles(folderId ?? null);
-        this.loadTree();
-        this._loading.set(false);
-      }, 500);
-    },
-    error: (err) => {
-      this._loading.set(false);
+  uploadFiles(files: FileList | File[], folderId?: string) {
+    this._loading.set(true);
+    this._error.set(null);
+    const formData = new FormData();
+    if (folderId) {
+      formData.append('folderId', folderId);
     }
-  });
-}
-
-getShareLink(id: string, name: string): string {
-  const safeName = encodeURIComponent(name.trim());
-  return `https://Infinity.com/share/download/${id}/${safeName}`;
-}
+    Array.from(files).forEach(file => {
+      formData.append('file', file);
+    });
+    this.http.post(`${this.apiUrl}/uploadFile`, formData, {
+      withCredentials: true  
+    }).pipe(
+      catchError(err => this.handleError(err, 'Ошибка загрузки файлов'))
+    ).subscribe({
+      next: () => {
+        setTimeout(() => {
+          this.loadFiles(folderId ?? null);
+          this._loading.set(false);
+        }, 1500);
+      },
+      error: (err) => {
+        this._loading.set(false);
+      }
+    });
+  }
 
   deleteItem(id: string, type: 'file' | 'folder') {
       this._loading.set(true);
@@ -144,7 +131,6 @@ getShareLink(id: string, name: string): string {
 
   private handleError(error: HttpErrorResponse, defaultMsg: string) {
     let message = defaultMsg;
-
     if (error.error instanceof ErrorEvent) {
       message = `Клиентская ошибка: ${error.error.message}`;
     } else {
@@ -169,10 +155,10 @@ getShareLink(id: string, name: string): string {
   }
 
   downloadFile(file: FileItem) {
-  fetch(`${this.apiUrl}/download/${file.id}`, {
+    fetch(`${this.apiUrl}/download/${file.id}`, {
     method: 'GET',
     credentials: 'include'
-  })
+    })
     .then(response => {
       if (!response.ok) {
         throw new Error(`Ошибка скачивания: ${response.status}`);
@@ -193,6 +179,6 @@ getShareLink(id: string, name: string): string {
     .catch(err => {
       console.error('Ошибка скачивания:', err);
     });
-}
+  }
 
 }
