@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, OnInit } from '@angular/core';
 import { ScrollPanelModule } from 'primeng/scrollpanel';
 import { Table, TableModule } from 'primeng/table';
 import { FileSystem } from '../../../../../services/file-system';
@@ -13,11 +13,12 @@ import { CardModule } from 'primeng/card';
 import { FolderItem } from '../../../../../interfaces/file-system-interfeces/folder-item.model';
 import { TieredMenuModule } from 'primeng/tieredmenu';
 import { DecodeURIComponentPipe } from "../../../../../pipes/decode-uri.pipe";
+import { BreadcrumbModule } from 'primeng/breadcrumb';
 
 
 @Component({
   selector: 'app-list-files',
-  imports: [ScrollPanelModule, TableModule, ToastModule, ButtonModule, MenuModule, CardModule, ProgressSpinner, TieredMenuModule, DecodeURIComponentPipe],
+  imports: [ScrollPanelModule, TableModule, ToastModule, ButtonModule, MenuModule, CardModule, ProgressSpinner, TieredMenuModule, DecodeURIComponentPipe, BreadcrumbModule],
   templateUrl: './list-files.html',
   styleUrl: './list-files.scss',
   providers: [MessageService, TieredMenuModule],
@@ -38,6 +39,9 @@ export class ListFiles implements OnInit{
   ngOnInit() {
     this.fileSystem.loadTree();
     this.fileSystem.loadFiles(null);
+    
+    console.log('Папки загружены:', this.folders().length);
+    console.log('Файлы загружены:', this.files().length);
 
     this.items = [
       {
@@ -59,11 +63,11 @@ export class ListFiles implements OnInit{
         label: 'переслать',
         icon: PrimeIcons.SEND,
         command: () => this.shareFile()
-      }
-      
+      } 
     ]
-
   }
+
+  
 
   getFileIcon(mimeType: string): string {
     if (mimeType.startsWith('image/')) return 'pi pi-image';
@@ -83,13 +87,20 @@ export class ListFiles implements OnInit{
     return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} ГБ`;
   }
 
-  isImage(file: FileItem): boolean {
-    return file.mimeType.startsWith('image/');
+  // ... твои импорты и класс
+
+  // Метод для клика по папке
+  openFolder(folder: FolderItem) {
+    this.fileSystem.openFolder(folder.id);
   }
 
-  openFolder(folder: FolderItem) {
-    this.fileSystem.selectItem(folder);
-    this.fileSystem.loadFiles(folder.id);
+  // Кнопка "Назад" (если хочешь оставить)
+  goBack() {
+    this.fileSystem.goBack();
+  }
+
+  isImage(file: FileItem): boolean {
+    return file.mimeType.startsWith('image/');
   }
 
   onFileDropped(files: FileList){

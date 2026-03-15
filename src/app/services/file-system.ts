@@ -21,8 +21,16 @@ export class FileSystem {
   selectedItem = computed(() => this._selectedItem());
   loading = computed(() => this._loading());
   error = computed(() => this._error());
-
   hasContent = computed(() => this._files().length > 0 || this._folders().length > 0);
+  private _pathStack = signal<string[]>([]);
+
+  readonly currentFolderId = computed(() => this._pathStack().length > 0 ? this._pathStack().slice(-1)[0] : null);
+
+  readonly breadcrumbs = computed(() => {
+  const stack = this._pathStack();
+  return stack.map(id => ({ id, label: id }));
+});
+
   constructor(
     private http: HttpClient,
   ) {
@@ -31,22 +39,41 @@ export class FileSystem {
     });
   }
 
-loadTree() {
-  this._loading.set(true);
-  this._error.set(null);
-  this.http.get<{ files: FileItem[], folders: FolderItem[] }>(`${this.apiUrl}/tree`, {
-    withCredentials: true
-  }).subscribe({
-    next: (tree) => {
-      this._folders.set(tree?.folders || []);
-      this._files.set(tree?.files || []);
-      this._loading.set(false);
-    },
-    error: (err) => {
-      this._loading.set(false);
+openFolder(folderId: string) {
+  this._pathStack.update(stack => [...stack, folderId]);
+  this.loadFiles(folderId);
+}
+
+goBack() {
+  this._pathStack.update(stack => {
+    if (stack.length > 0) {
+      const newStack = stack.slice(0, -1);
+      const parentId = newStack.length > 0 ? newStack[newStack.length - 1] : null;
+      this.loadFiles(parentId);
+      return newStack;
     }
+    return stack;
   });
 }
+
+  loadTree() {
+    this._loading.set(true);
+    this._error.set(null);
+    this.http.get<FolderItem[]>(`${this.apiUrl}/tree`, {
+      withCredentials: true
+    }).subscribe({
+      next: (folders) => {
+        console.log('loadTree вернул папок:', folders.length, folders);
+        this._folders.set(folders || []);
+        this._files.set([]);
+        this._loading.set(false);
+      },
+      error: (err) => {
+        this._loading.set(false);
+      }
+    });
+  }
+
 
 loadFiles(folderId: string | null) {
   this._loading.set(true);
@@ -71,18 +98,19 @@ loadFiles(folderId: string | null) {
   });
 }
 
-  uploadFiles(files: FileList | File[], folderId?: string) {
+  uploadFiles(files: FileList | File[], folderId?: string | null) {
     this._loading.set(true);
     this._error.set(null);
+
     const formData = new FormData();
     if (folderId) {
       formData.append('folderId', folderId);
     }
-    Array.from(files).forEach(file => {
-      formData.append('file', file);
-    });
+
+    Array.from(files).forEach(file => formData.append('file', file));
+
     this.http.post(`${this.apiUrl}/uploadFile`, formData, {
-      withCredentials: true  
+      withCredentials: true
     }).pipe(
       catchError(err => this.handleError(err, 'Ошибка загрузки файлов'))
     ).subscribe({
@@ -90,7 +118,7 @@ loadFiles(folderId: string | null) {
         setTimeout(() => {
           this.loadFiles(folderId ?? null);
           this._loading.set(false);
-        }, 1500);
+        }, 800);
       },
       error: (err) => {
         this._loading.set(false);
@@ -108,7 +136,7 @@ loadFiles(folderId: string | null) {
       ).subscribe({
         next: () => {
           this.loadTree();
-          this.loadFiles(null);
+          this.loadFiles(this.currentFolderId());
           this._loading.set(false);
         },
         error: (err) => {
@@ -117,8 +145,25 @@ loadFiles(folderId: string | null) {
       });
     }
 
-  createFolder(name: string, parantId: string | null = null){
+  createFolder(name: string, parentId: string | null = null) {
     this._loading.set(true);
+    this._error.set(null);
+    const body = { name, parentId };
+    this.http.post(`${this.apiUrl}/createFolder`, body, {
+      withCredentials: true
+    }).pipe(
+      catchError(err => this.handleError(err, 'Ошибка создания папки'))
+    ).subscribe({
+      next: () => {
+        this.loadTree();
+        this.loadFiles(parentId);
+        this._loading.set(false);
+        this._folders.set(this._folders());
+      },
+      error: (err) => {
+        this._loading.set(false);
+      }
+    });
   }
   
   selectItem(item: FileItem | FolderItem | null) {

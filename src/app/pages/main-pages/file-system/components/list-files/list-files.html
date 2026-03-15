@@ -1,33 +1,43 @@
 <div class="card-list-files">
     <p-scrollPanel [style]="{ width: '167vh', height: '83.5vh'}">
+
         @if (loading()) {
             <div class="progress-spin">
                 <p-progressSpinner></p-progressSpinner>
             </div>
-        } @else if (folders().length > 0) {
-        <div class="folder-grid">
-            @for (folder of folders(); track folder.id) {
-            <p-card 
-                class="folder-card" 
-                (click)="openFolder(folder)"
-                [class.selected]="selectedItem()?.id === folder.id"
-                [style]="{width: '15rem'}">
-                <div class="folder-preview">
-                <i class="pi pi-folder" style="font-size: 6rem; color: var(--primary-color);"></i>
-                </div>
-                <div class="folder-name">
-                {{ folder.name }}
-                </div>
-            </p-card>
+        } @else {
+            @if (folders().length > 0) {
+            <div class="folder-grid">
+                @if (fileSystem.currentFolderId()) {
+                    <p-button 
+                    label="назад"
+                    icon="pi pi-arrow-left" 
+                    (onClick)="goBack()"
+                    />
+                } 
+                @for (folder of folders(); track folder.id) {
+                    @if (folder.parentId === fileSystem.currentFolderId()) {
+                        <p-card>
+                            <div 
+                            class="folder-card" 
+                            (click)="openFolder(folder)"
+                            [class.selected]="selectedItem()?.id === folder.id">
+                            <i class="pi pi-folder" style="font-size: 1.2rem; color: var(--primary-color);"></i>
+                            <div class="folder-name">{{ folder.name }}</div>
+                        </div>
+                        </p-card>
+                    }
+                }
+            </div>
             }
-        </div>
-    }
+        }
+        <hr style="border: 0; border-top: 1px solid #e0e0e068; width: 97%; margin: 0 auto; margin-top: 20px;">
         @if (loading()) {
         } @else if (files().length === 0) {
         } @else {
             <div class="file-grid">
                 @for (file of files(); track file.id) {
-                    <p-card [style]="{width: '15rem'}">
+                    <p-card>
                         <div class="file-card"
                         (click)="selectFile(file)"
                         [class.selected]="selectedItem()?.id === file.id">
