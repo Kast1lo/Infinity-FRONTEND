@@ -3,6 +3,16 @@
     backdrop-filter: blur(10px);
     margin: 15px;
     border-radius: 10px;
+}
+.name-folder{
     display: flex;
-    
+    flex-direction: column;
+    gap: 10px;
+}
+.create-folder{
+    display: flex;
+    justify-content: end;
+    align-items: center;
+    padding-top: 20px;
+    gap: 10px;
 }

@@ -1,19 +1,18 @@
 .card-list-files{
-    width: 98.2%;
-    height: 87.5%;
-    margin: 15px;
-    border-radius: 15px;
-    background-color: rgba(0, 0, 0, 0.250);
-    border-color: var(--border-color-card);
-    border-width: 1px;
-    border-style: groove;
-    backdrop-filter: blur(10px);
+  height: 87.5%;
+  margin: 15px;
+  border-radius: 15px;
+  background-color: rgba(0, 0, 0, 0.250);
+  border-color: var(--border-color-card);
+  border-width: 1px;
+  border-style: groove;
+  backdrop-filter: blur(10px);
 }
 .file-grid{
   padding: 20px;
   display: grid;
   flex-wrap: wrap;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(220px, 2fr));
   gap: 0.6rem;
 }
 .file-card{
@@ -26,7 +25,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
     .preview-image{
       flex-shrink: 0;
       object-fit: contain;
@@ -76,3 +74,23 @@
 ::ng-deep .p-scrollpanel-bar {
   display: none !important;
 }
+.folder-grid{
+  margin: 20px;
+  width: 240px;
+  display: flex;
+  gap: 10px;
+}
+.folder-card{
+  display: flex;
+  align-items: center;
+  justify-content: start;
+  gap: 15px;
+  width: 200px;
+}
+.folder-name{
+  font-size: 16px;
+}
+.button-back{
+  margin: 20px;
+}
+

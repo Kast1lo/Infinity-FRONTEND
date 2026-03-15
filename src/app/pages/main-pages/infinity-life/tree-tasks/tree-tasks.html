@@ -100,13 +100,11 @@
   <ng-template pTemplate="footer">
     <p-button 
       label="Отмена" 
-      icon="pi pi-times" 
-      text 
+      severity="secondary"
       (onClick)="closeSubtaskDialog()">
     </p-button>
     <p-button 
       label="Создать" 
-      icon="pi pi-check" 
       [disabled]="!newSubtaskTitle().trim()"
       (onClick)="saveSubtask()">
     </p-button>

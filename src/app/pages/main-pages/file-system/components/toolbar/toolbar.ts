@@ -10,10 +10,11 @@ import { FileUploadModule } from 'primeng/fileupload';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { DialogModule } from 'primeng/dialog';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-toolbar',
-  imports: [ToolbarModule, ButtonModule, IconFieldModule, InputIconModule, SplitButtonModule, InputTextModule, FileUploadModule, ToastModule, DialogModule],
+  imports: [ToolbarModule, ButtonModule, IconFieldModule, InputIconModule, SplitButtonModule, InputTextModule, FileUploadModule, ToastModule, DialogModule, FormsModule],
   templateUrl: './toolbar.html',
   styleUrl: './toolbar.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -21,26 +22,45 @@ import { DialogModule } from 'primeng/dialog';
 
 })
 export class Toolbar {
+
   protected readonly fileSystem = inject(FileSystem)
 
-  visible: boolean = false;
+  visible = signal(false);
+  folderName = signal<string>('');
+
   files = this.fileSystem.files;
   folder = this.fileSystem.folders;
   selectedItem = this.fileSystem.selectedItem;
   loading = this.fileSystem.loading;
   error = this.fileSystem.error;
 
+  
   onUpload(event: any) {
     const files = event.files as File[];
     if (files.length > 0) {
-      this.fileSystem.uploadFiles(files);
+    const currentFolderId = this.fileSystem.currentFolderId();
+    this.fileSystem.uploadFiles(files, currentFolderId);
     }
   }
 
-  showDialog() {
-    this.visible = true;
+  openDialog() {
+    this.folderName.set('');
+    this.visible.set(true);
+  }
+  closeDialog() {
+    this.folderName.set('');
+    this.visible.set(false);
   }
 
-
+  createFolder() {
+    const name = this.folderName().trim();
+    if (!name) {
+      return;
+    }
+    const parentId = this.fileSystem.currentFolderId();
+    this.fileSystem.createFolder(name, parentId);
+    this.visible.set(false);
+    this.folderName.set('');
+  }
 
 }

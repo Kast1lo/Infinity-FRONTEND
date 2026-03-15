@@ -1,7 +1,8 @@
 .file-system{
     display: flex;
-    flex-direction:row
+    flex-direction:row;
 }
 .work-path-file-system{
-    width: 100%;
+    flex: 1;
+    min-width: 0;
 }
