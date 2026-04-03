@@ -129,7 +129,7 @@ loadFiles(folderId: string | null) {
   deleteItem(id: string, type: 'file' | 'folder') {
       this._loading.set(true);
       this._error.set(null);
-      this.http.delete(`${this.apiUrl}/delete/${id}?type=file`, {
+      this.http.delete(`${this.apiUrl}/delete/${id}?type=${type}`, {
         withCredentials: true
       }).pipe(
         catchError(err => this.handleError(err, `Не удалось удалить ${type}`))
@@ -167,7 +167,13 @@ loadFiles(folderId: string | null) {
   }
   
   selectItem(item: FileItem | FolderItem | null) {
+    const current = this._selectedItem();
     this._selectedItem.set(item);
+    if (current && item && current.id === item.id) {
+    this._selectedItem.set(null);
+  } else {
+    this._selectedItem.set(item);
+  }
   }
 
   clearSelection() {
@@ -223,6 +229,31 @@ loadFiles(folderId: string | null) {
     })
     .catch(err => {
       console.error('Ошибка скачивания:', err);
+    });
+  }
+
+  downloadFolder(folderId: string, name: string) {
+    this._loading.set(true);
+    this._error.set(null);
+
+    this.http.get(`${this.apiUrl}/download-folder/${folderId}`, {
+      responseType: 'blob', 
+      withCredentials: true
+    }).pipe(
+      catchError(err => this.handleError(err, 'Не удалось скачать папку'))
+    ).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${name}.zip`;
+        link.click();
+        window.URL.revokeObjectURL(url);
+        this._loading.set(false);
+      },
+      error: (err) => {
+        this._loading.set(false);
+      }
     });
   }
 

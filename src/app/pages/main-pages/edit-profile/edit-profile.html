@@ -4,9 +4,7 @@
         <div class="form">
             <p class="infoEdit">Изменение аватара</p>
             <div class="uploadAvatar">
-                <p-fileUpload
-                #fu
-                mode="basic"
+                <p-fileUpload #fu mode="basic"
                 chooseLabel="Загрузить новый аватар"
                 chooseIcon="pi pi-upload"
                 name="demo[]"
@@ -15,9 +13,7 @@
                 (onSelect)="onFileSelected($event)"
                 (onClear)="selectedFile.set(null)"
                 />
-                <p-button 
-                label="Загрузить" 
-                icon="pi pi-cloud-upload"
+                <p-button label="Загрузить" icon="pi pi-cloud-upload"
                 severity="secondary"
                 [loading]="isUploading()"
                 [disabled]="!selectedFile() || isUploading()"

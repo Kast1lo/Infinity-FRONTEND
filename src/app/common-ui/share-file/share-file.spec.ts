@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { CreateTask } from './create-task';
+import { ShareFile } from './share-file';
 
-describe('CreateTask', () => {
-  let component: CreateTask;
-  let fixture: ComponentFixture<CreateTask>;
+describe('ShareFile', () => {
+  let component: ShareFile;
+  let fixture: ComponentFixture<ShareFile>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CreateTask]
+      imports: [ShareFile]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(CreateTask);
+    fixture = TestBed.createComponent(ShareFile);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

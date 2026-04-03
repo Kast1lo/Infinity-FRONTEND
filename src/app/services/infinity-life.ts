@@ -1,111 +1,162 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
-import { Task } from '../interfaces/infinity-life/tasks.model';
 import { catchError, finalize, Observable, tap, throwError } from 'rxjs';
-import { CreateTaskDto } from '../interfaces/infinity-life/create-task.model';
+
+import { Task } from '../interfaces/infinity-life/tasks.model';
+import { Subtask } from '../interfaces/infinity-life/tasks.model';
 import { UpdateTask } from '../interfaces/infinity-life/update-task.model';
+import { CreateSubtaskDto } from '../interfaces/infinity-life/create-subtask.model';
+import { CreateColumnDto } from '../interfaces/infinity-life/create-column.model';
+import { UpdateColumnDto } from '../interfaces/infinity-life/update-column.model';
+import { CreateTaskDto } from '../interfaces/infinity-life/create-task.model';
 
 @Injectable({
   providedIn: 'root',
 })
-
 export class InfinityLife {
+  moveTaskToColumn(id: string, newColumnId: string) {
+    throw new Error('Method not implemented.');
+  }
   private readonly http = inject(HttpClient);
   private readonly baseUrl = 'http://localhost:4400/infinity-life';
-  
-  readonly tasks = signal<Task[]>([]);
+
+  // Сигналы
+  readonly columns = signal<any[]>([]);
   readonly isLoading = signal(false);
   readonly error = signal<string | null>(null);
 
-  loadAllTasks(): Observable<Task[]> {
+  constructor() {}
+
+  // ====================== COLUMNS ======================
+  loadBoard(): Observable<any[]> {
     this.isLoading.set(true);
     this.error.set(null);
-    return this.http.get<Task[]>(`${this.baseUrl}/tasksAll`, { 
+
+    return this.http.get<any[]>(`${this.baseUrl}/columns`, { 
       withCredentials: true 
     }).pipe(
-      tap(tasks => {
-        this.tasks.set(tasks);
-      }),
+      tap(columns => this.columns.set(columns)),
+      catchError(err => this.handleError(err, 'Не удалось загрузить доску')),
       finalize(() => this.isLoading.set(false))
     );
   }
 
+  createColumn(dto: CreateColumnDto): Observable<any> {
+    this.isLoading.set(true);
+    this.error.set(null);
+
+    return this.http.post(`${this.baseUrl}/columns`, dto, { withCredentials: true }).pipe(
+      tap(() => this.loadBoard().subscribe()),
+      catchError(err => this.handleError(err, 'Ошибка создания колонки')),
+      finalize(() => this.isLoading.set(false))
+    );
+  }
+
+  updateColumn(columnId: string, dto: UpdateColumnDto): Observable<any> {
+    this.isLoading.set(true);
+    this.error.set(null);
+
+    return this.http.patch(`${this.baseUrl}/columns/${columnId}`, dto, { withCredentials: true }).pipe(
+      tap(() => this.loadBoard().subscribe()),
+      catchError(err => this.handleError(err, 'Ошибка обновления колонки')),
+      finalize(() => this.isLoading.set(false))
+    );
+  }
+
+  deleteColumn(columnId: string): Observable<any> {
+    this.isLoading.set(true);
+    this.error.set(null);
+
+    return this.http.delete(`${this.baseUrl}/columns/${columnId}`, { withCredentials: true }).pipe(
+      tap(() => this.loadBoard().subscribe()),
+      catchError(err => this.handleError(err, 'Ошибка удаления колонки')),
+      finalize(() => this.isLoading.set(false))
+    );
+  }
+
+  // ====================== TASKS ======================
   createTask(dto: CreateTaskDto): Observable<Task> {
     this.isLoading.set(true);
     this.error.set(null);
-    return this.http.post<Task>(`${this.baseUrl}/createTasks`, dto, {
-      withCredentials: true 
-    }).pipe(
-      tap(newTask => {
-        if (!newTask.parentId) {
-          this.tasks.update(tasks => [...tasks, newTask]);
-        } else {
-          this.loadAllTasks().subscribe();
-        }
-      }),
-      finalize(() => this.isLoading.set(false))
-    );
-  }
-    
-  updateTask(taskId: string, updates: UpdateTask): Observable<Task>{
-    this.isLoading.set(true);
-    this.error.set(null);
-    return this.http.patch<Task>(`${this.baseUrl}/updateTask/${taskId}`, updates, {
-      withCredentials: true 
-    }).pipe(
-      tap(updated => {
-        this.tasks.update(current =>
-          current.map(t => t.id === taskId ? { ...t, ...updated } : t)
-        );
-      }),
-    finalize(() => this.isLoading.set(false))
-    );
-  }
 
-  toggleTaskCompletion(taskId: string): Observable<Task> {
-    this.isLoading.set(true);
-    this.error.set(null);
-    return this.http.patch<Task>(`${this.baseUrl}/toggleTaskCompletion/${taskId}`, {}, {
-      withCredentials: true 
-    }).pipe(
-      tap(updated => {
-        this.tasks.update(current =>
-          current.map(t => t.id === taskId ? { ...t, isCompleted: !t.isCompleted } : t)
-        );
-      }),
-      catchError(err => this.handleError(err, 'Ошибка переключения статуса задачи')),
+    return this.http.post<Task>(`${this.baseUrl}/tasks`, dto, { withCredentials: true }).pipe(
+      tap(() => this.loadBoard().subscribe()),
+      catchError(err => this.handleError(err, 'Ошибка создания задачи')),
       finalize(() => this.isLoading.set(false))
     );
   }
 
-  deleteTask(taskId: string): Observable<{message: string; deletedTaskId: string}> {
+  toggleTaskCompletion(taskId: string): Observable<any> {
     this.isLoading.set(true);
     this.error.set(null);
-    return this.http.delete<{message: string; deletedTaskId: string}>(`${this.baseUrl}/deleteTask/${taskId}`, {
-      withCredentials: true 
-    }).pipe(
-      tap(() => {
-        this.tasks.update(current => current.filter(t => t.id !== taskId));
-      }),
+
+    return this.http.patch(`${this.baseUrl}/tasks/${taskId}/toggle`, {}, { withCredentials: true }).pipe(
+      tap(() => this.loadBoard().subscribe()),
+      catchError(err => this.handleError(err, 'Ошибка изменения статуса задачи')),
+      finalize(() => this.isLoading.set(false))
+    );
+  }
+
+  deleteTask(taskId: string): Observable<any> {
+    this.isLoading.set(true);
+    this.error.set(null);
+
+    return this.http.delete(`${this.baseUrl}/tasks/${taskId}`, { withCredentials: true }).pipe(
+      tap(() => this.loadBoard().subscribe()),
       catchError(err => this.handleError(err, 'Ошибка удаления задачи')),
       finalize(() => this.isLoading.set(false))
     );
   }
 
-    private handleError(error: HttpErrorResponse, defaultMessage: string): Observable<never> {
+  // ====================== SUBTASKS ======================
+  createSubtask(dto: CreateSubtaskDto): Observable<any> {
+    this.isLoading.set(true);
+    this.error.set(null);
+
+    return this.http.post(`${this.baseUrl}/subtasks`, dto, { withCredentials: true }).pipe(
+      tap(() => this.loadBoard().subscribe()),
+      catchError(err => this.handleError(err, 'Ошибка создания подзадачи')),
+      finalize(() => this.isLoading.set(false))
+    );
+  }
+
+  toggleSubtaskCompletion(subtaskId: string): Observable<any> {
+    this.isLoading.set(true);
+    this.error.set(null);
+
+    return this.http.patch(`${this.baseUrl}/subtasks/${subtaskId}/toggle`, {}, { 
+      withCredentials: true 
+    }).pipe(
+      tap(() => this.loadBoard().subscribe()),
+      catchError(err => this.handleError(err, 'Ошибка изменения статуса подзадачи')),
+      finalize(() => this.isLoading.set(false))
+    );
+  }
+
+  deleteSubtask(subtaskId: string): Observable<any> {
+    this.isLoading.set(true);
+    this.error.set(null);
+
+    return this.http.delete(`${this.baseUrl}/subtasks/${subtaskId}`, { 
+      withCredentials: true 
+    }).pipe(
+      tap(() => this.loadBoard().subscribe()),
+      catchError(err => this.handleError(err, 'Ошибка удаления подзадачи')),
+      finalize(() => this.isLoading.set(false))
+    );
+  }
+
+  // ====================== ERROR HANDLING ======================
+  private handleError(error: HttpErrorResponse, defaultMessage: string): Observable<never> {
     let errorMessage = defaultMessage;
 
-    if (error.error instanceof ErrorEvent) {
-      errorMessage = `Сетевая ошибка: ${error.error.message}`;
-    } else if (error.error?.message) {
+    if (error.error?.message) {
       errorMessage = error.error.message;
     } else if (error.error?.error) {
       errorMessage = error.error.error;
-    } else {
-      errorMessage = `Сервер ответил ${error.status}: ${error.statusText}`;
     }
 
-    console.error('[TasksService]', errorMessage, error);
+    console.error('[InfinityLife Service]', errorMessage, error);
     this.error.set(errorMessage);
 
     return throwError(() => new Error(errorMessage));
@@ -116,9 +167,8 @@ export class InfinityLife {
   }
 
   reset(): void {
-    this.tasks.set([]);
+    this.columns.set([]);
     this.error.set(null);
     this.isLoading.set(false);
   }
-
 }

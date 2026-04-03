@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { TreeTasks } from './tree-tasks';
+import { KanbanBoard } from './kanban-board';
 
-describe('TreeTasks', () => {
-  let component: TreeTasks;
-  let fixture: ComponentFixture<TreeTasks>;
+describe('KanbanBoard', () => {
+  let component: KanbanBoard;
+  let fixture: ComponentFixture<KanbanBoard>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TreeTasks]
+      imports: [KanbanBoard]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(TreeTasks);
+    fixture = TestBed.createComponent(KanbanBoard);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

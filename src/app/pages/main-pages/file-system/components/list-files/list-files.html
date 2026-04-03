@@ -1,6 +1,5 @@
 <div class="card-list-files">
     <p-scrollPanel [style]="{ width: '167vh', height: '83.5vh'}">
-
         @if (loading()) {
             <div class="progress-spin">
                 <p-progressSpinner></p-progressSpinner>
@@ -17,29 +16,33 @@
                 } 
                 @for (folder of folders(); track folder.id) {
                     @if (folder.parentId === fileSystem.currentFolderId()) {
-                        <p-card>
-                            <div 
-                            class="folder-card" 
-                            (click)="openFolder(folder)"
-                            [class.selected]="selectedItem()?.id === folder.id">
-                            <i class="pi pi-folder" style="font-size: 1.2rem; color: var(--primary-color);"></i>
-                            <div class="folder-name">{{ folder.name }}</div>
-                        </div>
+                        <p-card 
+                        (click)="selectFolder(folder)"
+                        >
+                            <div class="folder-card" [class.selected]="selectedItem()?.id === folder.id">
+                                <div class="info-folder">
+                                    <i class="pi pi-folder" (click)="openFolder(folder)" style="font-size: 1.2rem; color: var(--primary-color); margin-top: 2.5px;"></i>
+                                    <div class="folder-name">{{ folder.name }}</div>
+                                </div>
+                                <div>
+                                    <p-button icon="pi pi-ellipsis-v" [text]="true" [outlined]="true" (click)="menu.toggle($event.stopPropagation);"/>
+                                    <p-tieredmenu #menu [model]="items()" [popup]="true"/>
+                                </div>
+                            </div>
                         </p-card>
                     }
                 }
             </div>
+            <hr style="border: 0; border-top: 1px solid #e0e0e068; width: 97%; margin: 0 auto; margin-top: 20px;">
             }
         }
-        <hr style="border: 0; border-top: 1px solid #e0e0e068; width: 97%; margin: 0 auto; margin-top: 20px;">
         @if (loading()) {
         } @else if (files().length === 0) {
         } @else {
             <div class="file-grid">
                 @for (file of files(); track file.id) {
-                    <p-card>
+                    <p-card (click)="selectFile(file)">
                         <div class="file-card"
-                        (click)="selectFile(file)"
                         [class.selected]="selectedItem()?.id === file.id">
                         @if (isImage(file)) {
                         <div class="file-info">
@@ -48,11 +51,11 @@
                             </div>
                             <div class="menu-container">
                                 <p-button icon="pi pi-ellipsis-v" [text]="true" [outlined]="true" (click)="menu.toggle($event.stopPropagation);"/>
-                                <p-tieredmenu #menu [model]="items" [popup]="true" />
+                                <p-tieredmenu #menu [model]="items()" [popup]="true"/>
                             </div>
                         </div>
                         <div class="preview">
-                            <img [src]="file.downloadUrl" class="preview-image" loading="lazy" />
+                            <img [src]="file.downloadUrl" class="preview-image" loading="lazy"/>
                         </div>
                         } @else {
                         <div class="file-info">
@@ -61,7 +64,7 @@
                             </div>
                             <div class="menu-container">
                                 <p-button icon="pi pi-ellipsis-v" [text]="true" [outlined]="true" (click)="menu.toggle($event.stopPropagation);"/>
-                                <p-tieredmenu #menu [model]="items" [popup]="true"/>
+                                <p-tieredmenu #menu [model]="items()" [popup]="true"/>
                             </div>
                         </div>
                         <div class="preview">
@@ -75,3 +78,4 @@
         }
     </p-scrollPanel>
 </div>
+<p-toast position="bottom-right" key="br"></p-toast>

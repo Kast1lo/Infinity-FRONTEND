@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, effect, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, OnInit, signal } from '@angular/core';
 import { ScrollPanelModule } from 'primeng/scrollpanel';
 import { Table, TableModule } from 'primeng/table';
 import { FileSystem } from '../../../../../services/file-system';
@@ -14,60 +14,86 @@ import { FolderItem } from '../../../../../interfaces/file-system-interfeces/fol
 import { TieredMenuModule } from 'primeng/tieredmenu';
 import { DecodeURIComponentPipe } from "../../../../../pipes/decode-uri.pipe";
 import { BreadcrumbModule } from 'primeng/breadcrumb';
-
+import { RippleModule } from 'primeng/ripple';
+import { ImageModule } from 'primeng/image';
+import { ShareService } from '../../../../../services/share';
 
 @Component({
   selector: 'app-list-files',
-  imports: [ScrollPanelModule, TableModule, ToastModule, ButtonModule, MenuModule, CardModule, ProgressSpinner, TieredMenuModule, DecodeURIComponentPipe, BreadcrumbModule],
+  imports: [ScrollPanelModule,
+  TableModule, 
+  ToastModule, 
+  ButtonModule, 
+  MenuModule, 
+  CardModule, 
+  ProgressSpinner, 
+  TieredMenuModule, 
+  DecodeURIComponentPipe, 
+  BreadcrumbModule, RippleModule
+  , ImageModule],
   templateUrl: './list-files.html',
   styleUrl: './list-files.scss',
-  providers: [MessageService, TieredMenuModule],
+  providers: [MessageService, TieredMenuModule, RippleModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ListFiles implements OnInit{
-
+  protected readonly messageService = inject(MessageService);
   protected readonly fileSystem = inject(FileSystem)
+  protected readonly shareService = inject(ShareService)
 
   files = this.fileSystem.files;
   folders = this.fileSystem.folders;
   selectedItem = this.fileSystem.selectedItem;
   loading = this.fileSystem.loading;
   error = this.fileSystem.error;
-
+  
   constructor(){}
-  items: MenuItem[] | undefined;
-  ngOnInit() {
-    this.fileSystem.loadTree();
-    this.fileSystem.loadFiles(null);
-    
-    console.log('Папки загружены:', this.folders().length);
-    console.log('Файлы загружены:', this.files().length);
 
-    this.items = [
-      {
-        label: 'скачать',
-        icon: PrimeIcons.DOWNLOAD,
-        command: () => {
-          const item = this.selectedItem();
-          if (item && 'downloadUrl' in item) {
-            this.fileSystem.downloadFile(item);
-          }
-        }
-      },
+  items = computed<MenuItem[]>(() => {
+    const selected = this.selectedItem();
+
+    if (!selected) return [];
+
+    const isFile = 'downloadUrl' in selected && 'mimeType' in selected;
+
+    const common = [
       {
         label: 'удалить',
         icon: PrimeIcons.TRASH,
         command: () => this.deleteSelected()
-      },
-      {
-        label: 'переслать',
-        icon: PrimeIcons.SEND,
-        command: () => this.shareFile()
-      } 
-    ]
-  }
+      }
+    ];
 
-  
+    if ('downloadUrl' in selected) {
+      return [
+        {
+          label: 'скачать',
+          icon: PrimeIcons.DOWNLOAD,
+          command: () => this.fileSystem.downloadFile(selected)
+        },
+        ...common,
+        {
+          label: 'переслать',
+          icon: PrimeIcons.SEND,
+          command: () => this.shareFile()
+        }
+      ];
+    } else {
+      return [
+        {
+          label: 'скачать',
+          icon: PrimeIcons.DOWNLOAD,
+          command: () => this.fileSystem.downloadFolder(selected.id, selected.name)
+        },
+        ...common
+      ];
+    }
+  });
+
+  ngOnInit() {    
+    this.fileSystem.loadTree();
+    this.fileSystem.loadFiles(null);
+  }
 
   getFileIcon(mimeType: string): string {
     if (mimeType.startsWith('image/')) return 'pi pi-image';
@@ -87,51 +113,81 @@ export class ListFiles implements OnInit{
     return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} ГБ`;
   }
 
-  // ... твои импорты и класс
-
-  // Метод для клика по папке
+  goBack() {
+    this.fileSystem.goBack();
+  }
+  
+  isImage(file: FileItem): boolean {
+    return file.mimeType.startsWith('image/');
+  }
+  
+  onFileDropped(files: FileList){
+    this.fileSystem.uploadFiles(files);
+  }
+  
+  selectFile(file: FileItem) {
+    this.fileSystem.selectItem(file);
+  }
+  
   openFolder(folder: FolderItem) {
     this.fileSystem.openFolder(folder.id);
   }
 
-  // Кнопка "Назад" (если хочешь оставить)
-  goBack() {
-    this.fileSystem.goBack();
-  }
-
-  isImage(file: FileItem): boolean {
-    return file.mimeType.startsWith('image/');
-  }
-
-  onFileDropped(files: FileList){
-    this.fileSystem.uploadFiles(files);
-  }
-
-  selectFile(file: FileItem) {
-    this.fileSystem.selectItem(file);
-  }
-
-  shareFile() {
-  const item = this.selectedItem();
-    if (!item || !('downloadUrl' in item)) {
-      alert('Выберите файл для пересылки');
-      return;
+  selectFolder(folder: FolderItem) {
+    const current = this.selectedItem();
+    if (current && current.id === folder.id) {
+      this.fileSystem.selectItem(null);
+    } else {
+      this.fileSystem.selectItem(folder);      
     }
-    const shareUrl = (item as FileItem).downloadUrl;
-    navigator.clipboard.writeText(shareUrl)
   }
 
-  downloadFile(file: FileItem) {
-    this.fileSystem.downloadFile(file);
+shareFile() {
+  const item = this.selectedItem();
+  if (!item || !('name' in item)) {
+    this.messageService.add({
+      severity: 'secondary',
+      summary: 'Внимание',
+      detail: 'Выберите файл для пересылки',
+      life: 1000,
+      key: 'br' 
+    });
+    return;
   }
+  try {
+    this.shareService.copyShareLink(item.name);
+    this.messageService.add({
+      severity: 'secondary',
+      summary: 'Успешно',
+      detail: `Ссылка на "${item.name}" скопирована`,
+      life: 1000,
+      key: 'br' 
+    });
+  } catch (error) {
+    this.messageService.add({
+      severity: 'secondary',
+      summary: 'Ошибка',
+      detail: 'Не удалось скопировать ссылку',
+      life: 1000,
+      key: 'br' 
+    });
+  }
+}
 
   deleteSelected() {
     const item = this.selectedItem();
     if (!item) return;
-    const type = 'files' in item ? 'file' : 'folder';
+    const isFile = 'downloadUrl' in item && 'mimeType' in item;
+    const type: 'file' | 'folder' = isFile ? 'file' : 'folder';
+    console.log(`🗑 Удаляем ${type.toUpperCase()}:`, item.id, item.name);
     this.fileSystem.deleteItem(item.id, type);
+    this.messageService.add({ 
+      severity: 'secondary', 
+      summary: 'Готово', 
+      detail: `${isFile ? 'Файл' : 'Папка'} удалён(а)`, 
+      key: 'br' 
+    });
   }
-
   downloadSelected() {
     const item = this.selectedItem();
     if (!item || !('downloadUrl' in item)) return;

@@ -3,5 +3,5 @@ export interface UpdateTask {
   notes?: string;
   priority?: 'HIGH' | 'MEDIUM' | 'LOW';
   isCompleted?: boolean;
-  parentId?: string | null;
+  columnId?: string | null;
 }

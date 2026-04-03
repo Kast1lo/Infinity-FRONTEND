@@ -1,0 +1,129 @@
+.kanban-board{
+    display: flex;
+    margin: 10px;
+    width: 98%;
+    height: 98%;
+    backdrop-filter: blur(1px);
+    border-radius: 15px;
+    background-color: rgba(0, 0, 0, 0.250);
+    border-color: var(--border-color-card);
+    border-width: 1px;
+    border-style: groove;
+    overflow: hidden;
+}
+.no-columns-info{
+    display: grid;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    margin: auto;
+}
+.input-name{
+    margin-top: 15px;
+}
+.columns{
+    display: flex;
+    gap: 10px;
+    margin: 20px;
+}
+.name-columns{
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+.buttons-inplace{
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+.column{
+    width: 300px;
+    height: fit-content;
+    backdrop-filter: blur(1px);
+    border-radius: 15px;
+    background-color: rgba(0, 0, 0, 0.250);
+    border-color: var(--border-color-card);
+    border-width: 1px;
+    border-style: groove; 
+    padding-bottom: 15px;
+    flex-shrink: 0;
+}
+.work-with-column{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-left: 25px;
+    margin-right: 20px;
+}
+.buttons-col{
+    display: flex;
+    padding-top: 10px;
+    gap: 10px;
+}
+.create-col{
+    font-size: 1rem;
+}
+:host ::ng-deep .p-card{
+    padding-top: -20px;
+    width: 90%; 
+}
+.sub-tasks{
+    margin-top: 10px;
+}
+.create-subtasks{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.create-buttons{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+.subtasks-list{
+    margin-top: 5px;
+}
+.subtask-item{
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+.progress-bar{
+    margin-top: 5px;
+}
+.new-task-button{
+    margin-left: 20px;
+    margin-right: 20px;
+}
+.tasks-card{
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-top: 10px;
+    margin-left: 20px;
+    margin-right: 20px;
+    margin-bottom: 10px;
+}
+.name-task{
+    margin-bottom: 10px;
+}
+.priority{
+    margin-bottom: 18px;
+}
+.task-title{
+    margin-top: -10px;
+    margin-bottom: -10px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+:host ::ng-deep .p-card:hover{
+  background-color: rgba(49, 49, 49, 0.8);
+}
+.main-info{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}

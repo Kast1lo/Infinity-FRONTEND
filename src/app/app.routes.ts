@@ -7,6 +7,7 @@ import { EditProfile } from './pages/main-pages/edit-profile/edit-profile';
 import { InfinityLife } from './pages/main-pages/infinity-life/infinity-life';
 import { FileSystem } from './pages/main-pages/file-system/file-system';
 import { ProfileCard } from './pages/main-pages/profile/profile-card/profile-card';
+import { ShareFile } from './common-ui/share-file/share-file';
 
 export const routes: Routes = [
     {
@@ -21,6 +22,10 @@ export const routes: Routes = [
     {
         path: 'registration',
         component: Registration
+    },
+    {
+        path: 'share/:username/:filename',
+        component: ShareFile
     },
     {
         path: 'profile',
@@ -41,5 +46,6 @@ export const routes: Routes = [
         path: 'file-system',
         component: FileSystem,
         canActivate:[authGuard],
-    }
+    },
+    { path: '**', redirectTo: 'file-system' }
 ];
