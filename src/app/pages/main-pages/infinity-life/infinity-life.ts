@@ -1,12 +1,12 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { SideBar } from "../../../common-ui/side-bar/side-bar";
-import { CreateTask } from './create-task/create-task';
-import { TreeTasks } from './tree-tasks/tree-tasks';
+import { KanbanBoard } from "./kanban-board/kanban-board";
+
 
 
 @Component({
   selector: 'app-infinity-life',
-  imports: [SideBar, CreateTask, TreeTasks],
+  imports: [SideBar, KanbanBoard],
   templateUrl: './infinity-life.html',
   styleUrl: './infinity-life.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

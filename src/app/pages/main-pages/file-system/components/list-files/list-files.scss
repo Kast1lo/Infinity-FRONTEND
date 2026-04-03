@@ -7,6 +7,7 @@
   border-width: 1px;
   border-style: groove;
   backdrop-filter: blur(10px);
+  overflow: hidden;
 }
 .file-grid{
   padding: 20px;
@@ -26,11 +27,10 @@
     align-items: center;
     justify-content: center;
     .preview-image{
-      flex-shrink: 0;
       object-fit: contain;
       height: 200px;
       width: fit-content;
-      border-radius: 15px;
+      border-radius: 10px;
     }
 }
 .file-info{
@@ -64,6 +64,10 @@
 }
 :host ::ng-deep .p-card{
   background-color: rgba(34, 34, 34, 0.400);
+  cursor: pointer;
+}
+:host ::ng-deep .p-card:hover{
+  background-color: rgba(35, 35, 35, 0.700);
 }
 .progress-spin{
   display: flex;
@@ -74,23 +78,35 @@
 ::ng-deep .p-scrollpanel-bar {
   display: none !important;
 }
+.folder{
+  display: flex;
+}
 .folder-grid{
   margin: 20px;
   width: 240px;
   display: flex;
   gap: 10px;
 }
+
 .folder-card{
   display: flex;
   align-items: center;
-  justify-content: start;
+  justify-content: space-between;
   gap: 15px;
   width: 200px;
 }
 .folder-name{
   font-size: 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .button-back{
   margin: 20px;
 }
+.info-folder{
+  display: flex;
+  gap: 10px;
+}
+
 

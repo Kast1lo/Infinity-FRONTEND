@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { SideBar } from "../../../common-ui/side-bar/side-bar";
 import { Toolbar } from "./components/toolbar/toolbar";
 import { ListFiles } from "./components/list-files/list-files";
@@ -11,5 +11,5 @@ import { ListFiles } from "./components/list-files/list-files";
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class FileSystem {
-  
+
 }
