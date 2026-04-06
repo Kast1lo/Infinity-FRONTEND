@@ -55,7 +55,7 @@
                             </div>
                         </div>
                         <div class="preview">
-                            <img [src]="file.downloadUrl" class="preview-image" loading="lazy"/>
+                            <p-image [src]="file.downloadUrl" class="preview-image" loading="lazy" [preview]="true" />
                         </div>
                         } @else {
                         <div class="file-info">

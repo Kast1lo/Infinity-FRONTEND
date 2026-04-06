@@ -14,9 +14,6 @@ import { CreateTaskDto } from '../interfaces/infinity-life/create-task.model';
   providedIn: 'root',
 })
 export class InfinityLife {
-  moveTaskToColumn(id: string, newColumnId: string) {
-    throw new Error('Method not implemented.');
-  }
   private readonly http = inject(HttpClient);
   private readonly baseUrl = 'http://localhost:4400/infinity-life';
 
@@ -27,7 +24,7 @@ export class InfinityLife {
 
   constructor() {}
 
-  // ====================== COLUMNS ======================
+  // COLUMNS 
   loadBoard(): Observable<any[]> {
     this.isLoading.set(true);
     this.error.set(null);
@@ -37,6 +34,20 @@ export class InfinityLife {
     }).pipe(
       tap(columns => this.columns.set(columns)),
       catchError(err => this.handleError(err, 'Не удалось загрузить доску')),
+      finalize(() => this.isLoading.set(false))
+    );
+  }
+
+  moveTaskToColumn(id: string, newColumnId: string): Observable<any> {
+    this.isLoading.set(true);
+    this.error.set(null);
+
+    return this.http.patch(`${this.baseUrl}/tasks/${id}/move`, 
+      { columnId: newColumnId }, 
+      { withCredentials: true }
+    ).pipe(
+      tap(() => this.loadBoard().subscribe()),
+      catchError(err => this.handleError(err, 'Не удалось переместить задачу')),
       finalize(() => this.isLoading.set(false))
     );
   }
@@ -74,7 +85,7 @@ export class InfinityLife {
     );
   }
 
-  // ====================== TASKS ======================
+  // TASKS 
   createTask(dto: CreateTaskDto): Observable<Task> {
     this.isLoading.set(true);
     this.error.set(null);
@@ -108,7 +119,7 @@ export class InfinityLife {
     );
   }
 
-  // ====================== SUBTASKS ======================
+  // SUBTASKS 
   createSubtask(dto: CreateSubtaskDto): Observable<any> {
     this.isLoading.set(true);
     this.error.set(null);
@@ -146,7 +157,6 @@ export class InfinityLife {
     );
   }
 
-  // ====================== ERROR HANDLING ======================
   private handleError(error: HttpErrorResponse, defaultMessage: string): Observable<never> {
     let errorMessage = defaultMessage;
 

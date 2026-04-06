@@ -18,6 +18,12 @@
     text-align: center;
     margin: auto;
 }
+.info-task{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 5px;
+}
 .input-name{
     margin-top: 15px;
 }
@@ -37,7 +43,7 @@
     align-items: center;
 }
 .column{
-    width: 300px;
+    width: 400px;
     height: fit-content;
     backdrop-filter: blur(1px);
     border-radius: 15px;
@@ -47,6 +53,10 @@
     border-style: groove; 
     padding-bottom: 15px;
     flex-shrink: 0;
+}
+.main-function{
+    display: flex;
+    gap: 5px;
 }
 .work-with-column{
     display: flex;
@@ -89,6 +99,8 @@
     display: flex;
     gap: 10px;
     margin-top: 10px;
+    justify-content: space-between;
+    align-items: center;
 }
 .progress-bar{
     margin-top: 5px;

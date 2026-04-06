@@ -12,9 +12,13 @@
             </div>
         </div>
     } @else {
-      <div class="columns">
+      <div class="columns" cdkDropListGroup>
         @for (column of columns(); track column.id) {
-          <div class="column">
+          <div class="column"
+          cdkDropList
+          [cdkDropListData]="column.tasks || []"
+          (cdkDropListDropped)="drop($event, column.id)"
+          >
             <div class="work-with-column">
                 <h2 class="name-columns">{{column.name}}</h2>
               <div>
@@ -22,25 +26,34 @@
                   icon="pi pi-ellipsis-v" 
                   [text]="true" [outlined]="true"
                   size="small"
-                  (click)="columnMenu.toggle($event)"/>                
+                  (click)="openColumnMenu($event, column, columnMenu)"/>          
                 <p-menu 
-                  #columnMenu 
-                  [model]="getColumnMenu(column)" 
-                  [popup]="true" 
+                  #columnMenu  
+                  [popup]="true"
                   appendTo="body">
                 </p-menu>
               </div>
             </div>
-            <div class="tasks">
+            <div class="tasks" cdkDropListGroup>
               @for (task of column.tasks || []; track task.id) {
-                <div class="tasks-card">
+                <div class="tasks-card"
+                cdkDrag
+               [cdkDragData]="task"
+                >
                   <p-checkbox 
                     [binary]="true" 
                     [ngModel]="task.isCompleted" 
                     (onChange)="toggleCompletion(task)">
                   </p-checkbox>
                   <p-card (click)="openTaskDetail(task)">
-                    <h2 class="task-title">{{ task.title }}</h2>
+                    <div class="info-task">
+                      <h2 class="task-title">{{ task.title }}</h2>
+                      <p-button 
+                      icon="pi pi-trash"
+                      text 
+                      size="small"
+                      (onClick)="deleteTask(task.id); $event.stopPropagation()"/>
+                    </div>
                   </p-card>
                 </div>
               }
@@ -213,7 +226,7 @@
         @if (task.subtasks && task.subtasks.length > 0) {
           <div class="progress-bar">
             <p-progressBar 
-              [value]="task.progress ?? 0" 
+              [value]="selectedTask()?.progress ?? 0" 
               [showValue]="true">
             </p-progressBar>
           </div>
@@ -250,7 +263,19 @@
           <div class="subtasks-list">
             @for (sub of task.subtasks; track sub.id) {
               <div class="subtask-item">
+                <div class="main-function">
+                  <p-checkbox 
+                    [binary]="true" 
+                    [ngModel]="sub.isCompleted" 
+                    (onChange)="toggleCompletion(sub)">
+                  </p-checkbox>
                 <span [class.line-through]="sub.isCompleted">{{ sub.title }}</span>
+                </div>
+                  <p-button 
+                    icon="pi pi-trash" 
+                    text 
+                    size="small"
+                    (onClick)="deleteSubtask(sub.id, task.id)"/>
               </div>
             }
           </div>
@@ -259,5 +284,43 @@
     </div>
   }
   <ng-template pTemplate="footer"> <p-button label="Закрыть" severity="secondary" (onClick)="showTaskDetailDialog.set(false)"></p-button></ng-template>
+</p-dialog>
+
+<p-dialog 
+  header="Переименовать колонку" 
+  [(visible)]="showRenameColumnDialog"
+  [modal]="true"
+  [style]="{width: '420px'}"
+  [dismissableMask]="true">
+  
+  <div class="p-fluid">
+    <div class="field">
+      <label for="rename-column-name">Новое название колонки</label>
+      <input 
+        pInputText
+        id="rename-column-name"
+        type="text"
+        [(ngModel)]="newColumnNameForRename"
+        placeholder="Введите новое название"
+        autofocus 
+        fluid
+        (keyup.enter)="saveColumnRename()">
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <p-button 
+      label="Отмена" 
+      severity="secondary" 
+      text 
+      (onClick)="closeRenameDialog()">
+    </p-button>
+    <p-button 
+      label="Сохранить" 
+      icon="pi pi-check"
+      [disabled]="!newColumnNameForRename().trim() || newColumnNameForRename().trim() === columnToRename()?.name"
+      (onClick)="saveColumnRename()">
+    </p-button>
+  </ng-template>
 </p-dialog>
 <p-toast position="bottom-right" key="br"></p-toast>
