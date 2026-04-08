@@ -1,42 +1,165 @@
-.fone-side-bar{
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: center;
-    width: fit-content;
-    height:98vh;
-    padding: 15px;
-    margin-left: 16.5px;;
-    border-radius: 15px;
-    background-color: rgba(0, 0, 0, 0.250);
-    border-color: var(--border-color-card);
-    border-width: 1px;
-    border-style: groove;
-    backdrop-filter: blur(10px);
-    overflow: hidden;
-    position: sticky;
-    top: 0;
-    animation: slideInLeft 0.5s ease-out forwards;
+:host {
+  --bg:      #0a0a0a;
+  --bg2:     #111111;
+  --bg3:     #1a1a1a;
+  --border:  #222222;
+  --border2: #2e2e2e;
+  --text:    #f0f0f0;
+  --text2:   #888888;
+  --text3:   #444444;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
 }
+
+/* ─── SIDEBAR ─── */
+.fone-side-bar {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  width: fit-content;
+  height: 98vh;
+  padding: 14px 10px;
+  margin-left: 16px;
+  border-radius: var(--radius-lg);
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  position: sticky;
+  top: 0;
+
+  /* точечный фон */
+  background-image: radial-gradient(circle, rgba(255,255,255,.035) 1px, transparent 1px);
+  background-size: 28px 28px;
+
+  animation: slideInLeft .45s ease-out forwards;
+}
+
 @keyframes slideInLeft {
-    0% {
-        opacity: 0;
-        transform: translateX(-100%);
-    }
-    100% {
-        opacity: 1;
-        transform: translateX(0);
-    }
+  from {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
-.router{
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    margin-top: 35px;
-    align-items: center;
-    gap: 10px;
+
+/* ─── ВЕРХНИЙ БЛОК ─── */
+.up-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
 }
-.bottom-link{
-    display: flex;
-    flex-direction: column;
+
+/* аватар */
+:host ::ng-deep .up-link .p-avatar {
+  cursor: pointer;
+  border: 1.5px solid var(--border2) !important;
+  transition: border-color .2s !important;
+
+  &:hover {
+    border-color: var(--text3) !important;
+  }
+}
+
+/* навигационные кнопки */
+.router {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-top: 28px;
+}
+
+:host ::ng-deep .router .p-button {
+  width: 36px !important;
+  height: 36px !important;
+  padding: 0 !important;
+  border-radius: var(--radius-sm) !important;
+  border: 1px solid transparent !important;
+  background: transparent !important;
+  color: var(--text3) !important;
+  transition: color .2s, background .2s, border-color .2s !important;
+
+  .p-button-icon {
+    font-size: 16px !important;
+  }
+
+  &:hover {
+    color: var(--text2) !important;
+    background: rgba(255,255,255,.05) !important;
+    border-color: var(--border) !important;
+  }
+
+  /* активный роут — добавь класс .active через routerLinkActive */
+  &.active-link {
+    color: var(--text2) !important;
+    background: rgba(255,255,255,.06) !important;
+    border-color: var(--border2) !important;
+  }
+}
+
+/* ─── НИЖНИЙ БЛОК ─── */
+.bottom-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
+/* разделитель */
+.bottom-link hr {
+  border: 0 !important;
+  border-top: 1px solid var(--border) !important;
+  width: 80% !important;
+  margin: 12px auto !important;
+  padding: 0 !important;
+}
+
+/* кнопка настроек */
+:host ::ng-deep .bottom-link .p-button:first-child {
+  width: 36px !important;
+  height: 36px !important;
+  padding: 0 !important;
+  border-radius: var(--radius-sm) !important;
+  border: 1px solid var(--border2) !important;
+  background: transparent !important;
+  color: var(--text2) !important;
+  transition: color .2s, background .2s, border-color .2s !important;
+
+  .p-button-icon {
+    font-size: 15px !important;
+  }
+
+  &:hover {
+    color: var(--text) !important;
+    background: rgba(255,255,255,.06) !important;
+    border-color: var(--text3) !important;
+  }
+}
+
+/* кнопка выхода */
+:host ::ng-deep .bottom-link .p-button:last-child {
+  width: 36px !important;
+  height: 36px !important;
+  padding: 0 !important;
+  border-radius: var(--radius-sm) !important;
+  border: 1px solid transparent !important;
+  background: transparent !important;
+  color: var(--text3) !important;
+  transition: color .2s, background .2s !important;
+
+  .p-button-icon {
+    font-size: 15px !important;
+  }
+
+  &:hover {
+    color: #e05555 !important;
+    background: rgba(224,85,85,.08) !important;
+  }
 }

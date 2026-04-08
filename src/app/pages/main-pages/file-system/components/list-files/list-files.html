@@ -47,7 +47,7 @@
                         @if (isImage(file)) {
                         <div class="file-info">
                             <div class="file-name">
-                                {{ file.name }}
+                                {{ file.name |decodeURIComponent}}
                             </div>
                             <div class="menu-container">
                                 <p-button icon="pi pi-ellipsis-v" [text]="true" [outlined]="true" (click)="menu.toggle($event.stopPropagation);"/>

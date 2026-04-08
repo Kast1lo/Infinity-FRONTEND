@@ -1,36 +1,159 @@
-.updateForm{
-    display: flex;
+:host {
+  --bg:      #0a0a0a;
+  --bg2:     #111111;
+  --bg3:     #1a1a1a;
+  --border:  #222222;
+  --border2: #2e2e2e;
+  --text:    #f0f0f0;
+  --text2:   #888888;
+  --text3:   #444444;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
 }
-.form{
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    width: 100%;
-    backdrop-filter: blur(10px);
-    margin-left: 21.5px;
-    padding: 100px;
-    gap: 15px;
-    border-radius: 15px;
-    background-color: rgba(0, 0, 0, 0.250);
-    border-color: var(--border-color-card);
-    border-width: 1px;
-    border-style: groove;
+
+/* ─── ОБЁРТКА ─── */
+.updateForm {
+  display: flex;
+  height: 100vh;
 }
-.uploadAvatar{
-    display: flex;
-    justify-content: space-between;
-    border-color: var(--border-color-card);
-    border-radius: 15px;
-    border-width: 1px;
-    border-style: groove;
-    padding: 30px;
+
+/* ─── ОСНОВНОЙ БЛОК ─── */
+.form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin: 15px 15px 15px 16px;
+  padding: 48px 56px;
+  gap: 0;
+  border-radius: var(--radius-lg);
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  overflow-y: auto;
+
+  /* точечный фон */
+  background-image: radial-gradient(circle, rgba(255,255,255,.035) 1px, transparent 1px);
+  background-size: 28px 28px;
 }
-.infoEdit{
-    display: flex;
-    justify-content: center;
-    font-family: "Montserrat", sans-serif;
-    font-size: 3vh;
+
+/* ─── ЗАГОЛОВКИ СЕКЦИЙ ─── */
+.infoEdit {
+  display: flex;
+  justify-content: center;
+  font-family: 'Syne', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -.3px;
+  margin-bottom: 20px;
 }
-.actions{
-    padding-top: 30px;
+
+/* ─── БЛОК ЗАГРУЗКИ АВАТАРА ─── */
+.uploadAvatar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: rgba(255,255,255,.02);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 20px 24px;
+  margin-bottom: 40px;
+}
+
+/* p-fileUpload кнопка */
+:host ::ng-deep .uploadAvatar .p-fileupload-basic .p-button {
+  font-family: 'DM Sans', sans-serif !important;
+  font-size: 13px !important;
+  border-radius: var(--radius-sm) !important;
+  color: var(--text2) !important;
+  background: transparent !important;
+  border: 1px solid var(--border2) !important;
+  padding: 8px 14px !important;
+  transition: all .2s !important;
+
+  &:hover {
+    color: var(--text) !important;
+    background: rgba(255,255,255,.06) !important;
+    border-color: var(--text3) !important;
+  }
+}
+
+/* кнопка «Загрузить» */
+:host ::ng-deep .uploadAvatar .p-button:not(.p-fileupload-basic .p-button) {
+  font-family: 'DM Sans', sans-serif !important;
+  font-size: 13px !important;
+  border-radius: var(--radius-sm) !important;
+  color: var(--text2) !important;
+  background: transparent !important;
+  border: 1px solid var(--border2) !important;
+  padding: 8px 16px !important;
+  transition: all .2s !important;
+
+  &:hover:not(:disabled) {
+    color: var(--text) !important;
+    background: rgba(255,255,255,.06) !important;
+    border-color: var(--text3) !important;
+  }
+
+  &:disabled {
+    opacity: .3 !important;
+    cursor: not-allowed !important;
+  }
+}
+
+/* ─── ПОЛЯ ВВОДА ─── */
+.field {
+  margin-bottom: 12px;
+}
+
+:host ::ng-deep .field .p-inputtext {
+  width: 100% !important;
+  background: var(--bg3) !important;
+  border: 1px solid var(--border2) !important;
+  border-radius: var(--radius-sm) !important;
+  color: var(--text) !important;
+  font-family: 'DM Sans', sans-serif !important;
+  font-size: 14px !important;
+  padding: 10px 14px !important;
+  transition: border-color .2s !important;
+
+  &:focus {
+    border-color: var(--text3) !important;
+    box-shadow: none !important;
+    outline: none !important;
+  }
+
+  &::placeholder {
+    color: var(--text3) !important;
+  }
+}
+
+/* ─── КНОПКА СОХРАНИТЬ ─── */
+.actions {
+  padding-top: 24px;
+}
+
+:host ::ng-deep .actions .p-button {
+  width: 100% !important;
+  font-family: 'DM Sans', sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  border-radius: var(--radius-sm) !important;
+  color: var(--text) !important;
+  background: rgba(255,255,255,.08) !important;
+  border: 1px solid rgba(255,255,255,.14) !important;
+  padding: 11px 20px !important;
+  transition: background .2s !important;
+  justify-content: center !important;
+
+  &:hover:not(:disabled) {
+    background: rgba(255,255,255,.14) !important;
+  }
+
+  &:disabled {
+    opacity: .3 !important;
+    cursor: not-allowed !important;
+  }
 }

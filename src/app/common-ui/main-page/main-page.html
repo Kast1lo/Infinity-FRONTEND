@@ -1,0 +1,256 @@
+<nav class="navbar" [class.scrolled]="navScrolled">
+    
+    <img class="logo" [src]="imagePath" alt="">
+
+  <ul class="nav-links">
+    <li><a href="#">Функции</a></li>
+    <li><a href="#">Kanban</a></li>
+    <li><a href="#">Файлы</a></li>
+    <li><a href="#">Тарифы</a></li>
+  </ul>
+
+  <div class="nav-cta">
+    <p-button
+      label="Войти"
+      [text]="true"
+      severity="secondary"
+      size="small"
+      routerLink="/login"
+    />
+    <p-button
+      label="Зарегистрироваться"
+      [outlined]="true"
+      severity="secondary"
+      size="small"
+      routerLink="/registration"
+    />
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-badge">
+    <span class="badge-dot"></span>
+    All-in-one рабочее пространство нового поколения
+  </div>
+
+  <h1 class="hero-title">
+    Один<br><em>инструмент.</em><br>Всё.
+  </h1>
+
+  <p class="hero-subtitle">
+    Kanban-доска, файловое хранилище и совместная работа
+    в одном минималистичном пространстве.
+  </p>
+
+  <div class="hero-preview">
+    <div class="preview-bar">
+      <span class="dot r"></span>
+      <span class="dot y"></span>
+      <span class="dot g"></span>
+    </div>
+    <div class="preview-window">
+      <div class="preview-sidebar">
+        <div class="p-avatar">U</div>
+        <div class="p-icon active"><i class="pi pi-th-large"></i></div>
+        <div class="p-icon"><i class="pi pi-folder"></i></div>
+        <div class="p-icon sidebar-bottom"><i class="pi pi-cog"></i></div>
+        <div class="p-icon"><i class="pi pi-sign-out"></i></div>
+      </div>
+      <div class="preview-content">
+        <div class="preview-topbar">
+          <p-button label="Загрузить файл" icon="pi pi-upload" [outlined]="true" severity="secondary" size="small" />
+          <p-button label="Создать папку" icon="pi pi-folder-open" [text]="true" severity="secondary" size="small" />
+          <div class="topbar-right">
+            <p-button icon="pi pi-download" [text]="true" severity="secondary" size="small" />
+            <p-button icon="pi pi-trash" [text]="true" severity="secondary" size="small" />
+            <p-button label="Переслать" icon="pi pi-share-alt" [outlined]="true" severity="secondary" size="small" />
+          </div>
+        </div>
+        <div class="kanban-cols">
+          <div class="kanban-col" *ngFor="let col of kanbanCols">
+            <div class="col-title">{{ col.title }}</div>
+            <div class="k-card" *ngFor="let task of col.tasks">
+              <div class="k-check" [class.done]="task.done">
+                <i *ngIf="task.done" class="pi pi-check"></i>
+              </div>
+              {{ task.label }}
+            </div>
+            <div class="k-add"><i class="pi pi-plus"></i> Создать задачу</div>
+          </div>
+          <div class="k-new-col"><i class="pi pi-plus"></i> Создать колонку</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="stats reveal">
+  <div class="container">
+    <div class="stats-grid">
+      <div class="stat-item" *ngFor="let s of stats">
+        <div class="stat-num">{{ s.num }}</div>
+        <div class="stat-label">{{ s.label }}</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="features">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-label">Возможности</div>
+      <h2 class="section-title">Всё что нужно для работы</h2>
+      <p class="section-sub">
+        Никаких переключений между приложениями. Всё в одном месте —
+        быстро, чисто, продуктивно.
+      </p>
+    </div>
+
+    <div class="features-grid">
+      <div
+        class="feat-card reveal"
+        [class.reveal-delay-1]="i % 3 === 0"
+        [class.reveal-delay-2]="i % 3 === 1"
+        [class.reveal-delay-3]="i % 3 === 2"
+        *ngFor="let f of features; let i = index"
+      >
+        <div class="feat-icon">
+          <i [class]="f.icon"></i>
+        </div>
+        <h3>{{ f.title }}</h3>
+        <p>{{ f.desc }}</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="container"><div class="divider reveal"></div></div>
+
+<section class="split">
+  <div class="container">
+    <div class="split-inner reveal">
+      <div class="split-text">
+        <div class="section-label">Kanban</div>
+        <h2 class="section-title">Задачи под контролем</h2>
+        <p class="section-sub">
+          Создавайте собственные колонки, добавляйте задачи
+          и отмечайте выполненные. Гибкость без лишней сложности.
+        </p>
+        <div class="split-actions">
+          <p-button
+            label="Попробовать Kanban"
+            icon="pi pi-th-large"
+            iconPos="left"
+            severity="secondary"
+            [outlined]="true"
+          />
+        </div>
+      </div>
+      <div class="split-visual">
+        <div class="sv-topbar">
+          <span class="sv-logo">INFINITY</span>
+        </div>
+        <div class="sv-body">
+          <div class="kanban-cols">
+            <div class="kanban-col" *ngFor="let col of kanbanCols">
+              <div class="col-title">{{ col.title }}</div>
+              <div class="k-card" *ngFor="let task of col.tasks">
+                <div class="k-check" [class.done]="task.done">
+                  <i *ngIf="task.done" class="pi pi-check"></i>
+                </div>
+                {{ task.label }}
+              </div>
+              <div class="k-add"><i class="pi pi-plus"></i> Создать задачу</div>
+            </div>
+            <div class="k-new-col"><i class="pi pi-plus"></i> Колонка</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="split">
+  <div class="container">
+    <div class="split-inner split-reverse reveal">
+      <div class="split-text">
+        <div class="section-label">Хранилище</div>
+        <h2 class="section-title">Все файлы рядом</h2>
+        <p class="section-sub">
+          Папки, изображения, документы — загружайте и организуйте
+          как в Google Drive, не выходя из рабочего пространства.
+        </p>
+        <div class="split-actions">
+          <p-button
+            label="Открыть хранилище"
+            icon="pi pi-folder-open"
+            iconPos="left"
+            severity="secondary"
+            [outlined]="true"
+          />
+        </div>
+      </div>
+      <div class="split-visual">
+        <div class="sv-topbar">
+          <p-button label="Загрузить файл" icon="pi pi-upload" [outlined]="true" severity="secondary" size="small" />
+          <p-button label="Создать папку" icon="pi pi-folder-open" [text]="true" severity="secondary" size="small" />
+          <div class="sv-topbar-right">
+            <p-button icon="pi pi-download" [text]="true" severity="secondary" size="small" />
+            <p-button icon="pi pi-trash" [text]="true" severity="secondary" size="small" />
+            <p-button label="Переслать" icon="pi pi-share-alt" [text]="true" severity="secondary" size="small" />
+          </div>
+        </div>
+        <div class="sv-body">
+          <div class="folder-row">
+            <div class="folder-card" *ngFor="let f of folders">
+              <i class="pi pi-folder"></i>
+              {{ f }}
+              <i class="pi pi-ellipsis-v folder-menu"></i>
+            </div>
+          </div>
+          <div class="file-grid">
+            <div
+              class="file-thumb"
+              *ngFor="let c of thumbColors; let i = index"
+              [style.background]="'linear-gradient(135deg,' + c[0] + ',' + c[1] + ')'"
+            >
+              <span class="thumb-label">img_{{ i + 1 }}.jpg</span>
+              <i class="pi pi-ellipsis-v thumb-menu"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="container"><div class="divider reveal"></div></div>
+<section class="cta-section">
+  <div class="container">
+    <div class="cta-inner reveal">
+      <div class="section-label">Начните сегодня</div>
+      <h2 class="section-title">Рабочее пространство без границ</h2>
+      <p class="section-sub">Бесплатно. Без кредитной карты. Всё в одном.</p>
+      <div class="cta-actions">
+      </div>
+    </div>
+    <p-button
+      label="Зарегистрироваться"
+      [outlined]="true"
+      severity="secondary"
+      size="small"
+      routerLink="/registration"
+    />
+  </div>
+</section>
+<footer class="footer">
+  <div class="container footer-inner">
+    <a class="footer-logo" href="#">INFINITY</a>
+    <div class="footer-links">
+      <a href="#">Условия</a>
+      <a href="#">Конфиденциальность</a>
+      <a href="#">Поддержка</a>
+    </div>
+    <span class="footer-copy">© 2025 Infinity</span>
+  </div>
+</footer>

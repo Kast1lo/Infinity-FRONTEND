@@ -1,112 +1,280 @@
-.card-list-files{
+/* ─── DESIGN TOKENS (matching landing) ─── */
+:host {
+  --bg:       #0a0a0a;
+  --bg2:      #111111;
+  --bg3:      #1a1a1a;
+  --border:   #222222;
+  --border2:  #333333;
+  --text:     #f0f0f0;
+  --text2:    #888888;
+  --text3:    #444444;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+}
+
+/* ─── WRAPPER ─── */
+.card-list-files {
   height: 87.5%;
   margin: 15px;
-  border-radius: 15px;
-  background-color: rgba(0, 0, 0, 0.250);
-  border-color: var(--border-color-card);
-  border-width: 1px;
-  border-style: groove;
-  backdrop-filter: blur(10px);
+  border-radius: var(--radius-lg);
+  background-color: var(--bg2);
+  border: 1px solid var(--border);
   overflow: hidden;
-}
-.file-grid{
-  padding: 20px;
-  display: grid;
-  flex-wrap: wrap;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 2fr));
-  gap: 0.6rem;
-}
-.file-card{
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
   position: relative;
-}
-.preview{
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    .preview-image{
-      object-fit: contain;
-      height: 200px;
-      width: fit-content;
-      border-radius: 10px;
-    }
-}
-.file-info{
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 35px;
-}
-.preview {
-    height: 200px;
-    background: var(--surface-100);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    border-radius: 10px;
-    .preview-img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      object-position: center;  
-    }
+
+  /* dot-grid background */
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle, rgba(255,255,255,.04) 1px, transparent 1px);
+    background-size: 28px 28px;
+    pointer-events: none;
+    z-index: 0;
+    border-radius: inherit;
   }
-.file-name{
-  font-weight: 500;
-  font-size: 1rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin-bottom: 0.5rem;
 }
-:host ::ng-deep .p-card{
-  background-color: rgba(34, 34, 34, 0.400);
-  cursor: pointer;
+
+/* ─── SCROLLPANEL ─── */
+::ng-deep .p-scrollpanel-bar {
+  display: none !important;
 }
-:host ::ng-deep .p-card:hover{
-  background-color: rgba(35, 35, 35, 0.700);
-}
-.progress-spin{
+
+/* ─── PROGRESS SPINNER ─── */
+.progress-spin {
   display: flex;
   height: 100%;
   justify-content: center;
   align-items: center;
 }
-::ng-deep .p-scrollpanel-bar {
-  display: none !important;
-}
-.folder{
+
+/* ─── FOLDER ROW ─── */
+.folder-grid {
   display: flex;
-}
-.folder-grid{
-  margin: 20px;
-  width: 240px;
-  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: 10px;
+  padding: 20px 20px 0;
+  width: 100%;
 }
 
-.folder-card{
+.folder {
+  display: flex;
+}
+
+/* folder p-card override */
+::ng-deep .folder-grid .p-card {
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+
+  .p-card-body,
+  .p-card-content {
+    padding: 0 !important;
+  }
+}
+
+.folder-card {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 15px;
-  width: 200px;
+  gap: 12px;
+  width: 190px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,.025);
+  cursor: pointer;
+  transition: background .2s, border-color .2s;
+
+  &:hover {
+    background: rgba(255,255,255,.05);
+    border-color: var(--border2);
+  }
+
+  &.selected {
+    border-color: var(--border2);
+    background: rgba(255,255,255,.07);
+  }
 }
-.folder-name{
-  font-size: 16px;
+
+.info-folder {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+
+  /* folder icon colour */
+  i {
+    font-size: 1.1rem !important;
+    color: var(--text2) !important;
+    flex-shrink: 0;
+    margin-top: 0 !important;
+  }
+}
+
+.folder-name {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.button-back{
-  margin: 20px;
+
+/* ─── DIVIDER ─── */
+hr {
+  border: 0 !important;
+  border-top: 1px solid var(--border) !important;
+  width: calc(100% - 40px) !important;
+  margin: 20px auto 0 !important;
 }
-.info-folder{
+
+/* ─── FILE GRID ─── */
+.file-grid {
+  padding: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 12px;
+  position: relative;
+  z-index: 1;
+}
+
+/* file p-card override */
+::ng-deep .file-grid .p-card {
+  background-color: var(--bg3) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: none !important;
+  cursor: pointer;
+  transition: border-color .2s, background .2s !important;
+
+  .p-card-body,
+  .p-card-content {
+    padding: 12px !important;
+  }
+
+  &:hover {
+    background-color: rgba(255,255,255,.04) !important;
+    border-color: var(--border2) !important;
+  }
+}
+
+.file-card {
   display: flex;
+  flex-direction: column;
   gap: 10px;
+  position: relative;
 }
 
+::ng-deep .file-grid .p-card.selected-card {
+  border-color: var(--border2) !important;
+  background-color: rgba(255,255,255,.06) !important;
+}
 
+/* ─── FILE INFO ROW ─── */
+.file-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.file-name {
+  font-weight: 400;
+  font-size: 13px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 0;
+  flex: 1;
+  min-width: 0;
+}
+
+.menu-container {
+  flex-shrink: 0;
+}
+
+/* ─── PREVIEW AREA ─── */
+.preview {
+  height: 180px;
+  background: rgba(255,255,255,.025);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  transition: background .2s;
+
+  /* file-type icon colour */
+  i {
+    font-size: 5rem !important;
+    color: var(--text3) !important;
+  }
+
+  &:hover {
+    background: rgba(255,255,255,.04);
+  }
+
+  .preview-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+    border-radius: var(--radius-sm);
+  }
+
+  /* PrimeNG p-image fills container */
+  ::ng-deep .p-image {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: var(--radius-sm);
+    }
+  }
+}
+
+/* ─── BUTTONS (ellipsis + back) ─── */
+::ng-deep {
+  /* ellipsis menu button */
+  .p-button.p-button-text.p-button-outlined {
+    color: var(--text3) !important;
+    border-color: transparent !important;
+    width: 28px !important;
+    height: 28px !important;
+    padding: 0 !important;
+
+    &:hover {
+      color: var(--text2) !important;
+      background: rgba(255,255,255,.06) !important;
+      border-radius: var(--radius-sm) !important;
+    }
+  }
+
+  /* back button */
+  .folder-grid > .p-button:not(.p-button-text) {
+    background: transparent !important;
+    border: 1px solid var(--border2) !important;
+    color: var(--text2) !important;
+    font-size: 13px !important;
+    padding: 7px 14px !important;
+    border-radius: var(--radius-sm) !important;
+    transition: all .2s !important;
+
+    &:hover {
+      background: rgba(255,255,255,.06) !important;
+      color: var(--text) !important;
+    }
+  }
+}

@@ -75,7 +75,6 @@ export class ShareFile implements OnInit {
     return;
   }
 
-  // Используем бэкенд для скачивания (обходит CORS)
   const downloadUrl = `/file-system/share/download/${data.username || 'Kastilo'}/${encodeURIComponent(data.name)}`;
 
   const link = document.createElement('a');

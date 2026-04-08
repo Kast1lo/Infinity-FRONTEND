@@ -308,16 +308,13 @@ deleteColumnAction(column: any) {
   }
 drop(event: CdkDragDrop<Task[]>, newColumnId: string) {
   if (event.previousContainer === event.container) {
-    // Перемещение внутри одной колонки (изменение порядка)
     moveItemInArray(
       event.container.data, 
       event.previousIndex, 
       event.currentIndex
     );
   } else {
-    // Перемещение в другую колонку
     const task = event.previousContainer.data[event.previousIndex];
-
     transferArrayItem(
       event.previousContainer.data,
       event.container.data,
@@ -325,22 +322,20 @@ drop(event: CdkDragDrop<Task[]>, newColumnId: string) {
       event.currentIndex
     );
 
-    // Сохраняем изменение на сервере
     this.tasksService.moveTaskToColumn(task.id, newColumnId).subscribe({
       next: () => {
         this.messageService.add({
-          severity: 'success',
+          severity: 'secondary',
           summary: 'Успех',
           detail: 'Задача перемещена'
         });
       },
       error: () => {
         this.messageService.add({
-          severity: 'error',
+          severity: 'secondary',
           summary: 'Ошибка',
           detail: 'Не удалось переместить задачу'
         });
-        // При ошибке можно обновить доску, чтобы вернуть всё назад
         this.loadBoard();
       }
     });
