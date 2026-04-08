@@ -1,13 +1,124 @@
-@if (userService.profile(); as profile) {
-    <div class="profile-card">
-        <p-avatar
-        [image]="avatarUrl()"
-        class="mr-2" 
-        size="xlarge" 
-        shape="circle"/>
-        <div class="profileInfo">
-            <h3>{{profile.username}}</h3>
-            <p class="email">{{profile.email}}</p>
+<div class="profile-page">
+
+  @if (userService.profile(); as profile) {
+    <div class="profile-content">
+      <div class="profile-header">
+        <div class="avatar-wrap">
+          <p-avatar
+            [image]="avatarUrl()"
+            size="xlarge"
+            shape="circle"
+          />
         </div>
+        <div class="profile-meta">
+          <h1 class="profile-name">{{ profile.username }}</h1>
+          <p class="profile-email">{{ profile.email }}</p>
+        </div>
+        <div class="profile-header-actions">
+          <p-button
+            label="Редактировать"
+            icon="pi pi-pencil"
+            [outlined]="true"
+            severity="secondary"
+            routerLink="/edit"
+          />
+          <p-button
+            icon="pi pi-sign-out"
+            [text]="true"
+            severity="secondary"
+            (onClick)="authService.logout()"
+            routerLink="/login"
+          />
+        </div>
+      </div>
+      <div class="stats-grid">
+
+        <div class="stat-card">
+          <div class="stat-label">Всего задач</div>
+          <div class="stat-num">{{ totalTasks() }}</div>
+          <div class="stat-sub">
+            <span class="stat-done">{{ completedTasks() }} выполнено</span>
+            <span class="stat-sep">·</span>
+            <span class="stat-left">{{ totalTasks() - completedTasks() }} осталось</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-label">Файлов</div>
+          <div class="stat-num">{{ totalFiles() }}</div>
+          <div class="stat-sub">
+            <span class="stat-done">{{ totalFolders() }} папок</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-label">Колонок на доске</div>
+          <div class="stat-num">{{ infinityLife.columns().length }}</div>
+          <div class="stat-sub">
+            <span class="stat-done">Kanban</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="progress-section">
+        <div class="progress-card knob-card">
+          <div class="section-label">Выполнение задач</div>
+          <div class="knob-wrap">
+            <p-knob
+              [(ngModel)]="knobValue"
+              [readonly]="true"
+              [min]="0"
+              [max]="100"
+              [size]="160"
+              valueTemplate="{value}%"
+              strokeWidth="6"
+            />
+          </div>
+          <div class="knob-legend">
+            <div class="legend-item">
+              <span class="legend-dot done"></span>
+              <span>Выполнено — {{ completedTasks() }}</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-dot left"></span>
+              <span>Осталось — {{ totalTasks() - completedTasks() }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="progress-card links-card">
+          <div class="section-label">Быстрый переход</div>
+          <div class="quick-links">
+            <a class="quick-link" routerLink="/infinity-life">
+              <div class="ql-icon"><i class="pi pi-objects-column"></i></div>
+              <div class="ql-text">
+                <span class="ql-title">Kanban-доска</span>
+                <span class="ql-sub">{{ infinityLife.columns().length }} колонок · {{ totalTasks() }} задач</span>
+              </div>
+              <i class="pi pi-chevron-right ql-arrow"></i>
+            </a>
+            <div class="ql-divider"></div>
+            <a class="quick-link" routerLink="/file-system">
+              <div class="ql-icon"><i class="pi pi-folder-open"></i></div>
+              <div class="ql-text">
+                <span class="ql-title">Хранилище файлов</span>
+                <span class="ql-sub">{{ totalFiles() }} файлов · {{ totalFolders() }} папок</span>
+              </div>
+              <i class="pi pi-chevron-right ql-arrow"></i>
+            </a>
+            <div class="ql-divider"></div>
+            <a class="quick-link" routerLink="/edit">
+              <div class="ql-icon"><i class="pi pi-user-edit"></i></div>
+              <div class="ql-text">
+                <span class="ql-title">Редактировать профиль</span>
+                <span class="ql-sub">Аватар, логин, email</span>
+              </div>
+              <i class="pi pi-chevron-right ql-arrow"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+
     </div>
-}
+  }
+</div>
