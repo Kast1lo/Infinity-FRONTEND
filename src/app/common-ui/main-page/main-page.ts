@@ -81,6 +81,16 @@ export class MainPage implements OnInit, OnDestroy {
   onScroll() {
     this.navScrolled = window.scrollY > 40;
   }
+
+scrollTo(id: string) {
+  const el = document.getElementById(id);
+  if (el) {
+    const navHeight = 80;
+    const offset = -60;
+    const top = el.getBoundingClientRect().top + window.scrollY - navHeight - offset;
+    window.scrollTo({ top, behavior: 'smooth' });
+  }
+}
  
   ngOnInit() {
     this.observer = new IntersectionObserver(
