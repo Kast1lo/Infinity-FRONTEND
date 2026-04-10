@@ -25,7 +25,7 @@
                                     <div class="folder-name">{{ folder.name }}</div>
                                 </div>
                                 <div>
-                                    <p-button icon="pi pi-ellipsis-v" [text]="true" [outlined]="true" (click)="menu.toggle($event.stopPropagation);"/>
+                                    <p-button icon="pi pi-ellipsis-v" [text]="true" [outlined]="true" (click)="menu.toggle($event.stopPropagation());"/>
                                     <p-tieredmenu #menu [model]="items()" [popup]="true"/>
                                 </div>
                             </div>
@@ -42,40 +42,180 @@
             <div class="file-grid">
                 @for (file of files(); track file.id) {
                     <p-card (click)="selectFile(file)">
-                        <div class="file-card"
-                        [class.selected]="selectedItem()?.id === file.id">
-                        @if (isImage(file)) {
-                        <div class="file-info">
-                            <div class="file-name">
-                                {{ file.name |decodeURIComponent}}
-                            </div>
-                            <div class="menu-container">
-                                <p-button icon="pi pi-ellipsis-v" [text]="true" [outlined]="true" (click)="menu.toggle($event.stopPropagation);"/>
-                                <p-tieredmenu #menu [model]="items()" [popup]="true"/>
-                            </div>
-                        </div>
-                        <div class="preview">
-                            <p-image [src]="file.downloadUrl" class="preview-image" loading="lazy" [preview]="true" />
-                        </div>
-                        } @else {
-                        <div class="file-info">
-                            <div class="file-name">
-                                {{ file.name | decodeURIComponent}}
-                            </div>
-                            <div class="menu-container">
-                                <p-button icon="pi pi-ellipsis-v" [text]="true" [outlined]="true" (click)="menu.toggle($event.stopPropagation);"/>
-                                <p-tieredmenu #menu [model]="items()" [popup]="true"/>
-                            </div>
-                        </div>
-                        <div class="preview">
-                            <i [class]="'pi ' + getFileIcon(file.mimeType)" style="font-size: 11rem;"></i>
-                        </div>
-                        }
+                        <div class="file-card" [class.selected]="selectedItem()?.id === file.id">
+
+                            @if (isImage(file)) {
+                                <div class="file-info">
+                                    <div class="file-name">{{ file.name | decodeURIComponent }}</div>
+                                    <div class="menu-container">
+                                        <p-button icon="pi pi-ellipsis-v" [text]="true" [outlined]="true" (click)="menu.toggle($event.stopPropagation());"/>
+                                        <p-tieredmenu #menu [model]="items()" [popup]="true"/>
+                                    </div>
+                                </div>
+                                <div class="preview">
+                                    <p-image [src]="file.downloadUrl" class="preview-image" loading="lazy" [preview]="true"/>
+                                </div>
+
+                            } @else if (isVideo(file)) {
+                                <div class="file-info">
+                                    <div class="file-name">{{ file.name | decodeURIComponent }}</div>
+                                    <div class="menu-container">
+                                        <p-button icon="pi pi-ellipsis-v" [text]="true" [outlined]="true" (click)="menu.toggle($event.stopPropagation());"/>
+                                        <p-tieredmenu #menu [model]="items()" [popup]="true"/>
+                                    </div>
+                                </div>
+                                <div class="preview preview-video" (click)="openVideo(file); $event.stopPropagation()">
+                                    <div class="video-thumb">
+                                        <video
+                                            class="video-thumb-frame"
+                                            [src]="file.downloadUrl + '#t=0.1'"
+                                            preload="metadata"
+                                            muted
+                                            playsinline
+                                            disablePictureInPicture
+                                        ></video>
+                                        <div class="video-play-overlay">
+                                            <div class="video-play-btn">
+                                                <i class="pi pi-play"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            } @else {
+                                <div class="file-info">
+                                    <div class="file-name">{{ file.name | decodeURIComponent }}</div>
+                                    <div class="menu-container">
+                                        <p-button icon="pi pi-ellipsis-v" [text]="true" [outlined]="true" (click)="menu.toggle($event.stopPropagation());"/>
+                                        <p-tieredmenu #menu [model]="items()" [popup]="true"/>
+                                    </div>
+                                </div>
+                                <div class="preview">
+                                    <i [class]="'pi ' + getFileIcon(file.mimeType)" style="font-size: 11rem;"></i>
+                                </div>
+                            }
+
                         </div>
                     </p-card>
-                    }
+                }
             </div>
         }
     </p-scrollPanel>
 </div>
+
+<!-- ─── ВИДЕО ПЛЕЕР ─── -->
+<p-dialog
+    [(visible)]="videoDialogVisible"
+    [modal]="true"
+    [closable]="false"
+    [draggable]="false"
+    [resizable]="false"
+    [style]="{ width: '900px', maxWidth: '96vw' }"
+    styleClass="video-dialog"
+    (onHide)="closeVideo()"
+>
+    <ng-template pTemplate="header"><span></span></ng-template>
+
+    <div class="vp-root"
+         (mousemove)="onPlayerMouseMove()"
+         (mouseleave)="onPlayerMouseLeave()">
+
+        @if (videoUrl) {
+
+            <!-- Видео -->
+            <video
+                #videoPlayer
+                class="vp-video"
+                [src]="videoUrl"
+                preload="metadata"
+                playsinline
+                (timeupdate)="onTimeUpdate()"
+                (loadedmetadata)="onMetaLoaded()"
+                (ended)="onEnded()"
+                (click)="togglePlay()"
+            ></video>
+
+            <!-- Центральная кнопка play/pause -->
+            <div class="vp-center-btn"
+                 [class.vp-hidden]="isPlaying && controlsHidden"
+                 (click)="togglePlay()">
+                <div class="vp-center-icon">
+                    <i [class]="isPlaying ? 'pi pi-pause' : 'pi pi-play'"
+                       [style.margin-left]="isPlaying ? '0' : '3px'"></i>
+                </div>
+            </div>
+
+            <!-- Панель управления -->
+            <div class="vp-controls" [class.vp-hidden]="isPlaying && controlsHidden">
+
+                <!-- Прогресс-бар -->
+                <div class="vp-progress" (click)="seek($event)">
+                    <div class="vp-progress-bg"></div>
+                    <div class="vp-progress-fill" [style.width.%]="progress"></div>
+                    <div class="vp-progress-thumb" [style.left.%]="progress"></div>
+                </div>
+
+                <!-- Нижняя строка -->
+                <div class="vp-bar">
+
+                    <!-- Левая часть -->
+                    <div class="vp-bar-left">
+                        <p-button
+                            [icon]="isPlaying ? 'pi pi-pause' : 'pi pi-play'"
+                            [text]="true"
+                            severity="secondary"
+                            (onClick)="togglePlay()"
+                            tooltipPosition="top"
+                        />
+                        <p-button
+                            [icon]="isMuted ? 'pi pi-volume-off' : 'pi pi-volume-up'"
+                            [text]="true"
+                            severity="secondary"
+                            (onClick)="toggleMute()"
+                        />
+                        <div class="vp-volume-wrap">
+                            <input
+                                class="vp-volume"
+                                type="range"
+                                min="0"
+                                max="1"
+                                step="0.05"
+                                [value]="volume"
+                                (input)="onVolumeChange($event)"
+                            />
+                        </div>
+                        <span class="vp-time">{{ currentTimeStr }} / {{ durationStr }}</span>
+                    </div>
+
+                    <!-- Центр — название -->
+                    <div class="vp-bar-center">
+                        <span class="vp-title">{{ videoTitle }}</span>
+                    </div>
+
+                    <!-- Правая часть -->
+                    <div class="vp-bar-right">
+                        <p-button
+                            icon="pi pi-window-maximize"
+                            [text]="true"
+                            severity="secondary"
+                            (onClick)="toggleFullscreen()"
+                            pTooltip="Полный экран"
+                            tooltipPosition="top"
+                        />
+                        <div class="vp-divider"></div>
+                        <p-button
+                            icon="pi pi-times"
+                            [text]="true"
+                            severity="secondary"
+                            (onClick)="closeVideo()"
+                            pTooltip="Закрыть"
+                            tooltipPosition="top"
+                        />
+                    </div>
+
+                </div>
+            </div>
+        }
+    </div>
+</p-dialog>
 <p-toast position="bottom-right" key="br"></p-toast>

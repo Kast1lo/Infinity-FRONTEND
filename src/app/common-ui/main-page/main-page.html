@@ -1,46 +1,65 @@
 <nav class="navbar" [class.scrolled]="navScrolled">
-    
-    <img class="logo" [src]="imagePath" alt="">
+  <img class="logo" [src]="imagePath" alt="">
 
   <ul class="nav-links">
-    <li><a href="#">Функции</a></li>
-    <li><a href="#">Kanban</a></li>
-    <li><a href="#">Файлы</a></li>
-    <li><a href="#">Тарифы</a></li>
+    <li><a (click)="scrollTo('features')">Функции</a></li>
+    <li><a (click)="scrollTo('kanban')">Kanban</a></li>
+    <li><a (click)="scrollTo('files')">Файлы</a></li>
+    <li><a (click)="scrollTo('pricing')">Тарифы</a></li>
   </ul>
 
   <div class="nav-cta">
-    <p-button
-      label="Войти"
-      [text]="true"
-      severity="secondary"
-      size="small"
-      routerLink="/login"
-    />
-    <p-button
-      label="Зарегистрироваться"
-      [outlined]="true"
-      severity="secondary"
-      size="small"
-      routerLink="/registration"
-    />
+    <p-button label="Войти" [text]="true" severity="secondary" size="small" routerLink="/login"/>
+    <p-button label="Зарегистрироваться" [outlined]="true" severity="secondary" size="small" routerLink="/registration"/>
   </div>
 </nav>
 
 <section class="hero">
-  <div class="hero-badge">
-    <span class="badge-dot"></span>
-    All-in-one рабочее пространство нового поколения
+
+  <div class="hero-tags">
+    <div class="hero-badge">
+      <span class="badge-dot"></span>
+      All-in-one рабочее пространство нового поколения
+    </div>
+    <div class="hero-badge hero-badge-sm">
+      <i class="pi pi-check-circle"></i>
+      Бесплатный пробный период 7 дней
+    </div>
+    <div class="hero-badge hero-badge-sm">
+      <i class="pi pi-lock"></i>
+      Безопасное хранение данных
+    </div>
   </div>
 
   <h1 class="hero-title">
-    Один<br><em>инструмент.</em><br>Всё.
+    Один<br><em>инструмент.</em><br>Для всего.
   </h1>
 
   <p class="hero-subtitle">
     Kanban-доска, файловое хранилище и совместная работа
     в одном минималистичном пространстве.
   </p>
+
+  <div class="hero-meta">
+    <span class="hero-meta-item"><i class="pi pi-th-large"></i> Kanban</span>
+    <span class="hero-meta-dot">·</span>
+    <span class="hero-meta-item"><i class="pi pi-folder-open"></i> Файловое хранилище</span>
+    <span class="hero-meta-dot">·</span>
+    <span class="hero-meta-item"><i class="pi pi-user"></i> Профиль</span>
+    <span class="hero-meta-dot">·</span>
+    <span class="hero-meta-item"><i class="pi pi-share-alt"></i> Пересылка файлов</span>
+  </div>
+
+      <div class="cta-actions">
+        <a class="btn-hero-primary" routerLink="/registration">
+          <i class="pi pi-user-plus"></i>
+          Зарегистрироваться
+        </a>
+        <a class="btn-hero-ghost" routerLink="/login">
+          <i class="pi pi-sign-in"></i>
+          Войти
+        </a>
+      </div>
 
   <div class="hero-preview">
     <div class="preview-bar">
@@ -58,25 +77,31 @@
       </div>
       <div class="preview-content">
         <div class="preview-topbar">
-          <p-button label="Загрузить файл" icon="pi pi-upload" [outlined]="true" severity="secondary" size="small" />
-          <p-button label="Создать папку" icon="pi pi-folder-open" [text]="true" severity="secondary" size="small" />
+          <p-button label="Загрузить файл" icon="pi pi-upload" [outlined]="true" severity="secondary" size="small"/>
+          <p-button label="Создать папку" icon="pi pi-folder-open" [text]="true" severity="secondary" size="small"/>
           <div class="topbar-right">
-            <p-button icon="pi pi-download" [text]="true" severity="secondary" size="small" />
-            <p-button icon="pi pi-trash" [text]="true" severity="secondary" size="small" />
-            <p-button label="Переслать" icon="pi pi-share-alt" [outlined]="true" severity="secondary" size="small" />
+            <p-button icon="pi pi-download" [text]="true" severity="secondary" size="small"/>
+            <p-button icon="pi pi-trash" [text]="true" severity="secondary" size="small"/>
+            <p-button label="Переслать" icon="pi pi-share-alt" [outlined]="true" severity="secondary" size="small"/>
           </div>
         </div>
         <div class="kanban-cols">
-          <div class="kanban-col" *ngFor="let col of kanbanCols">
-            <div class="col-title">{{ col.title }}</div>
-            <div class="k-card" *ngFor="let task of col.tasks">
-              <div class="k-check" [class.done]="task.done">
-                <i *ngIf="task.done" class="pi pi-check"></i>
-              </div>
-              {{ task.label }}
+          @for (col of kanbanCols; track col.title) {
+            <div class="kanban-col">
+              <div class="col-title">{{ col.title }}</div>
+              @for (task of col.tasks; track task.label) {
+                <div class="k-card">
+                  <div class="k-check" [class.done]="task.done">
+                    @if (task.done) {
+                      <i class="pi pi-check"></i>
+                    }
+                  </div>
+                  {{ task.label }}
+                </div>
+              }
+              <div class="k-add"><i class="pi pi-plus"></i> Создать задачу</div>
             </div>
-            <div class="k-add"><i class="pi pi-plus"></i> Создать задачу</div>
-          </div>
+          }
           <div class="k-new-col"><i class="pi pi-plus"></i> Создать колонку</div>
         </div>
       </div>
@@ -87,15 +112,17 @@
 <section class="stats reveal">
   <div class="container">
     <div class="stats-grid">
-      <div class="stat-item" *ngFor="let s of stats">
-        <div class="stat-num">{{ s.num }}</div>
-        <div class="stat-label">{{ s.label }}</div>
-      </div>
+      @for (s of stats; track s.label) {
+        <div class="stat-item">
+          <div class="stat-num">{{ s.num }}</div>
+          <div class="stat-label">{{ s.label }}</div>
+        </div>
+      }
     </div>
   </div>
 </section>
 
-<section class="features">
+<section class="features" id="features">
   <div class="container">
     <div class="section-header reveal">
       <div class="section-label">Возможности</div>
@@ -107,26 +134,27 @@
     </div>
 
     <div class="features-grid">
-      <div
-        class="feat-card reveal"
-        [class.reveal-delay-1]="i % 3 === 0"
-        [class.reveal-delay-2]="i % 3 === 1"
-        [class.reveal-delay-3]="i % 3 === 2"
-        *ngFor="let f of features; let i = index"
-      >
-        <div class="feat-icon">
-          <i [class]="f.icon"></i>
+      @for (f of features; let i = $index; track f.title) {
+        <div
+          class="feat-card reveal"
+          [class.reveal-delay-1]="i % 3 === 0"
+          [class.reveal-delay-2]="i % 3 === 1"
+          [class.reveal-delay-3]="i % 3 === 2"
+        >
+          <div class="feat-icon">
+            <i [class]="f.icon"></i>
+          </div>
+          <h3>{{ f.title }}</h3>
+          <p>{{ f.desc }}</p>
         </div>
-        <h3>{{ f.title }}</h3>
-        <p>{{ f.desc }}</p>
-      </div>
+      }
     </div>
   </div>
 </section>
 
 <div class="container"><div class="divider reveal"></div></div>
 
-<section class="split">
+<section class="split" id="kanban">
   <div class="container">
     <div class="split-inner reveal">
       <div class="split-text">
@@ -136,6 +164,12 @@
           Создавайте собственные колонки, добавляйте задачи
           и отмечайте выполненные. Гибкость без лишней сложности.
         </p>
+        <ul class="split-list">
+          <li><i class="pi pi-check"></i> Drag & Drop между колонками</li>
+          <li><i class="pi pi-check"></i> Подзадачи с прогресс-баром</li>
+          <li><i class="pi pi-check"></i> Приоритеты задач</li>
+          <li><i class="pi pi-check"></i> Неограниченное количество колонок</li>
+        </ul>
         <div class="split-actions">
           <p-button
             label="Попробовать Kanban"
@@ -143,6 +177,7 @@
             iconPos="left"
             severity="secondary"
             [outlined]="true"
+            routerLink="/login"
           />
         </div>
       </div>
@@ -152,16 +187,22 @@
         </div>
         <div class="sv-body">
           <div class="kanban-cols">
-            <div class="kanban-col" *ngFor="let col of kanbanCols">
-              <div class="col-title">{{ col.title }}</div>
-              <div class="k-card" *ngFor="let task of col.tasks">
-                <div class="k-check" [class.done]="task.done">
-                  <i *ngIf="task.done" class="pi pi-check"></i>
-                </div>
-                {{ task.label }}
+            @for (col of kanbanCols; track col.title) {
+              <div class="kanban-col">
+                <div class="col-title">{{ col.title }}</div>
+                @for (task of col.tasks; track task.label) {
+                  <div class="k-card">
+                    <div class="k-check" [class.done]="task.done">
+                      @if (task.done) {
+                        <i class="pi pi-check"></i>
+                      }
+                    </div>
+                    {{ task.label }}
+                  </div>
+                }
+                <div class="k-add"><i class="pi pi-plus"></i> Создать задачу</div>
               </div>
-              <div class="k-add"><i class="pi pi-plus"></i> Создать задачу</div>
-            </div>
+            }
             <div class="k-new-col"><i class="pi pi-plus"></i> Колонка</div>
           </div>
         </div>
@@ -170,7 +211,7 @@
   </div>
 </section>
 
-<section class="split">
+<section class="split" id="files">
   <div class="container">
     <div class="split-inner split-reverse reveal">
       <div class="split-text">
@@ -180,6 +221,12 @@
           Папки, изображения, документы — загружайте и организуйте
           как в Google Drive, не выходя из рабочего пространства.
         </p>
+        <ul class="split-list">
+          <li><i class="pi pi-check"></i> Папки и подпапки</li>
+          <li><i class="pi pi-check"></i> Превью изображений</li>
+          <li><i class="pi pi-check"></i> Пересылка по ссылке</li>
+          <li><i class="pi pi-check"></i> Скачивание ZIP-архивом</li>
+        </ul>
         <div class="split-actions">
           <p-button
             label="Открыть хранилище"
@@ -187,36 +234,40 @@
             iconPos="left"
             severity="secondary"
             [outlined]="true"
+            routerLink="/login"
           />
         </div>
       </div>
       <div class="split-visual">
         <div class="sv-topbar">
-          <p-button label="Загрузить файл" icon="pi pi-upload" [outlined]="true" severity="secondary" size="small" />
-          <p-button label="Создать папку" icon="pi pi-folder-open" [text]="true" severity="secondary" size="small" />
+          <p-button label="Загрузить файл" icon="pi pi-upload" [outlined]="true" severity="secondary" size="small"/>
+          <p-button label="Создать папку" icon="pi pi-folder-open" [text]="true" severity="secondary" size="small"/>
           <div class="sv-topbar-right">
-            <p-button icon="pi pi-download" [text]="true" severity="secondary" size="small" />
-            <p-button icon="pi pi-trash" [text]="true" severity="secondary" size="small" />
-            <p-button label="Переслать" icon="pi pi-share-alt" [text]="true" severity="secondary" size="small" />
+            <p-button icon="pi pi-download" [text]="true" severity="secondary" size="small"/>
+            <p-button icon="pi pi-trash" [text]="true" severity="secondary" size="small"/>
+            <p-button label="Переслать" icon="pi pi-share-alt" [text]="true" severity="secondary" size="small"/>
           </div>
         </div>
         <div class="sv-body">
           <div class="folder-row">
-            <div class="folder-card" *ngFor="let f of folders">
-              <i class="pi pi-folder"></i>
-              {{ f }}
-              <i class="pi pi-ellipsis-v folder-menu"></i>
-            </div>
+            @for (f of folders; track f) {
+              <div class="folder-card">
+                <i class="pi pi-folder"></i>
+                {{ f }}
+                <i class="pi pi-ellipsis-v folder-menu"></i>
+              </div>
+            }
           </div>
           <div class="file-grid">
-            <div
-              class="file-thumb"
-              *ngFor="let c of thumbColors; let i = index"
-              [style.background]="'linear-gradient(135deg,' + c[0] + ',' + c[1] + ')'"
-            >
-              <span class="thumb-label">img_{{ i + 1 }}.jpg</span>
-              <i class="pi pi-ellipsis-v thumb-menu"></i>
-            </div>
+            @for (c of thumbColors; let i = $index; track i) {
+              <div
+                class="file-thumb"
+                [style.background]="'linear-gradient(135deg,' + c[0] + ',' + c[1] + ')'"
+              >
+                <span class="thumb-label">img_{{ i + 1 }}.jpg</span>
+                <i class="pi pi-ellipsis-v thumb-menu"></i>
+              </div>
+            }
           </div>
         </div>
       </div>
@@ -225,6 +276,87 @@
 </section>
 
 <div class="container"><div class="divider reveal"></div></div>
+
+<section class="pricing" id="pricing">
+  <div class="container">
+    <div class="section-header reveal" style="text-align:center; max-width:560px; margin:0 auto 64px;">
+      <div class="section-label">Тарифы</div>
+      <h2 class="section-title">Простые и прозрачные цены</h2>
+      <p class="section-sub" style="margin:0 auto;">Начните бесплатно. Переходите когда будете готовы.</p>
+    </div>
+
+    <div class="plans-grid">
+
+      <div class="plan-card reveal reveal-delay-1">
+        <div class="plan-header">
+          <div class="plan-badge">Бесплатно</div>
+          <h3 class="plan-name">Пробный период</h3>
+          <p class="plan-duration">7 дней</p>
+          <div class="plan-price">
+            <span class="price-num">0</span>
+            <span class="price-currency">₽</span>
+          </div>
+        </div>
+        <ul class="plan-features">
+          <li class="feature-item"><i class="pi pi-check fi"></i><span>Безлимитные задачи</span></li>
+          <li class="feature-item"><i class="pi pi-check fi"></i><span>10 ГБ хранилища</span></li>
+          <li class="feature-item"><i class="pi pi-check fi"></i><span>Полный доступ к функциям</span></li>
+          <li class="feature-item"><i class="pi pi-check fi"></i><span>Хранение данных: 7 дней</span></li>
+          <li class="feature-item feature-muted"><i class="pi pi-minus fi"></i><span>Шифрование данных</span></li>
+        </ul>
+        <p-button label="Начать бесплатно" [outlined]="true" severity="secondary" styleClass="plan-btn" routerLink="/registration"/>
+      </div>
+
+      <div class="plan-card plan-featured reveal">
+        <div class="plan-popular">Популярный</div>
+        <div class="plan-header">
+          <div class="plan-badge plan-badge-accent">Ежемесячно</div>
+          <h3 class="plan-name">Подписка</h3>
+          <p class="plan-duration">в месяц</p>
+          <div class="plan-price">
+            <span class="price-num">299</span>
+            <span class="price-currency">₽</span>
+            <span class="price-period">/мес</span>
+          </div>
+        </div>
+        <ul class="plan-features">
+          <li class="feature-item"><i class="pi pi-check fi"></i><span>Безлимитные задачи</span></li>
+          <li class="feature-item"><i class="pi pi-check fi"></i><span>250 ГБ+ хранилища</span></li>
+          <li class="feature-item"><i class="pi pi-check fi"></i><span>Полный доступ к функциям</span></li>
+          <li class="feature-item"><i class="pi pi-check fi"></i><span>Приоритетная поддержка</span></li>
+          <li class="feature-item"><i class="pi pi-check fi"></i><span>Безопасное хранение</span></li>
+        </ul>
+        <p-button label="Оформить подписку" severity="secondary" styleClass="plan-btn plan-btn-primary" routerLink="/registration"/>
+      </div>
+
+      <div class="plan-card reveal reveal-delay-2">
+        <div class="plan-header">
+          <div class="plan-badge plan-badge-save">Выгода 15%</div>
+          <h3 class="plan-name">Годовой план</h3>
+          <p class="plan-duration">в год</p>
+          <div class="plan-price">
+            <span class="price-num">3049</span>
+            <span class="price-currency">₽</span>
+            <span class="price-period">/год</span>
+          </div>
+          <p class="price-note">≈ 269 ₽/мес · экономия 538 ₽</p>
+        </div>
+        <ul class="plan-features">
+          <li class="feature-item"><i class="pi pi-check fi"></i><span>Безлимитные задачи</span></li>
+          <li class="feature-item"><i class="pi pi-check fi"></i><span>1 ТБ хранилища</span></li>
+          <li class="feature-item"><i class="pi pi-check fi"></i><span>Полный доступ к функциям</span></li>
+          <li class="feature-item"><i class="pi pi-check fi"></i><span>Приоритетная поддержка</span></li>
+          <li class="feature-item"><i class="pi pi-check fi"></i><span>Безопасное хранение</span></li>
+        </ul>
+        <p-button label="Выбрать годовой" [outlined]="true" severity="secondary" styleClass="plan-btn" routerLink="/registration"/>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="container"><div class="divider reveal"></div></div>
+
 <section class="cta-section">
   <div class="container">
     <div class="cta-inner reveal">
@@ -232,20 +364,22 @@
       <h2 class="section-title">Рабочее пространство без границ</h2>
       <p class="section-sub">Бесплатно. Без кредитной карты. Всё в одном.</p>
       <div class="cta-actions">
+        <a class="btn-hero-primary" routerLink="/registration">
+          <i class="pi pi-user-plus"></i>
+          Зарегистрироваться
+        </a>
+        <a class="btn-hero-ghost" routerLink="/login">
+          <i class="pi pi-sign-in"></i>
+          Войти
+        </a>
       </div>
     </div>
-    <p-button
-      label="Зарегистрироваться"
-      [outlined]="true"
-      severity="secondary"
-      size="small"
-      routerLink="/registration"
-    />
   </div>
 </section>
+
 <footer class="footer">
   <div class="container footer-inner">
-    <a class="footer-logo" href="#">INFINITY</a>
+    <img class="logo" [src]="imagePath" alt="">
     <div class="footer-links">
       <a href="#">Условия</a>
       <a href="#">Конфиденциальность</a>
