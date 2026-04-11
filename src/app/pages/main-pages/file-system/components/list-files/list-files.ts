@@ -1,5 +1,6 @@
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   computed,
   inject,
@@ -76,6 +77,23 @@ export class ListFiles implements OnInit {
   durationStr = '0:00';
   controlsHidden = false;
   private controlsTimer: any;
+  private clickTimer: any;
+  private rafId: any;
+  isDragging = signal(false);
+  private dragCounter = 0;
+
+  homeItem: MenuItem = {
+    icon: 'pi pi-home',
+    command: () => this.fileSystem.navigateToRoot(),
+  };
+
+  breadcrumbModel = computed<MenuItem[]>(() => {
+    const items = this.fileSystem.breadcrumbItems();
+    return items.map((item: { id: string; label: string }, index: number) => ({
+      label: item.label,
+      command: () => this.fileSystem.navigateToIndex(index),
+    }));
+  });
 
   constructor() {}
 
@@ -162,6 +180,7 @@ export class ListFiles implements OnInit {
     this.videoTitle = '';
     this.videoDialogVisible = false;
     clearTimeout(this.controlsTimer);
+    this.stopProgressLoop();
   }
 
   togglePlay() {
@@ -170,9 +189,11 @@ export class ListFiles implements OnInit {
     if (video.paused) {
       video.play();
       this.isPlaying = true;
+      this.startProgressLoop();
     } else {
       video.pause();
       this.isPlaying = false;
+      this.stopProgressLoop();
     }
   }
 
@@ -205,11 +226,13 @@ export class ListFiles implements OnInit {
     this.durationStr = this.formatTime(video.duration);
     video.play();
     this.isPlaying = true;
+    this.startProgressLoop();
   }
 
   onEnded() {
     this.isPlaying = false;
     this.progress = 0;
+    this.stopProgressLoop();
   }
 
   seek(event: MouseEvent) {
@@ -246,6 +269,27 @@ export class ListFiles implements OnInit {
     }
   }
 
+  private startProgressLoop() {
+    this.stopProgressLoop();
+    const video = this.videoPlayerRef?.nativeElement;
+    if (!video) return;
+    const tick = () => {
+      if (!video.paused && !video.ended) {
+        this.progress = video.duration ? (video.currentTime / video.duration) * 100 : 0;
+        this.currentTimeStr = this.formatTime(video.currentTime);
+        this.rafId = requestAnimationFrame(tick);
+      }
+    };
+    this.rafId = requestAnimationFrame(tick);
+  }
+
+  private stopProgressLoop() {
+    if (this.rafId) {
+      cancelAnimationFrame(this.rafId);
+      this.rafId = null;
+    }
+  }
+
   private formatTime(sec: number): string {
     if (!sec || isNaN(sec)) return '0:00';
     const m = Math.floor(sec / 60);
@@ -275,6 +319,41 @@ export class ListFiles implements OnInit {
     this.fileSystem.goBack();
   }
 
+  onDragEnter(event: DragEvent) {
+    event.preventDefault();
+    this.dragCounter++;
+    this.isDragging.set(true);
+  }
+
+  onDragOver(event: DragEvent) {
+    event.preventDefault();
+  }
+
+  onDragLeave(event: DragEvent) {
+    this.dragCounter--;
+    if (this.dragCounter === 0) {
+      this.isDragging.set(false);
+    }
+  }
+
+  onDrop(event: DragEvent) {
+    event.preventDefault();
+    this.dragCounter = 0;
+    this.isDragging.set(false);
+    const files = event.dataTransfer?.files;
+    if (files && files.length > 0) {
+      const folderId = this.fileSystem.currentFolderId();
+      this.fileSystem.uploadFiles(files, folderId);
+      this.messageService.add({
+        severity: 'secondary',
+        summary: 'Загрузка',
+        detail: `${files.length} файл(ов) отправлено`,
+        life: 2000,
+        key: 'br',
+      });
+    }
+  }
+
   onFileDropped(files: FileList) {
     this.fileSystem.uploadFiles(files);
   }
@@ -283,17 +362,24 @@ export class ListFiles implements OnInit {
     this.fileSystem.selectItem(file);
   }
 
-  openFolder(folder: FolderItem) {
-    this.fileSystem.openFolder(folder.id);
-  }
+
 
   selectFolder(folder: FolderItem) {
-    const current = this.selectedItem();
-    if (current && current.id === folder.id) {
-      this.fileSystem.selectItem(null);
-    } else {
-      this.fileSystem.selectItem(folder);
-    }
+    // Откладываем выделение чтобы двойной клик успел сработать первым
+    clearTimeout(this.clickTimer);
+    this.clickTimer = setTimeout(() => {
+      const current = this.selectedItem();
+      if (current && current.id === folder.id) {
+        this.fileSystem.selectItem(null);
+      } else {
+        this.fileSystem.selectItem(folder);
+      }
+    }, 200);
+  }
+
+  openFolder(folder: FolderItem) {
+    clearTimeout(this.clickTimer); // отменяем одиночный клик
+    this.fileSystem.openFolder(folder.id);
   }
 
   shareFile() {

@@ -1,4 +1,26 @@
-<div class="card-list-files">
+<div class="card-list-files"
+     (dragenter)="onDragEnter($event)"
+     (dragover)="onDragOver($event)"
+     (dragleave)="onDragLeave($event)"
+     (drop)="onDrop($event)">
+  @if (isDragging()) {
+    <div class="drop-overlay">
+      <div class="drop-overlay-inner">
+        <i class="pi pi-cloud-upload"></i>
+        <span>Отпустите чтобы загрузить</span>
+      </div>
+    </div>
+  }
+    @if (breadcrumbModel().length > 0) {
+        <div class="fs-breadcrumbs">
+            <p-breadcrumb
+                [model]="breadcrumbModel()"
+                [home]="homeItem"
+                styleClass="fs-breadcrumb-bar"
+            />
+        </div>
+    }
+
     <p-scrollPanel [style]="{ width: '167vh', height: '83.5vh'}">
         @if (loading()) {
             <div class="progress-spin">
@@ -16,17 +38,18 @@
                 } 
                 @for (folder of folders(); track folder.id) {
                     @if (folder.parentId === fileSystem.currentFolderId()) {
-                        <p-card 
-                        (click)="selectFolder(folder)"
-                        >
+                        <p-card
+                            (click)="selectFolder(folder)"
+                            (dblclick)="openFolder(folder)">
                             <div class="folder-card" [class.selected]="selectedItem()?.id === folder.id">
                                 <div class="info-folder">
-                                    <i class="pi pi-folder" (click)="openFolder(folder)" style="font-size: 1.2rem; color: var(--primary-color); margin-top: 2.5px;"></i>
+                                    <i class="pi pi-folder" style="font-size: 1.2rem; color: var(--primary-color); margin-top: 2.5px;"></i>
                                     <div class="folder-name">{{ folder.name }}</div>
                                 </div>
                                 <div>
-                                    <p-button icon="pi pi-ellipsis-v" [text]="true" [outlined]="true" (click)="menu.toggle($event.stopPropagation());"/>
-                                    <p-tieredmenu #menu [model]="items()" [popup]="true"/>
+                                    <p-button icon="pi pi-ellipsis-v" [text]="true" [outlined]="true"
+                                        (click)="selectFolder(folder); folderMenu.toggle($event); $event.stopPropagation()"/>
+                                    <p-tieredmenu #folderMenu [model]="items()" [popup]="true" appendTo="body"/>
                                 </div>
                             </div>
                         </p-card>
@@ -48,8 +71,8 @@
                                 <div class="file-info">
                                     <div class="file-name">{{ file.name | decodeURIComponent }}</div>
                                     <div class="menu-container">
-                                        <p-button icon="pi pi-ellipsis-v" [text]="true" [outlined]="true" (click)="menu.toggle($event.stopPropagation());"/>
-                                        <p-tieredmenu #menu [model]="items()" [popup]="true"/>
+                                        <p-button icon="pi pi-ellipsis-v" [text]="true" [outlined]="true" (click)="selectFile(file); fileMenu.toggle($event); $event.stopPropagation()"/>
+                                        <p-tieredmenu #fileMenu [model]="items()" [popup]="true" appendTo="body"/>
                                     </div>
                                 </div>
                                 <div class="preview">
@@ -60,8 +83,8 @@
                                 <div class="file-info">
                                     <div class="file-name">{{ file.name | decodeURIComponent }}</div>
                                     <div class="menu-container">
-                                        <p-button icon="pi pi-ellipsis-v" [text]="true" [outlined]="true" (click)="menu.toggle($event.stopPropagation());"/>
-                                        <p-tieredmenu #menu [model]="items()" [popup]="true"/>
+                                        <p-button icon="pi pi-ellipsis-v" [text]="true" [outlined]="true" (click)="selectFile(file); fileMenu.toggle($event); $event.stopPropagation()"/>
+                                        <p-tieredmenu #fileMenu [model]="items()" [popup]="true" appendTo="body"/>
                                     </div>
                                 </div>
                                 <div class="preview preview-video" (click)="openVideo(file); $event.stopPropagation()">
@@ -86,8 +109,8 @@
                                 <div class="file-info">
                                     <div class="file-name">{{ file.name | decodeURIComponent }}</div>
                                     <div class="menu-container">
-                                        <p-button icon="pi pi-ellipsis-v" [text]="true" [outlined]="true" (click)="menu.toggle($event.stopPropagation());"/>
-                                        <p-tieredmenu #menu [model]="items()" [popup]="true"/>
+                                        <p-button icon="pi pi-ellipsis-v" [text]="true" [outlined]="true" (click)="selectFile(file); fileMenu.toggle($event); $event.stopPropagation()"/>
+                                        <p-tieredmenu #fileMenu [model]="items()" [popup]="true" appendTo="body"/>
                                     </div>
                                 </div>
                                 <div class="preview">
@@ -103,7 +126,6 @@
     </p-scrollPanel>
 </div>
 
-<!-- ─── ВИДЕО ПЛЕЕР ─── -->
 <p-dialog
     [(visible)]="videoDialogVisible"
     [modal]="true"
@@ -121,8 +143,6 @@
          (mouseleave)="onPlayerMouseLeave()">
 
         @if (videoUrl) {
-
-            <!-- Видео -->
             <video
                 #videoPlayer
                 class="vp-video"
@@ -135,7 +155,6 @@
                 (click)="togglePlay()"
             ></video>
 
-            <!-- Центральная кнопка play/pause -->
             <div class="vp-center-btn"
                  [class.vp-hidden]="isPlaying && controlsHidden"
                  (click)="togglePlay()">
@@ -145,77 +164,33 @@
                 </div>
             </div>
 
-            <!-- Панель управления -->
             <div class="vp-controls" [class.vp-hidden]="isPlaying && controlsHidden">
-
-                <!-- Прогресс-бар -->
                 <div class="vp-progress" (click)="seek($event)">
                     <div class="vp-progress-bg"></div>
                     <div class="vp-progress-fill" [style.width.%]="progress"></div>
                     <div class="vp-progress-thumb" [style.left.%]="progress"></div>
                 </div>
-
-                <!-- Нижняя строка -->
                 <div class="vp-bar">
-
-                    <!-- Левая часть -->
                     <div class="vp-bar-left">
-                        <p-button
-                            [icon]="isPlaying ? 'pi pi-pause' : 'pi pi-play'"
-                            [text]="true"
-                            severity="secondary"
-                            (onClick)="togglePlay()"
-                            tooltipPosition="top"
-                        />
-                        <p-button
-                            [icon]="isMuted ? 'pi pi-volume-off' : 'pi pi-volume-up'"
-                            [text]="true"
-                            severity="secondary"
-                            (onClick)="toggleMute()"
-                        />
+                        <p-button [icon]="isPlaying ? 'pi pi-pause' : 'pi pi-play'" [text]="true" severity="secondary" (onClick)="togglePlay()"/>
+                        <p-button [icon]="isMuted ? 'pi pi-volume-off' : 'pi pi-volume-up'" [text]="true" severity="secondary" (onClick)="toggleMute()"/>
                         <div class="vp-volume-wrap">
-                            <input
-                                class="vp-volume"
-                                type="range"
-                                min="0"
-                                max="1"
-                                step="0.05"
-                                [value]="volume"
-                                (input)="onVolumeChange($event)"
-                            />
+                            <input class="vp-volume" type="range" min="0" max="1" step="0.05" [value]="volume" (input)="onVolumeChange($event)"/>
                         </div>
                         <span class="vp-time">{{ currentTimeStr }} / {{ durationStr }}</span>
                     </div>
-
-                    <!-- Центр — название -->
                     <div class="vp-bar-center">
                         <span class="vp-title">{{ videoTitle }}</span>
                     </div>
-
-                    <!-- Правая часть -->
                     <div class="vp-bar-right">
-                        <p-button
-                            icon="pi pi-window-maximize"
-                            [text]="true"
-                            severity="secondary"
-                            (onClick)="toggleFullscreen()"
-                            pTooltip="Полный экран"
-                            tooltipPosition="top"
-                        />
+                        <p-button icon="pi pi-window-maximize" [text]="true" severity="secondary" (onClick)="toggleFullscreen()"/>
                         <div class="vp-divider"></div>
-                        <p-button
-                            icon="pi pi-times"
-                            [text]="true"
-                            severity="secondary"
-                            (onClick)="closeVideo()"
-                            pTooltip="Закрыть"
-                            tooltipPosition="top"
-                        />
+                        <p-button icon="pi pi-times" [text]="true" severity="secondary" (onClick)="closeVideo()"/>
                     </div>
-
                 </div>
             </div>
         }
     </div>
 </p-dialog>
+
 <p-toast position="bottom-right" key="br"></p-toast>
