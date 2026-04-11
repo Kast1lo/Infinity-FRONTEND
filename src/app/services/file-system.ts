@@ -39,22 +39,44 @@ export class FileSystem {
     });
   }
 
-openFolder(folderId: string) {
-  this._pathStack.update(stack => [...stack, folderId]);
-  this.loadFiles(folderId);
-}
-
-goBack() {
-  this._pathStack.update(stack => {
-    if (stack.length > 0) {
-      const newStack = stack.slice(0, -1);
-      const parentId = newStack.length > 0 ? newStack[newStack.length - 1] : null;
-      this.loadFiles(parentId);
-      return newStack;
-    }
-    return stack;
+  readonly breadcrumbItems = computed(() => {
+    const stack = this._pathStack();
+    const folders = this._folders();
+    return stack.map(id => {
+      const folder = folders.find(f => f.id === id);
+      return { id, label: folder?.name ?? '...' };
+    });
   });
-}
+
+  navigateToRoot() {
+    this._pathStack.set([]);
+    this.loadFiles(null);
+  }
+
+  navigateToIndex(index: number) {
+    const stack = this._pathStack();
+    const newStack = stack.slice(0, index + 1);
+    this._pathStack.set(newStack);
+    const folderId = newStack[newStack.length - 1];
+    this.loadFiles(folderId);
+  }
+
+  openFolder(folderId: string) {
+    this._pathStack.update(stack => [...stack, folderId]);
+    this.loadFiles(folderId);
+  }
+
+  goBack() {
+    this._pathStack.update(stack => {
+      if (stack.length > 0) {
+        const newStack = stack.slice(0, -1);
+        const parentId = newStack.length > 0 ? newStack[newStack.length - 1] : null;
+        this.loadFiles(parentId);
+        return newStack;
+      }
+      return stack;
+    });
+  }
 
   loadTree() {
     this._loading.set(true);
@@ -63,9 +85,49 @@ goBack() {
       withCredentials: true
     }).subscribe({
       next: (folders) => {
-        console.log('loadTree вернул папок:', folders.length, folders);
-        this._folders.set(folders || []);
+        const flat = this.flattenFolders(folders);
+        console.log('loadTree: папок всего (плоско):', flat.length, flat);
+        this._folders.set(flat);
         this._files.set([]);
+        this._loading.set(false);
+      },
+      error: () => {
+        this._loading.set(false);
+      }
+    });
+  }
+
+  private flattenFolders(folders: FolderItem[]): FolderItem[] {
+    const result: FolderItem[] = [];
+    const traverse = (items: any[]) => {
+      for (const folder of items) {
+        const { children, files, ...folderData } = folder;
+        result.push(folderData as FolderItem);
+        if (children && children.length > 0) {
+          traverse(children);
+        }
+      }
+    };
+    traverse(folders);
+    return result;
+  }
+
+
+  loadFiles(folderId: string | null) {
+    this._loading.set(true);
+    this._error.set(null);
+    const url = folderId ? `${this.apiUrl}/files/${folderId}` : `${this.apiUrl}/files`;
+    this.http.get<FileItem[]>(url, {
+      withCredentials: true  
+    }).pipe(
+      catchError(err => this.handleError(err, 'Ошибка загрузки файлов'))
+    ).subscribe({
+      next: (files) => {
+        const decodedFiles = files.map(file => ({
+        ...file,
+        name: decodeURIComponent(file.name)
+      }));
+        this._files.set(files || []);
         this._loading.set(false);
       },
       error: (err) => {
@@ -74,55 +136,36 @@ goBack() {
     });
   }
 
-
-loadFiles(folderId: string | null) {
-  this._loading.set(true);
-  this._error.set(null);
-  const url = folderId ? `${this.apiUrl}/files/${folderId}` : `${this.apiUrl}/files`;
-  this.http.get<FileItem[]>(url, {
-    withCredentials: true  
-  }).pipe(
-    catchError(err => this.handleError(err, 'Ошибка загрузки файлов'))
-  ).subscribe({
-    next: (files) => {
-      const decodedFiles = files.map(file => ({
-      ...file,
-      name: decodeURIComponent(file.name)
-    }));
-      this._files.set(files || []);
-      this._loading.set(false);
-    },
-    error: (err) => {
-      this._loading.set(false);
-    }
-  });
-}
-
   uploadFiles(files: FileList | File[], folderId?: string | null) {
     this._loading.set(true);
     this._error.set(null);
 
+    const fileArray = Array.from(files);
+
+  const uploads = fileArray.map(file => {
+    console.log('uploading file:', file.name, 'size:', file.size);
     const formData = new FormData();
-    if (folderId) {
-      formData.append('folderId', folderId);
-    }
+    formData.append('file', file);
 
-    Array.from(files).forEach(file => formData.append('file', file));
+      return this.http.post(`${this.apiUrl}/uploadFile`, formData, {
+        withCredentials: true
+      }).pipe(
+        catchError(err => this.handleError(err, 'Ошибка загрузки файлов'))
+      );
+    });
 
-    this.http.post(`${this.apiUrl}/uploadFile`, formData, {
-      withCredentials: true
-    }).pipe(
-      catchError(err => this.handleError(err, 'Ошибка загрузки файлов'))
-    ).subscribe({
-      next: () => {
-        setTimeout(() => {
-          this.loadFiles(folderId ?? null);
+    import('rxjs').then(({ forkJoin }) => {
+      forkJoin(uploads).subscribe({
+        next: () => {
+          setTimeout(() => {
+            this.loadFiles(folderId ?? null);
+            this._loading.set(false);
+          }, 800);
+        },
+        error: () => {
           this._loading.set(false);
-        }, 800);
-      },
-      error: (err) => {
-        this._loading.set(false);
-      }
+        }
+      });
     });
   }
 

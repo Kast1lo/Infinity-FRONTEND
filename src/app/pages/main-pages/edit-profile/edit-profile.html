@@ -1,40 +1,121 @@
-<div class="updateForm">
-    <app-side-bar></app-side-bar>
-    @if (userService.profile(); as user) {
-        <div class="form">
-            <p class="infoEdit">Изменение аватара</p>
-            <div class="uploadAvatar">
-                <p-fileUpload #fu mode="basic"
-                chooseLabel="Загрузить новый аватар"
-                chooseIcon="pi pi-upload"
-                name="demo[]"
-                maxFileSize="1000000"
-                accept="image/*"
-                (onSelect)="onFileSelected($event)"
-                (onClear)="selectedFile.set(null)"
-                />
-                <p-button label="Загрузить" icon="pi pi-cloud-upload"
-                severity="secondary"
-                [loading]="isUploading()"
-                [disabled]="!selectedFile() || isUploading()"
-                (onClick)="onAvatarUpload()"
-                />
+<div class="ep-root">
+  <app-side-bar></app-side-bar>
+
+  @if (userService.profile(); as user) {
+    <div class="ep-page">
+
+      <div class="ep-left">
+
+        <div class="ep-card ep-avatar-card">
+          <p-avatar
+            [image]="user.avatarUrl ?? undefined"
+            size="xlarge"
+            shape="circle"
+            class="ep-avatar"
+          />
+          <div class="ep-avatar-info">
+            <div class="ep-username">{{ user.username }}</div>
+            <div class="ep-useremail">{{ user.email }}</div>
+          </div>
+          <div class="ep-divider"></div>
+          <div class="ep-upload-row">
+            <p-fileUpload #fu
+              mode="basic"
+              chooseLabel="Выбрать фото"
+              chooseIcon="pi pi-image"
+              name="demo[]"
+              maxFileSize="1000000"
+              accept="image/*"
+              (onSelect)="onFileSelected($event)"
+              (onClear)="selectedFile.set(null)"
+            />
+            <p-button
+              label="Загрузить"
+              icon="pi pi-cloud-upload"
+              severity="secondary"
+              [loading]="isUploading()"
+              [disabled]="!selectedFile() || isUploading()"
+              (onClick)="onAvatarUpload()"
+            />
+          </div>
+        </div>
+
+        <!-- Фон -->
+        <div class="ep-card ep-bg-card">
+          <div class="ep-card-label">Фон приложения</div>
+
+          <!-- Загрузить новый фон -->
+          <div class="ep-bg-upload" (click)="bgFileInput.click()">
+            <i class="pi pi-cloud-upload"></i>
+            <span>Загрузить изображение</span>
+            <input #bgFileInput type="file" accept="image/*" style="display:none" (change)="onCustomBg($event)"/>
+          </div>
+
+          <!-- История фонов -->
+          @if (bgService.history().length > 0) {
+            <div class="ep-card-label ep-bg-history-label">История</div>
+            <div class="ep-bg-grid">
+              @for (url of bgService.history(); track url) {
+                <div
+                  class="ep-bg-thumb"
+                  [class.ep-bg-active]="bgService.backgroundUrl() === url"
+                  (click)="bgService.setBackground(url)"
+                >
+                  <img [src]="url" loading="lazy"/>
+                  <!-- Удалить из истории -->
+                  <button class="ep-bg-remove" (click)="bgService.removeFromHistory(url); $event.stopPropagation()">
+                    <i class="pi pi-times"></i>
+                  </button>
+                  @if (bgService.backgroundUrl() === url) {
+                    <div class="ep-bg-check"><i class="pi pi-check"></i></div>
+                  }
+                </div>
+              }
             </div>
-            <p class="infoEdit">Изменение основной информации</p>
-        <div class="field">
-            <input pInputText [(ngModel)]="newUsername" placeholder="Введите новый логин" fluid="true" />
+          }
+
+          @if (bgService.backgroundUrl()) {
+            <button class="ep-reset-bg" (click)="bgService.clearBackground()">
+              <i class="pi pi-eye-slash"></i> Убрать фон
+            </button>
+          }
         </div>
-        <div class="field">
-            <input pInputText [(ngModel)]="newEmail" type="email" placeholder="Введите новый email" fluid/>
-        </div>
-            <div class="actions">
-                <p-button 
-                label="Сохранить изменения"
-                [disabled]="!hasChanges() || userService.isLoading()"
-                (onClick)="saveChanges()"
-                fluid
-                />
+
+      </div>
+
+      <!-- ── ПРАВАЯ КОЛОНКА ── -->
+      <div class="ep-right">
+        <div class="ep-card ep-form-card">
+          <div class="ep-card-label">Основная информация</div>
+
+          <div class="ep-field">
+            <label class="ep-field-label">Новый логин</label>
+            <div class="ep-input-wrap">
+              <i class="pi pi-user ep-input-icon"></i>
+              <input pInputText [(ngModel)]="newUsername" placeholder="Введите новый логин" class="ep-input"/>
             </div>
+          </div>
+
+          <div class="ep-field">
+            <label class="ep-field-label">Новый email</label>
+            <div class="ep-input-wrap">
+              <i class="pi pi-envelope ep-input-icon"></i>
+              <input pInputText [(ngModel)]="newEmail" type="email" placeholder="Введите новый email" class="ep-input"/>
+            </div>
+          </div>
+
+          <div class="ep-form-actions">
+            <p-button
+              label="Сохранить изменения"
+              icon="pi pi-check"
+              [disabled]="!hasChanges() || userService.isLoading()"
+              [loading]="userService.isLoading()"
+              (onClick)="saveChanges()"
+            />
+          </div>
         </div>
-    }
+      </div>
+
+    </div>
+  }
 </div>

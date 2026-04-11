@@ -1,4 +1,5 @@
 :host {
+  --bg:      #0a0a0a;
   --bg2:     #111111;
   --bg3:     #1a1a1a;
   --border:  #222222;
@@ -6,232 +7,336 @@
   --text:    #f0f0f0;
   --text2:   #888888;
   --text3:   #444444;
-
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
-}
 
-.share-page {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 32px 24px;
-  background: var(--bg);
-  background-image: radial-gradient(circle, rgba(255,255,255,.05) 1px, transparent 1px);
-  background-size: 28px 28px;
-}
-
-.share-container {
-  max-width: 480px;
-  width: 100%;
-  animation: fadeUp .7s ease forwards;
-}
-
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(24px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-/* ─── ЗАГРУЗКА ─── */
-.loading-state {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 20px;
-  padding: 64px 24px;
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  min-height: 100vh;
+  background: var(--bg);
+  background-image: radial-gradient(rgba(255,255,255,.04) 1px, transparent 1px);
+  background-size: 28px 28px;
+  overflow: hidden;
+}
 
-  p {
-    font-size: 14px;
-    color: var(--text2);
-    font-weight: 300;
-    margin: 0;
+.sf-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(10,10,10,.85);
+  backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.sf-nav-logo {
+  font-family: 'Syne', sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text);
+  text-decoration: none;
+  letter-spacing: 2px;
+}
+
+.sf-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  ::ng-deep .p-button {
+    font-family: 'DM Sans', sans-serif !important;
+    font-size: 13px !important;
+    border-radius: var(--radius-sm) !important;
   }
 }
 
-/* ─── ОШИБКА ─── */
-.error-state {
+.share-page {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.share-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  color: var(--text2);
+  font-size: 14px;
+  text-align: center;
+
+  i { font-size: 3rem !important; color: var(--text3); }
+}
+
+.share-error h2 {
+  font-family: 'Syne', sans-serif;
+  font-size: 20px;
+  color: var(--text);
+  margin: 0;
+}
+
+.share-error p { font-size: 13px; color: var(--text2); margin: 0; }
+
+.share-layout {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 20px;
+  width: 100%;
+  max-width: 1060px;
+  max-height: calc(100vh - 120px);
+  animation: fadeIn .3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.share-preview {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  min-height: 300px;
+}
+
+.sp-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.sp-file-icon {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 12px;
-  padding: 56px 32px;
-  text-align: center;
+
+  i    { font-size: 6rem !important; color: var(--text3); }
+  span { font-size: 12px; color: var(--text3); letter-spacing: 2px; text-transform: uppercase; }
+}
+
+.sp-video-wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  line-height: 0; font-size: 0;
+}
+
+.sp-video {
+  width: 100%; height: 100%;
+  object-fit: contain;
+  display: block;
+  cursor: pointer;
+  vertical-align: bottom;
+}
+
+.sp-center-btn {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: opacity .25s;
+  &.sp-hidden { opacity: 0; pointer-events: none; }
+}
+
+.sp-center-icon {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: rgba(0,0,0,.6);
+  border: 1.5px solid rgba(255,255,255,.15);
+  display: flex; align-items: center; justify-content: center;
+  transition: background .2s, transform .15s;
+  line-height: normal; font-size: 14px;
+  i { font-size: 1.3rem !important; color: #fff !important; }
+  &:hover { background: rgba(0,0,0,.75); transform: scale(1.06); }
+}
+
+.sp-controls {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: linear-gradient(to top, rgba(0,0,0,.9) 0%, transparent 100%);
+  padding: 40px 14px 12px;
+  transition: opacity .3s;
+  box-sizing: border-box; line-height: normal; font-size: 14px;
+  &.sp-hidden { opacity: 0; pointer-events: none; }
+}
+
+.sp-progress {
+  position: relative; height: 18px;
+  display: flex; align-items: center;
+  cursor: pointer; margin-bottom: 8px;
+  &:hover .sp-progress-thumb { opacity: 1; transform: translateX(-50%) scale(1); }
+  &:hover .sp-progress-bg    { background: rgba(255,255,255,.25); }
+}
+
+.sp-progress-bg {
+  position: absolute; inset: 7px 0;
+  background: rgba(255,255,255,.15); border-radius: 100px; transition: background .2s;
+}
+
+.sp-progress-fill {
+  position: absolute; left: 0; top: 7px; bottom: 7px;
+  background: rgba(255,255,255,.85); border-radius: 100px;
+  pointer-events: none; will-change: width;
+}
+
+.sp-progress-thumb {
+  position: absolute; top: 50%;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: #fff; transform: translateX(-50%) scale(0);
+  transition: transform .15s, opacity .15s;
+  opacity: 0; pointer-events: none; box-shadow: 0 0 6px rgba(0,0,0,.5);
+}
+
+.sp-bar { display: flex; align-items: center; justify-content: space-between; }
+.sp-bar-left, .sp-bar-right { display: flex; align-items: center; gap: 2px; }
+
+::ng-deep .sp-bar .p-button {
+  width: 34px !important; height: 34px !important; padding: 0 !important;
+  border-radius: 8px !important; background: transparent !important;
+  border: none !important; color: rgba(255,255,255,.7) !important;
+  .p-button-icon { font-size: 14px !important; color: inherit !important; }
+  &:hover { background: rgba(255,255,255,.1) !important; color: #fff !important; }
+}
+
+.sp-volume-wrap { width: 68px; display: flex; align-items: center; margin: 0 4px; }
+.sp-volume {
+  -webkit-appearance: none; width: 100%; height: 3px;
+  border-radius: 100px; background: rgba(255,255,255,.2); outline: none; cursor: pointer;
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 12px; height: 12px;
+    border-radius: 50%; background: #fff; box-shadow: 0 0 4px rgba(0,0,0,.4);
+  }
+}
+
+.sp-time {
+  font-family: 'DM Sans', sans-serif; font-size: 12px;
+  color: rgba(255,255,255,.6); white-space: nowrap;
+  margin-left: 4px; font-variant-numeric: tabular-nums;
+}
+
+/* ── ИНФО ── */
+.share-info {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+}
+
+.si-card {
   background: var(--bg2);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-
-  i {
-    font-size: 3rem;
-    color: #e05555;
-    margin-bottom: 8px;
-  }
-
-  h2 {
-    font-family: 'Syne', sans-serif;
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--text);
-    letter-spacing: -.3px;
-    margin: 0;
-  }
-
-  p {
-    font-size: 13px;
-    color: var(--text2);
-    font-weight: 300;
-    margin: 0;
-    max-width: 320px;
-    line-height: 1.6;
-  }
+  padding: 20px 22px;
+  background-image: radial-gradient(rgba(255,255,255,.035) 1px, transparent 1px);
+  background-size: 28px 28px;
 }
 
-:host ::ng-deep .error-state .p-button {
-  margin-top: 8px;
-  font-family: 'DM Sans', sans-serif !important;
-  font-size: 13px !important;
-  border-radius: var(--radius-sm) !important;
-  color: var(--text2) !important;
-  background: transparent !important;
-  border: 1px solid var(--border2) !important;
-  padding: 9px 18px !important;
-  transition: all .2s !important;
+.si-header { flex-shrink: 0; }
 
-  &:hover {
-    color: var(--text) !important;
-    background: rgba(255,255,255,.06) !important;
-    border-color: var(--text3) !important;
-  }
+.si-badge {
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 2px; color: var(--text3);
+  text-transform: uppercase; margin-bottom: 8px;
+  display: block;
 }
 
-/* ─── КАРТОЧКА ФАЙЛА ─── */
-:host ::ng-deep .file-card.p-card {
-  background: var(--bg2) !important;
-  border: 1px solid var(--border) !important;
-  border-radius: var(--radius-lg) !important;
-  box-shadow: none !important;
-  overflow: hidden;
-
-  .p-card-body,
-  .p-card-content {
-    padding: 0 !important;
-  }
-}
-
-/* ─── ПРЕВЬЮ ИЗОБРАЖЕНИЯ ─── */
-.preview-container {
-  height: 260px;
-  background: rgba(255,255,255,.02);
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-
-  .preview-image {
-    margin: 20px;
-    max-height: 95%;
-    max-width: 95%;
-    object-fit: contain;
-    border-radius: 15px;
-  }
-}
-
-.icon-container {
-  height: 260px;
-  background: rgba(255,255,255,.02);
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  i {
-    font-size: 5rem !important;
-    color: var(--text3) !important;
-  }
-}
-
-/* ─── ИНФОРМАЦИЯ О ФАЙЛЕ ─── */
-.file-info {
-  padding: 28px 28px 32px;
-}
-
-.file-name {
+.si-name {
   font-family: 'Syne', sans-serif;
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--text);
-  letter-spacing: -.3px;
-  text-align: center;
-  margin: 0 0 24px;
-  word-break: break-all;
-  line-height: 1.3;
+  font-size: 17px; font-weight: 700;
+  color: var(--text); letter-spacing: -.3px;
+  margin: 0; word-break: break-word; line-height: 1.3;
 }
 
-/* ─── ДЕТАЛИ ─── */
-.details {
-  display: flex;
-  justify-content: center;
-  gap: 0;
-  margin-bottom: 28px;
-  background: rgba(255,255,255,.02);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-}
-
-.detail-item {
-  flex: 1;
+/* Статы — вертикально */
+.si-stats {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 5px;
-  padding: 16px 12px;
-  border-right: 1px solid var(--border);
-
-  &:last-child { border-right: none; }
-
-  .label {
-    font-size: 10px;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--text3);
-  }
-
-  .value {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text);
-    text-align: center;
-    word-break: break-all;
-    line-height: 1.4;
-  }
+  gap: 10px;
+  flex: 1;
 }
 
-/* ─── КНОПКА СКАЧАТЬ ─── */
-.actions {
+.si-stat {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  gap: 4px;
+  background-image: radial-gradient(rgba(255,255,255,.035) 1px, transparent 1px);
+  background-size: 28px 28px;
+  transition: border-color .2s;
+
+  &:hover { border-color: var(--border2); }
 }
 
-:host ::ng-deep .actions .p-button {
-  width: 100% !important;
-  font-family: 'DM Sans', sans-serif !important;
-  font-size: 14px !important;
-  font-weight: 500 !important;
-  border-radius: var(--radius-sm) !important;
-  color: var(--text) !important;
-  background: rgba(255,255,255,.08) !important;
-  border: 1px solid rgba(255,255,255,.14) !important;
-  padding: 11px 20px !important;
-  justify-content: center !important;
-  transition: background .2s !important;
+.si-stat-label {
+  font-size: 9px; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--text3);
+}
 
-  &:hover:not(.p-disabled) {
-    background: rgba(255,255,255,.14) !important;
+.si-stat-num {
+  font-family: 'Syne', sans-serif;
+  font-size: 36px; font-weight: 800;
+  letter-spacing: -2px; color: var(--text); line-height: 1;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.si-stat-num-sm { font-size: 20px; letter-spacing: -.5px; }
+
+.si-stat-sub {
+  font-size: 11px; color: var(--text3);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* Кнопка скачать — белая нативная */
+.si-download-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px 20px;
+  background: #fff;
+  color: #0a0a0a;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .2s, transform .1s;
+  flex-shrink: 0;
+  margin-top: auto;
+
+  i { font-size: 14px !important; color: #0a0a0a !important; }
+
+  &:hover  { background: #e8e8e8; }
+  &:active { transform: scale(.98); }
+}
+
+@media (max-width: 768px) {
+  .share-layout {
+    grid-template-columns: 1fr;
+    max-height: none;
+    overflow: visible;
   }
+
+  .share-preview { min-height: 240px; max-height: 320px; }
+
+  .share-info { overflow: visible; }
+
+  .sf-nav-actions ::ng-deep .p-button:first-child { display: none; }
 }

@@ -1,58 +1,117 @@
+<!-- Навбар -->
+<nav class="sf-nav">
+  <a class="sf-nav-logo" routerLink="/main">INFINITY</a>
+  <div class="sf-nav-actions">
+    <p-button label="Войти" [text]="true" severity="secondary" size="small" routerLink="/login"/>
+    <p-button label="Зарегистрироваться" [outlined]="true" severity="secondary" size="small" routerLink="/registration"/>
+  </div>
+</nav>
+
 <div class="share-page">
-  <div class="share-container">
-    @if (loading()) {
-      <div class="loading-state">
-        <p-progressSpinner></p-progressSpinner>
-        <p>Загрузка информации о файле...</p>
-      </div>
-    } 
-    @else if (error()) {
-      <div class="error-state">
-        <i class="pi pi-exclamation-circle"></i>
-        <h2>Файл не найден</h2>
-        <p>{{ error() }}</p>
-        <p-button label="На главную" routerLink="/" severity="secondary"></p-button>
-      </div>
-    } 
-    @else if (fileData()) {
-      <p-card class="file-card">
-        @if (fileData()!.mimeType.startsWith('image/')) {
-          <div class="preview-container">
-            <img [src]="fileData()!.downloadUrl" 
-                 class="preview-image" 
-                 alt="Превью файла">
+
+  @if (loading()) {
+    <div class="share-state">
+      <p-progressSpinner strokeWidth="3"/>
+      <span>Загрузка файла...</span>
+    </div>
+  }
+
+  @else if (error()) {
+    <div class="share-state share-error">
+      <i class="pi pi-exclamation-circle"></i>
+      <h2>Файл не найден</h2>
+      <p>{{ error() }}</p>
+      <p-button label="На главную" routerLink="/main" [outlined]="true" severity="secondary"/>
+    </div>
+  }
+
+  @else if (fileData()) {
+    <div class="share-layout">
+
+      <div class="share-preview">
+        @if (isImage(fileData()!.mimeType)) {
+          <img [src]="fileData()!.downloadUrl" class="sp-image" [alt]="fileData()!.name"/>
+        } @else if (isVideo(fileData()!.mimeType)) {
+          <div class="sp-video-wrap"
+               (mousemove)="onPlayerMouseMove()"
+               (mouseleave)="onPlayerMouseLeave()">
+            <video
+              #videoPlayer
+              class="sp-video"
+              [src]="fileData()!.downloadUrl"
+              preload="metadata"
+              playsinline
+              (timeupdate)="onTimeUpdate()"
+              (loadedmetadata)="onMetaLoaded()"
+              (ended)="onEnded()"
+              (click)="togglePlay()"
+            ></video>
+            <div class="sp-center-btn" [class.sp-hidden]="isPlaying && controlsHidden" (click)="togglePlay()">
+              <div class="sp-center-icon">
+                <i [class]="isPlaying ? 'pi pi-pause' : 'pi pi-play'" [style.margin-left]="isPlaying ? '0' : '3px'"></i>
+              </div>
+            </div>
+            <div class="sp-controls" [class.sp-hidden]="isPlaying && controlsHidden">
+              <div class="sp-progress" (click)="seek($event)">
+                <div class="sp-progress-bg"></div>
+                <div class="sp-progress-fill" [style.width.%]="progress"></div>
+                <div class="sp-progress-thumb" [style.left.%]="progress"></div>
+              </div>
+              <div class="sp-bar">
+                <div class="sp-bar-left">
+                  <p-button [icon]="isPlaying ? 'pi pi-pause' : 'pi pi-play'" [text]="true" severity="secondary" (onClick)="togglePlay()"/>
+                  <p-button [icon]="isMuted ? 'pi pi-volume-off' : 'pi pi-volume-up'" [text]="true" severity="secondary" (onClick)="toggleMute()"/>
+                  <div class="sp-volume-wrap">
+                    <input class="sp-volume" type="range" min="0" max="1" step="0.05" [value]="volume" (input)="onVolumeChange($event)"/>
+                  </div>
+                  <span class="sp-time">{{ currentTimeStr }} / {{ durationStr }}</span>
+                </div>
+                <div class="sp-bar-right">
+                  <p-button icon="pi pi-window-maximize" [text]="true" severity="secondary" (onClick)="toggleFullscreen()"/>
+                </div>
+              </div>
+            </div>
           </div>
         } @else {
-          <div class="icon-container">
-            <i class="pi pi-file" style="font-size: 6rem; color: var(--primary-color);"></i>
+          <div class="sp-file-icon">
+            <i [class]="'pi ' + getFileIcon(fileData()!.mimeType)"></i>
+            <span>{{ getFileExt(fileData()!.name) }}</span>
           </div>
         }
-        <div class="file-info">
-          <h2 class="file-name">{{ fileData()!.name }}</h2> 
-          <div class="details">
-            <div class="detail-item">
-              <span class="label">Размер</span>
-              <span class="value">{{ formatSize(fileData()!.size) }}</span>
-            </div>
-            <div class="detail-item">
-              <span class="label">Тип</span>
-              <span class="value">{{ fileData()!.mimeType }}</span>
-            </div>
-            <div class="detail-item">
-              <span class="label">Загружен</span>
-              <span class="value">{{ fileData()!.createdAt | date:'dd MMMM yyyy, HH:mm' }}</span>
-            </div>
+      </div>
+
+      <div class="share-info">
+
+        <div class="si-card si-header">
+          <div class="si-badge">{{ getFileExt(fileData()!.name) }}</div>
+          <h1 class="si-name">{{ fileData()!.name }}</h1>
+        </div>
+
+        <div class="si-stats">
+          <div class="si-stat">
+            <div class="si-stat-label">Размер</div>
+            <div class="si-stat-num">{{ formatSizeShort(fileData()!.size) }}</div>
+            <div class="si-stat-sub">{{ formatSizeFull(fileData()!.size) }}</div>
           </div>
-          <div class="actions">
-            <p-button 
-              label="Скачать файл" 
-              icon="pi pi-download" 
-              (onClick)="downloadFile()"
-              [loading]="loading()">
-            </p-button>
+          <div class="si-stat">
+            <div class="si-stat-label">Тип файла</div>
+            <div class="si-stat-num si-stat-num-sm">{{ getFileType(fileData()!.mimeType) }}</div>
+            <div class="si-stat-sub">{{ fileData()!.mimeType }}</div>
+          </div>
+          <div class="si-stat">
+            <div class="si-stat-label">Загружен</div>
+            <div class="si-stat-num si-stat-num-sm">{{ fileData()!.createdAt | date:'dd MMM' }}</div>
+            <div class="si-stat-sub">{{ fileData()!.createdAt | date:'yyyy, HH:mm' }}</div>
           </div>
         </div>
-      </p-card>
-    }
-  </div>
+
+        <button class="si-download-btn" (click)="downloadFile()">
+          <i class="pi pi-download"></i>
+          Скачать файл
+        </button>
+
+      </div>
+    </div>
+  }
+
 </div>
