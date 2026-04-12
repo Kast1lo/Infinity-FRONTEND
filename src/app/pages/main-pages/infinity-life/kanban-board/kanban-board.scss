@@ -14,6 +14,7 @@
   --radius-lg: 16px;
 }
 
+/* ─── BOARD ─── */
 .kanban-board {
   display: flex;
   margin: 10px;
@@ -23,7 +24,6 @@
   background: var(--bg2);
   border: 1px solid var(--border);
   overflow-y: hidden;
-
   background-image: radial-gradient(circle, rgba(255,255,255,.035) 1px, transparent 1px);
   background-size: 28px 28px;
 }
@@ -42,9 +42,7 @@
   align-items: center;
   gap: 16px;
 
-  i {
-    color: var(--text3);
-  }
+  i { color: var(--text3); }
 
   h2 {
     font-family: 'Syne', sans-serif;
@@ -63,7 +61,7 @@
   }
 }
 
-
+/* ─── COLUMNS ─── */
 .columns {
   display: flex;
   gap: 12px;
@@ -74,16 +72,12 @@
   scrollbar-width: thin;
   scrollbar-color: rgba(255,255,255,.1) transparent;
 
-  &::-webkit-scrollbar {
-    height: 5px;
-  }
+  &::-webkit-scrollbar { height: 5px; }
   &::-webkit-scrollbar-thumb {
     background: rgba(255,255,255,.12);
     border-radius: 10px;
   }
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
+  &::-webkit-scrollbar-track { background: transparent; }
 }
 
 .column {
@@ -101,11 +95,8 @@
   overflow: hidden;
   transition: border-color .2s;
 
-  &:hover {
-    border-color: var(--border2);
-  }
+  &:hover { border-color: var(--border2); }
 }
-
 
 .work-with-column {
   display: flex;
@@ -128,7 +119,6 @@
   margin: 0;
 }
 
-
 :host ::ng-deep .work-with-column .p-button {
   width: 26px !important;
   height: 26px !important;
@@ -144,7 +134,7 @@
   }
 }
 
-
+/* ─── TASKS ─── */
 .tasks {
   display: flex;
   flex-direction: column;
@@ -161,7 +151,6 @@
   }
 }
 
-
 .tasks-card {
   display: flex;
   gap: 8px;
@@ -169,17 +158,11 @@
   margin: 4px 0;
 }
 
-
 :host ::ng-deep .tasks-card p-checkbox {
   flex-shrink: 0;
   align-self: center;
 
-
-  .p-checkbox {
-    width: 16px !important;
-    height: 16px !important;
-  }
-
+  .p-checkbox { width: 16px !important; height: 16px !important; }
 
   .p-checkbox-box {
     width: 16px !important;
@@ -190,11 +173,7 @@
     transition: border-color .2s, background .2s !important;
   }
 
-
-  &:hover .p-checkbox-box {
-    border-color: rgba(255,255,255,.55) !important;
-  }
-
+  &:hover .p-checkbox-box { border-color: rgba(255,255,255,.55) !important; }
 
   .p-checkbox.p-checkbox-checked .p-checkbox-box,
   .p-checkbox[data-p-checked="true"] .p-checkbox-box {
@@ -202,14 +181,12 @@
     border-color: rgba(255,255,255,.45) !important;
   }
 
-
   .p-checkbox-icon {
     color: var(--text) !important;
     font-size: 10px !important;
     stroke: var(--text) !important;
   }
 }
-
 
 :host ::ng-deep .tasks-card .p-card {
   flex: 1;
@@ -256,7 +233,6 @@
   min-width: 0;
 }
 
-/* кнопка корзины в задаче */
 :host ::ng-deep .info-task .p-button {
   width: 24px !important;
   height: 24px !important;
@@ -270,9 +246,7 @@
   transition: opacity .15s, color .15s, background .15s !important;
 }
 
-:host ::ng-deep .tasks-card:hover .info-task .p-button {
-  opacity: 1 !important;
-}
+:host ::ng-deep .tasks-card:hover .info-task .p-button { opacity: 1 !important; }
 
 :host ::ng-deep .info-task .p-button:hover {
   color: #e05555 !important;
@@ -297,11 +271,10 @@
     background: rgba(255,255,255,.04) !important;
   }
 
-  .p-button-icon {
-    font-size: 12px !important;
-  }
+  .p-button-icon { font-size: 12px !important; }
 }
 
+/* ─── ADD COLUMN ─── */
 .add-column-card {
   min-width: 260px;
   max-width: 260px;
@@ -328,14 +301,10 @@
   color: var(--text3);
   transition: color .2s;
 
-  .add-column-card:hover & {
-    color: var(--text2);
-  }
+  .add-column-card:hover & { color: var(--text2); }
 }
 
-:host ::ng-deep .add-column-card .p-inplace {
-  width: 100%;
-}
+:host ::ng-deep .add-column-card .p-inplace { width: 100%; }
 
 :host ::ng-deep .add-column-card .p-inplace-display {
   padding: 0 !important;
@@ -346,15 +315,10 @@
   align-items: center !important;
   gap: 8px !important;
 
-  &:hover {
-    background: transparent !important;
-    color: var(--text2) !important;
-  }
+  &:hover { background: transparent !important; color: var(--text2) !important; }
 }
 
-:host ::ng-deep .add-column-card .p-inplace-content {
-  width: 100%;
-}
+:host ::ng-deep .add-column-card .p-inplace-content { width: 100%; }
 
 :host ::ng-deep .add-column-card .p-inputtext {
   width: 100%;
@@ -388,13 +352,8 @@
     background: rgba(255,255,255,.08) !important;
     border: 1px solid rgba(255,255,255,.12) !important;
 
-    &:hover {
-      background: rgba(255,255,255,.14) !important;
-    }
-
-    &:disabled {
-      opacity: .3 !important;
-    }
+    &:hover { background: rgba(255,255,255,.14) !important; }
+    &:disabled { opacity: .3 !important; }
   }
 
   &.p-button-text {
@@ -409,6 +368,7 @@
   }
 }
 
+/* ─── ДИАЛОГИ ─── */
 :host ::ng-deep .p-dialog {
   background: var(--bg2) !important;
   border: 1px solid var(--border) !important;
@@ -419,11 +379,11 @@
     background: var(--bg2) !important;
     border-bottom: 1px solid var(--border) !important;
     border-radius: var(--radius-lg) var(--radius-lg) 0 0 !important;
-    padding: 20px 24px !important;
+    padding: 18px 24px !important;
 
     .p-dialog-title {
       font-family: 'Syne', sans-serif !important;
-      font-size: 16px !important;
+      font-size: 15px !important;
       font-weight: 700 !important;
       color: var(--text) !important;
       letter-spacing: -.3px !important;
@@ -441,17 +401,18 @@
 
   .p-dialog-content {
     background: var(--bg2) !important;
-    padding: 24px 24px 8px !important;
+    padding: 20px 24px 8px !important;
   }
 
   .p-dialog-footer {
     background: var(--bg2) !important;
     border-top: 1px solid var(--border) !important;
     border-radius: 0 0 var(--radius-lg) var(--radius-lg) !important;
-    padding: 16px 24px !important;
+    padding: 12px 24px 24px !important;
     display: flex !important;
     justify-content: flex-end !important;
     gap: 8px !important;
+    margin-top: 15px;
   }
 }
 
@@ -460,7 +421,42 @@
   backdrop-filter: blur(4px) !important;
 }
 
-/* инпуты в диалогах */
+/* ─── ПОЛЯ В ДИАЛОГАХ ─── */
+
+/* контейнер формы создания задачи */
+.tasks-create {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* каждое поле — лейбл + инпут */
+.name-task,
+.priority,
+:host ::ng-deep .p-dialog .field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin: 0;
+}
+
+/* убираем старые margin */
+.name-task   { margin-bottom: 0 !important; }
+.priority    { margin-bottom: 0 !important; }
+.input-name  { margin-top: 0 !important; }
+
+/* лейблы */
+:host ::ng-deep .p-dialog label,
+:host ::ng-deep .p-dialog .font-medium {
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  color: var(--text2) !important;
+  font-family: 'DM Sans', sans-serif !important;
+  letter-spacing: .2px !important;
+  text-transform: uppercase !important;
+}
+
+/* инпуты */
 :host ::ng-deep .p-dialog .p-inputtext,
 :host ::ng-deep .p-dialog textarea {
   background: var(--bg3) !important;
@@ -478,6 +474,7 @@
   &::placeholder { color: var(--text3) !important; }
 }
 
+/* select приоритета */
 :host ::ng-deep .p-dialog .p-select {
   background: var(--bg3) !important;
   border: 1px solid var(--border2) !important;
@@ -490,10 +487,10 @@
   .p-select-dropdown { color: var(--text3) !important; }
 }
 
-/* кнопки в футере диалогов */
+/* кнопки в футере */
 :host ::ng-deep .p-dialog-footer .p-button {
   border-radius: var(--radius-sm) !important;
-  font-size: 14px !important;
+  font-size: 13px !important;
 
   &.p-button-text,
   &[severity="secondary"][text] {
@@ -512,14 +509,12 @@
     background: rgba(255,255,255,.08) !important;
     border: 1px solid rgba(255,255,255,.14) !important;
 
-    &:hover:not(:disabled) {
-      background: rgba(255,255,255,.14) !important;
-    }
-
+    &:hover:not(:disabled) { background: rgba(255,255,255,.14) !important; }
     &:disabled { opacity: .3 !important; }
   }
 }
 
+/* ─── ДЕТАЛИ ЗАДАЧИ ─── */
 .task-detail {
   display: flex;
   flex-direction: column;
@@ -534,7 +529,7 @@
 
   h2 {
     font-family: 'Syne', sans-serif;
-    font-size: 18px;
+    font-size: 17px;
     font-weight: 700;
     color: var(--text);
     letter-spacing: -.3px;
@@ -542,14 +537,12 @@
   }
 }
 
-.progress-bar {
-  margin-top: 8px;
-}
+.progress-bar { margin-top: 4px; }
 
 :host ::ng-deep .progress-bar .p-progressbar {
   background: var(--bg3) !important;
   border-radius: 100px !important;
-  height: 6px !important;
+  height: 5px !important;
 
   .p-progressbar-value {
     background: rgba(255,255,255,.35) !important;
@@ -559,9 +552,7 @@
   .p-progressbar-label { display: none !important; }
 }
 
-.sub-tasks {
-  margin-top: 8px;
-}
+.sub-tasks { margin-top: 4px; }
 
 :host ::ng-deep .sub-tasks .p-inplace-display {
   font-size: 13px !important;
@@ -652,17 +643,12 @@
   &:hover { color: #e05555 !important; }
 }
 
-.subtask-item:hover ::ng-deep .p-button {
-  opacity: 1 !important;
-}
+.subtask-item:hover ::ng-deep .p-button { opacity: 1 !important; }
 
 :host ::ng-deep .subtask-item p-checkbox {
   flex-shrink: 0;
 
-  .p-checkbox {
-    width: 16px !important;
-    height: 16px !important;
-  }
+  .p-checkbox { width: 16px !important; height: 16px !important; }
 
   .p-checkbox-box {
     width: 16px !important;
@@ -673,9 +659,7 @@
     transition: border-color .2s, background .2s !important;
   }
 
-  &:hover .p-checkbox-box {
-    border-color: rgba(255,255,255,.55) !important;
-  }
+  &:hover .p-checkbox-box { border-color: rgba(255,255,255,.55) !important; }
 
   .p-checkbox.p-checkbox-checked .p-checkbox-box,
   .p-checkbox[data-p-checked="true"] .p-checkbox-box {
@@ -690,16 +674,7 @@
   }
 }
 
-.name-task    { margin-bottom: 10px; }
-.priority     { margin-bottom: 18px; }
-.input-name   { margin-top: 15px; }
-
-.tasks-create {
-  display: flex;
-  flex-direction: column;
-}
-
-
+/* ─── MENU ─── */
 :host ::ng-deep .p-menu {
   background: var(--bg3) !important;
   border: 1px solid var(--border2) !important;
