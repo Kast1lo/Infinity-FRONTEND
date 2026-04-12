@@ -66,6 +66,18 @@ export class FileSystem {
     this.loadFiles(folderId);
   }
 
+  async fetchFileAsArrayBuffer(fileId: string): Promise<ArrayBuffer> {
+    const response = await fetch(
+      `${this.apiUrl}/proxy/${fileId}`,
+      { 
+        method: 'GET',
+        credentials: 'include' 
+      }
+    );
+    if (!response.ok) throw new Error(`Ошибка загрузки: ${response.status}`);
+    return response.arrayBuffer();
+  }
+
   goBack() {
     this._pathStack.update(stack => {
       if (stack.length > 0) {

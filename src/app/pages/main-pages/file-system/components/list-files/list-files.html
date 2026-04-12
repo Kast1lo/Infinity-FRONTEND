@@ -3,6 +3,7 @@
      (dragover)="onDragOver($event)"
      (dragleave)="onDragLeave($event)"
      (drop)="onDrop($event)">
+
   @if (isDragging()) {
     <div class="drop-overlay">
       <div class="drop-overlay-inner">
@@ -11,186 +12,305 @@
       </div>
     </div>
   }
-    @if (breadcrumbModel().length > 0) {
+
+  <p-scrollPanel [style]="{ width: '167vh', height: '83.5vh'}">
+    @if (loading()) {
+      <div class="progress-spin">
+        <p-progressSpinner></p-progressSpinner>
+      </div>
+    } @else {
+
+      @if (fileSystem.currentFolderId()) {
         <div class="fs-breadcrumbs">
-            <p-breadcrumb
-                [model]="breadcrumbModel()"
-                [home]="homeItem"
-                styleClass="fs-breadcrumb-bar"
-            />
+          <p-breadcrumb [model]="breadcrumbModel()" [home]="homeItem" styleClass="fs-breadcrumb-bar"/>
         </div>
+      }
+
+      @if (folders().length > 0) {
+        <div class="folder-grid">
+          @if (fileSystem.currentFolderId()) {
+            <p-button label="назад" icon="pi pi-arrow-left" (onClick)="goBack()"/>
+          }
+          @for (folder of folders(); track folder.id) {
+            @if (folder.parentId === fileSystem.currentFolderId()) {
+              <p-card (click)="selectFolder(folder)" (dblclick)="openFolder(folder)">
+                <div class="folder-card" [class.selected]="selectedItem()?.id === folder.id">
+                  <div class="info-folder">
+                    <i class="pi pi-folder"></i>
+                    <div class="folder-name">{{ folder.name }}</div>
+                  </div>
+                  <div>
+                    <p-button icon="pi pi-ellipsis-v" [text]="true" [outlined]="true"
+                      (click)="selectFolder(folder); folderMenu.toggle($event); $event.stopPropagation()"/>
+                    <p-tieredmenu #folderMenu [model]="items()" [popup]="true" appendTo="body"/>
+                  </div>
+                </div>
+              </p-card>
+            }
+          }
+        </div>
+        <hr style="border: 0; border-top: 1px solid #e0e0e068; width: 97%; margin: 0 auto; margin-top: 20px;">
+      }
     }
 
-    <p-scrollPanel [style]="{ width: '167vh', height: '83.5vh'}">
-        @if (loading()) {
-            <div class="progress-spin">
-                <p-progressSpinner></p-progressSpinner>
-            </div>
-        } @else {
-            @if (folders().length > 0) {
-            <div class="folder-grid">
-                @if (fileSystem.currentFolderId()) {
-                    <p-button 
-                    label="назад"
-                    icon="pi pi-arrow-left" 
-                    (onClick)="goBack()"
-                    />
-                } 
-                @for (folder of folders(); track folder.id) {
-                    @if (folder.parentId === fileSystem.currentFolderId()) {
-                        <p-card
-                            (click)="selectFolder(folder)"
-                            (dblclick)="openFolder(folder)">
-                            <div class="folder-card" [class.selected]="selectedItem()?.id === folder.id">
-                                <div class="info-folder">
-                                    <i class="pi pi-folder" style="font-size: 1.2rem; color: var(--primary-color); margin-top: 2.5px;"></i>
-                                    <div class="folder-name">{{ folder.name }}</div>
-                                </div>
-                                <div>
-                                    <p-button icon="pi pi-ellipsis-v" [text]="true" [outlined]="true"
-                                        (click)="selectFolder(folder); folderMenu.toggle($event); $event.stopPropagation()"/>
-                                    <p-tieredmenu #folderMenu [model]="items()" [popup]="true" appendTo="body"/>
-                                </div>
-                            </div>
-                        </p-card>
-                    }
+    @if (loading()) {
+    } @else if (files().length === 0) {
+    } @else {
+      <div class="file-grid">
+        @for (file of files(); track file.id) {
+          <p-card (click)="selectFile(file)">
+            <div class="file-card" [class.selected]="selectedItem()?.id === file.id">
+
+              @if (isImage(file)) {
+                <div class="file-info">
+                  <div class="file-name">{{ file.name | decodeURIComponent }}</div>
+                  <div class="menu-container">
+                    <p-button icon="pi pi-ellipsis-v" [text]="true" [outlined]="true"
+                      (click)="selectFile(file); fileMenu.toggle($event); $event.stopPropagation()"/>
+                    <p-tieredmenu #fileMenu [model]="items()" [popup]="true" appendTo="body"/>
+                  </div>
+                </div>
+                <div class="preview" (click)="openImagePreview(file); $event.stopPropagation()">
+                  <img [src]="file.downloadUrl" loading="lazy" class="preview-img" [alt]="file.name"/>
+                </div>
+
+              } @else if (isVideo(file)) {
+                <div class="file-info">
+                  <div class="file-name">{{ file.name | decodeURIComponent }}</div>
+                  <div class="menu-container">
+                    <p-button icon="pi pi-ellipsis-v" [text]="true" [outlined]="true"
+                      (click)="selectFile(file); fileMenu.toggle($event); $event.stopPropagation()"/>
+                    <p-tieredmenu #fileMenu [model]="items()" [popup]="true" appendTo="body"/>
+                  </div>
+                </div>
+                <div class="preview preview-video" (click)="openVideo(file); $event.stopPropagation()">
+                  <div class="video-thumb">
+                    <video class="video-thumb-frame" [src]="file.downloadUrl + '#t=0.1'"
+                      preload="metadata" muted playsinline disablePictureInPicture></video>
+                    <div class="video-play-overlay">
+                      <div class="video-play-btn"><i class="pi pi-play"></i></div>
+                    </div>
+                  </div>
+                </div>
+
+              } @else if (isPdf(file)) {
+                <div class="file-info">
+                  <div class="file-name">{{ file.name | decodeURIComponent }}</div>
+                  <div class="menu-container">
+                    <p-button icon="pi pi-ellipsis-v" [text]="true" [outlined]="true"
+                      (click)="selectFile(file); fileMenu.toggle($event); $event.stopPropagation()"/>
+                    <p-tieredmenu #fileMenu [model]="items()" [popup]="true" appendTo="body"/>
+                  </div>
+                </div>
+                <div class="preview preview-doc preview-pdf" (click)="openPdf(file); $event.stopPropagation()">
+                  <i class="pi pi-file-pdf"></i>
+                  <span class="doc-open-hint">Нажмите для просмотра</span>
+                </div>
+
+              } @else if (isZip(file)) {
+                <div class="file-info">
+                  <div class="file-name">{{ file.name | decodeURIComponent }}</div>
+                  <div class="menu-container">
+                    <p-button icon="pi pi-ellipsis-v" [text]="true" [outlined]="true"
+                      (click)="selectFile(file); fileMenu.toggle($event); $event.stopPropagation()"/>
+                    <p-tieredmenu #fileMenu [model]="items()" [popup]="true" appendTo="body"/>
+                  </div>
+                </div>
+                <div class="preview preview-doc preview-zip" (click)="openZip(file); $event.stopPropagation()">
+                  <i class="pi pi-box"></i>
+                  <span class="doc-open-hint">Нажмите для просмотра</span>
+                </div>
+
+              } @else {
+                <div class="file-info">
+                  <div class="file-name">{{ file.name | decodeURIComponent }}</div>
+                  <div class="menu-container">
+                    <p-button icon="pi pi-ellipsis-v" [text]="true" [outlined]="true"
+                      (click)="selectFile(file); fileMenu.toggle($event); $event.stopPropagation()"/>
+                    <p-tieredmenu #fileMenu [model]="items()" [popup]="true" appendTo="body"/>
+                  </div>
+                </div>
+                @if (isDocument(file)) {
+                  <div class="preview preview-doc" (click)="openDocument(file); $event.stopPropagation()">
+                    <i [class]="'pi ' + getFileIcon(file.mimeType)"></i>
+                    <span class="doc-open-hint">Нажмите для просмотра</span>
+                  </div>
+                } @else {
+                  <div class="preview">
+                    <i [class]="'pi ' + getFileIcon(file.mimeType)" style="font-size: 11rem;"></i>
+                  </div>
                 }
+              }
+
             </div>
-            <hr style="border: 0; border-top: 1px solid #e0e0e068; width: 97%; margin: 0 auto; margin-top: 20px;">
-            }
+          </p-card>
         }
-        @if (loading()) {
-        } @else if (files().length === 0) {
-        } @else {
-            <div class="file-grid">
-                @for (file of files(); track file.id) {
-                    <p-card (click)="selectFile(file)">
-                        <div class="file-card" [class.selected]="selectedItem()?.id === file.id">
-
-                            @if (isImage(file)) {
-                                <div class="file-info">
-                                    <div class="file-name">{{ file.name | decodeURIComponent }}</div>
-                                    <div class="menu-container">
-                                        <p-button icon="pi pi-ellipsis-v" [text]="true" [outlined]="true" (click)="selectFile(file); fileMenu.toggle($event); $event.stopPropagation()"/>
-                                        <p-tieredmenu #fileMenu [model]="items()" [popup]="true" appendTo="body"/>
-                                    </div>
-                                </div>
-                                <div class="preview">
-                                    <p-image [src]="file.downloadUrl" class="preview-image" loading="lazy" [preview]="true"/>
-                                </div>
-
-                            } @else if (isVideo(file)) {
-                                <div class="file-info">
-                                    <div class="file-name">{{ file.name | decodeURIComponent }}</div>
-                                    <div class="menu-container">
-                                        <p-button icon="pi pi-ellipsis-v" [text]="true" [outlined]="true" (click)="selectFile(file); fileMenu.toggle($event); $event.stopPropagation()"/>
-                                        <p-tieredmenu #fileMenu [model]="items()" [popup]="true" appendTo="body"/>
-                                    </div>
-                                </div>
-                                <div class="preview preview-video" (click)="openVideo(file); $event.stopPropagation()">
-                                    <div class="video-thumb">
-                                        <video
-                                            class="video-thumb-frame"
-                                            [src]="file.downloadUrl + '#t=0.1'"
-                                            preload="metadata"
-                                            muted
-                                            playsinline
-                                            disablePictureInPicture
-                                        ></video>
-                                        <div class="video-play-overlay">
-                                            <div class="video-play-btn">
-                                                <i class="pi pi-play"></i>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                            } @else {
-                                <div class="file-info">
-                                    <div class="file-name">{{ file.name | decodeURIComponent }}</div>
-                                    <div class="menu-container">
-                                        <p-button icon="pi pi-ellipsis-v" [text]="true" [outlined]="true" (click)="selectFile(file); fileMenu.toggle($event); $event.stopPropagation()"/>
-                                        <p-tieredmenu #fileMenu [model]="items()" [popup]="true" appendTo="body"/>
-                                    </div>
-                                </div>
-                                <div class="preview">
-                                    <i [class]="'pi ' + getFileIcon(file.mimeType)" style="font-size: 11rem;"></i>
-                                </div>
-                            }
-
-                        </div>
-                    </p-card>
-                }
-            </div>
-        }
-    </p-scrollPanel>
+      </div>
+    }
+  </p-scrollPanel>
 </div>
 
-<p-dialog
-    [(visible)]="videoDialogVisible"
-    [modal]="true"
-    [closable]="false"
-    [draggable]="false"
-    [resizable]="false"
-    [style]="{ width: '900px', maxWidth: '96vw' }"
-    styleClass="video-dialog"
-    (onHide)="closeVideo()"
->
-    <ng-template pTemplate="header"><span></span></ng-template>
-
-    <div class="vp-root"
-         (mousemove)="onPlayerMouseMove()"
-         (mouseleave)="onPlayerMouseLeave()">
-
-        @if (videoUrl) {
-            <video
-                #videoPlayer
-                class="vp-video"
-                [src]="videoUrl"
-                preload="metadata"
-                playsinline
-                (timeupdate)="onTimeUpdate()"
-                (loadedmetadata)="onMetaLoaded()"
-                (ended)="onEnded()"
-                (click)="togglePlay()"
-            ></video>
-
-            <div class="vp-center-btn"
-                 [class.vp-hidden]="isPlaying && controlsHidden"
-                 (click)="togglePlay()">
-                <div class="vp-center-icon">
-                    <i [class]="isPlaying ? 'pi pi-pause' : 'pi pi-play'"
-                       [style.margin-left]="isPlaying ? '0' : '3px'"></i>
-                </div>
+<!-- ─── ВИДЕО ПЛЕЕР ─── -->
+<p-dialog [(visible)]="videoDialogVisible" [modal]="true" [closable]="false" [draggable]="false"
+    [resizable]="false" [style]="{ width: '900px', maxWidth: '96vw' }" styleClass="video-dialog" (onHide)="closeVideo()">
+  <ng-template pTemplate="header"><span></span></ng-template>
+  <div class="vp-root" (mousemove)="onPlayerMouseMove()" (mouseleave)="onPlayerMouseLeave()">
+    @if (videoUrl) {
+      <video #videoPlayer class="vp-video" [src]="videoUrl" preload="metadata" playsinline
+        (loadedmetadata)="onMetaLoaded()" (ended)="onEnded()" (click)="togglePlay()"></video>
+      <div class="vp-center-btn" [class.vp-hidden]="isPlaying && controlsHidden" (click)="togglePlay()">
+        <div class="vp-center-icon">
+          <i [class]="isPlaying ? 'pi pi-pause' : 'pi pi-play'"></i>
+        </div>
+      </div>
+      <div class="vp-controls" [class.vp-hidden]="isPlaying && controlsHidden">
+        <div class="vp-progress" (click)="seek($event)">
+          <div class="vp-progress-bg"></div>
+          <div class="vp-progress-fill" [style.width.%]="progress"></div>
+          <div class="vp-progress-thumb" [style.left.%]="progress"></div>
+        </div>
+        <div class="vp-bar">
+          <div class="vp-bar-left">
+            <button class="vp-btn" (click)="togglePlay()"><i [class]="isPlaying ? 'pi pi-pause' : 'pi pi-play'"></i></button>
+            <button class="vp-btn" (click)="toggleMute()"><i [class]="isMuted ? 'pi pi-volume-off' : 'pi pi-volume-up'"></i></button>
+            <div class="vp-volume-wrap">
+              <input class="vp-volume" type="range" min="0" max="1" step="0.05" [value]="volume" (input)="onVolumeChange($event)"/>
             </div>
+            <span class="vp-time">{{ currentTimeStr }} / {{ durationStr }}</span>
+          </div>
+          <div class="vp-bar-center"><span class="vp-title">{{ videoTitle }}</span></div>
+          <div class="vp-bar-right">
+            <button class="vp-btn" (click)="toggleFullscreen()"><i class="pi pi-window-maximize"></i></button>
+            <div class="vp-divider"></div>
+            <button class="vp-btn" (click)="closeVideo()"><i class="pi pi-times"></i></button>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</p-dialog>
 
-            <div class="vp-controls" [class.vp-hidden]="isPlaying && controlsHidden">
-                <div class="vp-progress" (click)="seek($event)">
-                    <div class="vp-progress-bg"></div>
-                    <div class="vp-progress-fill" [style.width.%]="progress"></div>
-                    <div class="vp-progress-thumb" [style.left.%]="progress"></div>
-                </div>
-                <div class="vp-bar">
-                    <div class="vp-bar-left">
-                        <p-button [icon]="isPlaying ? 'pi pi-pause' : 'pi pi-play'" [text]="true" severity="secondary" (onClick)="togglePlay()"/>
-                        <p-button [icon]="isMuted ? 'pi pi-volume-off' : 'pi pi-volume-up'" [text]="true" severity="secondary" (onClick)="toggleMute()"/>
-                        <div class="vp-volume-wrap">
-                            <input class="vp-volume" type="range" min="0" max="1" step="0.05" [value]="volume" (input)="onVolumeChange($event)"/>
-                        </div>
-                        <span class="vp-time">{{ currentTimeStr }} / {{ durationStr }}</span>
-                    </div>
-                    <div class="vp-bar-center">
-                        <span class="vp-title">{{ videoTitle }}</span>
-                    </div>
-                    <div class="vp-bar-right">
-                        <p-button icon="pi pi-window-maximize" [text]="true" severity="secondary" (onClick)="toggleFullscreen()"/>
-                        <div class="vp-divider"></div>
-                        <p-button icon="pi pi-times" [text]="true" severity="secondary" (onClick)="closeVideo()"/>
-                    </div>
-                </div>
-            </div>
-        }
+<!-- ─── ПРЕВЬЮ ИЗОБРАЖЕНИЙ ─── -->
+<p-dialog [(visible)]="imagePreviewVisible" [modal]="true" [closable]="false" [draggable]="false"
+    [resizable]="false" [style]="{ width: '90vw', maxWidth: '1200px' }" styleClass="image-preview-dialog" (onHide)="closeImagePreview()">
+  <ng-template pTemplate="header"><span></span></ng-template>
+  <div class="img-preview-root">
+    <div class="img-preview-header">
+      <span class="img-preview-title">{{ imagePreviewTitle }}</span>
+      <p-button icon="pi pi-times" [text]="true" severity="secondary" (onClick)="closeImagePreview()"/>
     </div>
+    <div class="img-preview-body">
+      @if (imagePreviewUrl) {
+        <img [src]="imagePreviewUrl" class="img-preview-full" [alt]="imagePreviewTitle"/>
+      }
+    </div>
+  </div>
+</p-dialog>
+
+<!-- ─── ПРОСМОТР ДОКУМЕНТОВ ─── -->
+<p-dialog [(visible)]="docDialogVisible" [modal]="true" [closable]="false" [draggable]="false"
+    [resizable]="false" [style]="{ width: '900px', maxWidth: '96vw', height: '85vh' }" styleClass="doc-dialog" (onHide)="closeDocument()">
+  <ng-template pTemplate="header"><span></span></ng-template>
+  <div class="doc-viewer">
+    <div class="doc-header">
+      <div class="doc-header-left">
+        <i [class]="'pi ' + getFileIcon(docType === 'word' ? 'application/msword' : docType === 'excel' ? 'application/vnd.ms-excel' : 'application/vnd.ms-powerpoint')"></i>
+        <span class="doc-title">{{ docTitle }}</span>
+      </div>
+      <p-button icon="pi pi-times" [text]="true" severity="secondary" (onClick)="closeDocument()"/>
+    </div>
+    <div class="doc-content">
+      @if (docLoading) {
+        <div class="doc-loading">
+          <p-progressSpinner strokeWidth="3"/>
+          <span>Загрузка документа...</span>
+        </div>
+      } @else {
+        <div class="doc-body" [innerHTML]="getSafeHtml(docHtml())"></div>
+      }
+    </div>
+  </div>
+</p-dialog>
+
+<!-- ─── ПРОСМОТР PDF ─── -->
+<p-dialog [(visible)]="pdfDialogVisible" [modal]="true" [closable]="false" [draggable]="false"
+    [resizable]="false" [style]="{ width: '900px', maxWidth: '96vw', height: '90vh' }" styleClass="doc-dialog" (onHide)="closePdf()">
+  <ng-template pTemplate="header"><span></span></ng-template>
+  <div class="doc-viewer">
+    <div class="doc-header">
+      <div class="doc-header-left">
+        <i class="pi pi-file-pdf" style="color: #e74c3c !important;"></i>
+        <span class="doc-title">{{ pdfTitle }}</span>
+      </div>
+      <p-button icon="pi pi-times" [text]="true" severity="secondary" (onClick)="closePdf()"/>
+    </div>
+    <div class="doc-content pdf-content">
+      @if (pdfLoading) {
+        <div class="doc-loading">
+          <p-progressSpinner strokeWidth="3"/>
+          <span>Загрузка PDF...</span>
+        </div>
+      } @else if (pdfPages().length === 0) {
+        <div class="doc-error">
+          <i class="pi pi-exclamation-circle"></i>
+          <p>Не удалось загрузить PDF</p>
+        </div>
+      } @else {
+        <div class="pdf-pages">
+          @for (page of pdfPages(); track $index) {
+            <img [src]="page" class="pdf-page" [alt]="'Страница ' + ($index + 1)"/>
+          }
+        </div>
+      }
+    </div>
+  </div>
+</p-dialog>
+
+<!-- ─── ПРОСМОТР ZIP ─── -->
+<p-dialog [(visible)]="zipDialogVisible" [modal]="true" [closable]="false" [draggable]="false"
+    [resizable]="false" [style]="{ width: '700px', maxWidth: '96vw', height: '85vh' }" styleClass="doc-dialog" (onHide)="closeZip()">
+  <ng-template pTemplate="header"><span></span></ng-template>
+  <div class="doc-viewer">
+    <div class="doc-header">
+      <div class="doc-header-left">
+        <i class="pi pi-box" style="color: #f39c12 !important;"></i>
+        <span class="doc-title">{{ zipTitle }}</span>
+      </div>
+      <p-button icon="pi pi-times" [text]="true" severity="secondary" (onClick)="closeZip()"/>
+    </div>
+    <div class="doc-content zip-content">
+      @if (zipLoading) {
+        <div class="doc-loading">
+          <p-progressSpinner strokeWidth="3"/>
+          <span>Загрузка архива...</span>
+        </div>
+      } @else if (zipEntries().length === 0) {
+        <div class="doc-error">
+          <i class="pi pi-exclamation-circle"></i>
+          <p>Не удалось открыть архив или архив пуст</p>
+        </div>
+      } @else {
+        <div class="zip-tree">
+          @for (entry of zipEntries(); track entry.path) {
+            <div class="zip-entry" [style.padding-left.px]="16 + entry.depth * 20">
+              <div class="zip-entry-left">
+                <i [class]="'pi ' + getZipIcon(entry)" [class.zip-icon-folder]="entry.isDir" [class.zip-icon-file]="!entry.isDir"></i>
+                <span class="zip-entry-name">{{ entry.name }}</span>
+              </div>
+              <div class="zip-entry-right">
+                @if (!entry.isDir) {
+                  <span class="zip-entry-size">{{ formatZipSize(entry.size) }}</span>
+                  <button class="zip-download-btn" (click)="downloadZipEntry(entry)" title="Скачать">
+                    <i class="pi pi-download"></i>
+                  </button>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
 </p-dialog>
 
 <p-toast position="bottom-right" key="br"></p-toast>

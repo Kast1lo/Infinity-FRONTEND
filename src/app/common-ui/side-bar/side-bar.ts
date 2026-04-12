@@ -4,31 +4,33 @@ import { AuthService } from '../../services/auth';
 import { AvatarModule } from 'primeng/avatar';
 import { AvatarGroupModule } from 'primeng/avatargroup';
 import { ButtonModule } from 'primeng/button';
-import { RouterLink } from "@angular/router";
-import { UserProfile } from '../../interfaces/profile-interfaces/user-profile.model';
-
+import { RouterLink, RouterLinkActive } from '@angular/router';
+import { TooltipModule } from 'primeng/tooltip';
 
 @Component({
   selector: 'app-side-bar',
-  imports: [AvatarModule,
-    AvatarGroupModule, ButtonModule, RouterLink],
+  imports: [
+    AvatarModule,
+    AvatarGroupModule,
+    ButtonModule,
+    RouterLink,
+    RouterLinkActive,
+    TooltipModule,
+  ],
   templateUrl: './side-bar.html',
   styleUrl: './side-bar.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SideBar {
-  public authService = inject(AuthService)
-  public userService = inject(UserService)
+  public authService = inject(AuthService);
+  public userService = inject(UserService);
 
   profile = this.userService.profile;
   isLoading = this.userService.isLoading;
   error = this.userService.error;
-  placeholderUrl = 'infinityLogo.svg';
+
   avatarUrl = computed(() => {
     const profile = this.profile();
     return profile?.avatarUrl || '';
   });
-  logout(){
-    this.authService.logout();
-  }
 }

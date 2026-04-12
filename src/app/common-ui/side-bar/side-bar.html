@@ -1,19 +1,61 @@
 <aside class="fone-side-bar">
-    <div class="up-link">
-        <p-avatar
+
+  <!-- ─── ВЕРХ: аватар ─── -->
+  <div class="sb-top">
+    <div class="sb-avatar-wrap" routerLink="/profile">
+      <p-avatar
         [image]="avatarUrl()"
-        class="mr-2" 
         size="large"
         shape="circle"
-        routerLink="/profile"/>
-        <div class="router">
-            <p-button routerLink="/infinity-life" icon="pi pi-objects-column" [outlined]="true" [text]="true" size="large" severity="secondary"/>
-            <p-button routerLink="/file-system" icon="pi pi-file" [outlined]="true" [text]="true" size="large" severity="secondary"/>
-        </div>
+        class="sb-avatar"/>
     </div>
-    <div class="bottom-link">
-        <p-button class="setting" routerLink="/edit"  icon="pi pi-cog" class="mr2" [outlined]="true" size="large"/>
-        <hr style="border: 0; border-top: 1px solid #e0e0e068; width: 80%; margin: 0 auto; padding-bottom: 20px; margin-top: 20px;">
-        <p-button (click)="authService.logout()" routerLink="/login" icon="pi pi-sign-out" size="large"/>
+  </div>
+
+  <!-- ─── СЕРЕДИНА: навигация ─── -->
+  <nav class="sb-nav">
+
+    <!-- активные пункты -->
+    <a class="sb-item" routerLink="/profile" routerLinkActive="sb-item--active" [routerLinkActiveOptions]="{ exact: true }" pTooltip="Профиль" tooltipPosition="right">
+      <i class="pi pi-home"></i>
+    </a>
+
+    <a class="sb-item" routerLink="/infinity-life" routerLinkActive="sb-item--active" pTooltip="Kanban" tooltipPosition="right">
+      <i class="pi pi-objects-column"></i>
+    </a>
+
+    <a class="sb-item" routerLink="/file-system" routerLinkActive="sb-item--active" pTooltip="Файлы" tooltipPosition="right">
+      <i class="pi pi-folder"></i>
+    </a>
+
+    <div class="sb-divider"></div>
+
+    <!-- заглушки — скоро -->
+    <div class="sb-item sb-item--soon" pTooltip="Заметки — скоро" tooltipPosition="right">
+      <i class="pi pi-file-edit"></i>
+      <span class="sb-soon-badge">soon</span>
     </div>
+
+    <div class="sb-item sb-item--soon" pTooltip="Календарь — скоро" tooltipPosition="right">
+      <i class="pi pi-calendar"></i>
+      <span class="sb-soon-badge">soon</span>
+    </div>
+
+    <div class="sb-item sb-item--soon" pTooltip="Чат — скоро" tooltipPosition="right">
+      <i class="pi pi-comments"></i>
+      <span class="sb-soon-badge">soon</span>
+    </div>
+
+  </nav>
+
+  <!-- ─── НИЗ: настройки и выход ─── -->
+  <div class="sb-bottom">
+    <a class="sb-item" routerLink="/edit" routerLinkActive="sb-item--active" pTooltip="Настройки" tooltipPosition="right">
+      <i class="pi pi-cog"></i>
+    </a>
+    <div class="sb-divider"></div>
+    <button class="sb-item sb-item--logout" (click)="authService.logout()" pTooltip="Выйти" tooltipPosition="right">
+      <i class="pi pi-sign-out"></i>
+    </button>
+  </div>
+
 </aside>

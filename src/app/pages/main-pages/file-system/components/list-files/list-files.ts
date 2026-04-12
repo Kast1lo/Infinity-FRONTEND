@@ -9,6 +9,7 @@ import {
   ViewChild,
   ElementRef,
 } from '@angular/core';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ScrollPanelModule } from 'primeng/scrollpanel';
 import { TableModule } from 'primeng/table';
 import { FileSystem } from '../../../../../services/file-system';
@@ -27,6 +28,16 @@ import { RippleModule } from 'primeng/ripple';
 import { ImageModule } from 'primeng/image';
 import { DialogModule } from 'primeng/dialog';
 import { ShareService } from '../../../../../services/share';
+
+export interface ZipEntry {
+  name: string;
+  path: string;
+  isDir: boolean;
+  size: number;
+  depth: number;
+  expanded?: boolean;
+  children?: ZipEntry[];
+}
 
 @Component({
   selector: 'app-list-files',
@@ -56,6 +67,8 @@ export class ListFiles implements OnInit {
   protected readonly messageService = inject(MessageService);
   protected readonly fileSystem = inject(FileSystem);
   protected readonly shareService = inject(ShareService);
+  private readonly sanitizer = inject(DomSanitizer);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   files = this.fileSystem.files;
   folders = this.fileSystem.folders;
@@ -68,7 +81,32 @@ export class ListFiles implements OnInit {
   videoUrl: string | null = null;
   videoTitle = '';
 
-  // состояние плеера
+  // ─── Превью изображений ───
+  imagePreviewVisible = false;
+  imagePreviewUrl: string | null = null;
+  imagePreviewTitle = '';
+
+  // ─── Просмотрщик документов ───
+  docDialogVisible = false;
+  docTitle = '';
+  docLoading = false;
+  docHtml = signal<string>('');
+  docType: 'word' | 'excel' | 'ppt' | 'pdf' | null = null;
+
+  // ─── PDF ───
+  pdfDialogVisible = false;
+  pdfTitle = '';
+  pdfLoading = false;
+  pdfPages = signal<string[]>([]);
+
+  // ─── ZIP ───
+  zipDialogVisible = false;
+  zipTitle = '';
+  zipLoading = false;
+  zipEntries = signal<ZipEntry[]>([]);
+  private zipRef: any = null;
+
+  // ─── Плеер ───
   isPlaying = false;
   isMuted = false;
   volume = 1;
@@ -124,12 +162,31 @@ export class ListFiles implements OnInit {
         },
       ];
 
-      // Добавляем "смотреть" для видео
       if (this.isVideo(selected as FileItem)) {
         menuItems.unshift({
           label: 'смотреть',
           icon: PrimeIcons.PLAY,
           command: () => this.openVideo(selected as FileItem),
+        });
+      }
+
+      if (this.isPdf(selected as FileItem)) {
+        menuItems.unshift({
+          label: 'открыть',
+          icon: PrimeIcons.EYE,
+          command: () => this.openPdf(selected as FileItem),
+        });
+      } else if (this.isZip(selected as FileItem)) {
+        menuItems.unshift({
+          label: 'открыть',
+          icon: PrimeIcons.EYE,
+          command: () => this.openZip(selected as FileItem),
+        });
+      } else if (this.isDocument(selected as FileItem)) {
+        menuItems.unshift({
+          label: 'открыть',
+          icon: PrimeIcons.EYE,
+          command: () => this.openDocument(selected as FileItem),
         });
       }
 
@@ -160,6 +217,249 @@ export class ListFiles implements OnInit {
     return file.mimeType.startsWith('video/');
   }
 
+  isPdf(file: FileItem): boolean {
+    return file.mimeType === 'application/pdf';
+  }
+
+  isZip(file: FileItem): boolean {
+    return (
+      file.mimeType === 'application/zip' ||
+      file.mimeType === 'application/x-zip-compressed' ||
+      file.mimeType === 'application/x-zip' ||
+      file.name.toLowerCase().endsWith('.zip')
+    );
+  }
+
+  isDocument(file: FileItem): boolean {
+    const m = file.mimeType;
+    return (
+      m.includes('word') || m.includes('document') ||
+      m.includes('excel') || m.includes('spreadsheet') ||
+      m.includes('powerpoint') || m.includes('presentation') ||
+      m === 'application/vnd.ms-excel' ||
+      m === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+      m === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+      m === 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+    );
+  }
+
+  getDocType(mimeType: string): 'word' | 'excel' | 'ppt' | 'pdf' | null {
+    if (mimeType === 'application/pdf') return 'pdf';
+    if (mimeType.includes('word') || mimeType.includes('document')) return 'word';
+    if (mimeType.includes('excel') || mimeType.includes('spreadsheet')) return 'excel';
+    if (mimeType.includes('powerpoint') || mimeType.includes('presentation')) return 'ppt';
+    return null;
+  }
+
+  // ─── Превью изображений ───
+  openImagePreview(file: FileItem) {
+    this.imagePreviewUrl = file.downloadUrl;
+    this.imagePreviewTitle = decodeURIComponent(file.name);
+    this.imagePreviewVisible = true;
+  }
+
+  closeImagePreview() {
+    this.imagePreviewVisible = false;
+    this.imagePreviewUrl = null;
+    this.imagePreviewTitle = '';
+  }
+
+  // ─── PDF ───
+  async openPdf(file: FileItem) {
+    this.pdfTitle = decodeURIComponent(file.name);
+    this.pdfPages.set([]);
+    this.pdfLoading = true;
+    this.pdfDialogVisible = true;
+    this.cdr.detectChanges();
+
+    try {
+      const arrayBuffer = await this.fileSystem.fetchFileAsArrayBuffer(file.id);
+      const pdfjsLib = (window as any).pdfjsLib;
+      if (!pdfjsLib) throw new Error('pdf.js not loaded');
+
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      const pages: string[] = [];
+
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const viewport = page.getViewport({ scale: 1.5 });
+        const canvas = document.createElement('canvas');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        const ctx = canvas.getContext('2d')!;
+        await page.render({ canvasContext: ctx, viewport }).promise;
+        pages.push(canvas.toDataURL('image/png'));
+        this.pdfPages.set([...pages]);
+        this.cdr.detectChanges();
+      }
+    } catch (e) {
+      console.error('Ошибка загрузки PDF:', e);
+      this.pdfPages.set([]);
+    }
+
+    this.pdfLoading = false;
+    this.cdr.detectChanges();
+  }
+
+  closePdf() {
+    this.pdfDialogVisible = false;
+    this.pdfPages.set([]);
+    this.pdfTitle = '';
+    this.pdfLoading = false;
+  }
+
+  // ─── ZIP ───
+  async openZip(file: FileItem) {
+    this.zipTitle = decodeURIComponent(file.name);
+    this.zipEntries.set([]);
+    this.zipLoading = true;
+    this.zipDialogVisible = true;
+    this.zipRef = null;
+    this.cdr.detectChanges();
+
+    try {
+      const arrayBuffer = await this.fileSystem.fetchFileAsArrayBuffer(file.id);
+      const JSZip = (window as any).JSZip;
+      if (!JSZip) throw new Error('JSZip not loaded');
+
+      const zip = await JSZip.loadAsync(arrayBuffer);
+      this.zipRef = zip;
+
+      const entries: ZipEntry[] = [];
+
+      zip.forEach((relativePath: string, zipEntry: any) => {
+        const parts = relativePath.split('/').filter(p => p.length > 0);
+        const depth = parts.length - 1;
+        const isDir = zipEntry.dir;
+        const size = zipEntry._data?.uncompressedSize ?? 0;
+
+        entries.push({
+          name: parts[parts.length - 1] || relativePath,
+          path: relativePath,
+          isDir,
+          size,
+          depth,
+          expanded: depth === 0,
+        });
+      });
+
+      // Сортируем: папки вверху, потом файлы, по алфавиту
+      entries.sort((a, b) => {
+        if (a.depth !== b.depth) return a.depth - b.depth;
+        if (a.isDir !== b.isDir) return a.isDir ? -1 : 1;
+        return a.path.localeCompare(b.path);
+      });
+
+      this.zipEntries.set(entries);
+    } catch (e) {
+      console.error('Ошибка загрузки ZIP:', e);
+      this.zipEntries.set([]);
+    }
+
+    this.zipLoading = false;
+    this.cdr.detectChanges();
+  }
+
+  closeZip() {
+    this.zipDialogVisible = false;
+    this.zipEntries.set([]);
+    this.zipTitle = '';
+    this.zipLoading = false;
+    this.zipRef = null;
+  }
+
+  async downloadZipEntry(entry: ZipEntry) {
+    if (!this.zipRef || entry.isDir) return;
+    try {
+      const zipFile = this.zipRef.file(entry.path);
+      if (!zipFile) return;
+      const blob = await zipFile.async('blob');
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = entry.name;
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error('Ошибка извлечения файла:', e);
+    }
+  }
+
+  getZipIcon(entry: ZipEntry): string {
+    if (entry.isDir) return 'pi-folder';
+    const name = entry.name.toLowerCase();
+    if (/\.(jpg|jpeg|png|gif|webp|svg)$/.test(name)) return 'pi-image';
+    if (/\.(mp4|mov|avi|mkv|webm)$/.test(name)) return 'pi-video';
+    if (/\.(pdf)$/.test(name)) return 'pi-file-pdf';
+    if (/\.(doc|docx)$/.test(name)) return 'pi-file-word';
+    if (/\.(xls|xlsx)$/.test(name)) return 'pi-file-excel';
+    if (/\.(zip|rar|7z|tar|gz)$/.test(name)) return 'pi-box';
+    return 'pi-file';
+  }
+
+  formatZipSize(bytes: number): string {
+    if (!bytes) return '';
+    if (bytes < 1024) return `${bytes} Б`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} КБ`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} МБ`;
+  }
+
+  // ─── Документы ───
+  async openDocument(file: FileItem) {
+    this.docTitle = decodeURIComponent(file.name);
+    this.docType = this.getDocType(file.mimeType);
+    this.docHtml.set('');
+    this.docLoading = true;
+    this.docDialogVisible = true;
+    this.cdr.detectChanges();
+
+    try {
+      const arrayBuffer = await this.fileSystem.fetchFileAsArrayBuffer(file.id);
+
+      if (this.docType === 'word') {
+        const mammoth = (window as any).mammoth;
+        if (!mammoth) throw new Error('mammoth not loaded');
+        const result = await mammoth.convertToHtml({ arrayBuffer });
+        this.docHtml.set(result.value);
+
+      } else if (this.docType === 'excel') {
+        const XLSX = (window as any).XLSX;
+        if (!XLSX) throw new Error('XLSX not loaded');
+        const wb = XLSX.read(arrayBuffer, { type: 'array' });
+        let html = '';
+        wb.SheetNames.forEach((name: string) => {
+          const ws = wb.Sheets[name];
+          html += `<div class="sheet-tab">${name}</div>`;
+          html += XLSX.utils.sheet_to_html(ws, { editable: false });
+        });
+        this.docHtml.set(html);
+
+      } else if (this.docType === 'ppt') {
+        this.docHtml.set('<div class="doc-ppt-msg"><i class="pi pi-info-circle"></i><p>Предпросмотр PowerPoint ограничен.<br>Скачайте файл для полного просмотра.</p></div>');
+      }
+
+    } catch (e) {
+      console.error('Ошибка загрузки документа:', e);
+      this.docHtml.set('<div class="doc-error"><i class="pi pi-exclamation-circle"></i><p>Не удалось загрузить документ</p></div>');
+    }
+
+    this.docLoading = false;
+    this.cdr.detectChanges();
+  }
+
+  closeDocument() {
+    this.docDialogVisible = false;
+    this.docHtml.set('');
+    this.docTitle = '';
+    this.docType = null;
+    this.docLoading = false;
+  }
+
+  getSafeHtml(html: string): SafeHtml {
+    return this.sanitizer.bypassSecurityTrustHtml(html);
+  }
+
+  // ─── Видео ───
   openVideo(file: FileItem) {
     this.videoUrl = file.downloadUrl;
     this.videoTitle = decodeURIComponent(file.name);
@@ -303,6 +603,7 @@ export class ListFiles implements OnInit {
     if (mimeType.includes('word') || mimeType.includes('document')) return 'pi-file-word';
     if (mimeType.includes('excel') || mimeType.includes('spreadsheet')) return 'pi-file-excel';
     if (mimeType.startsWith('video/')) return 'pi-video';
+    if (mimeType.includes('zip')) return 'pi-box';
     return 'pi-file';
   }
 
@@ -362,10 +663,7 @@ export class ListFiles implements OnInit {
     this.fileSystem.selectItem(file);
   }
 
-
-
   selectFolder(folder: FolderItem) {
-    // Откладываем выделение чтобы двойной клик успел сработать первым
     clearTimeout(this.clickTimer);
     this.clickTimer = setTimeout(() => {
       const current = this.selectedItem();
@@ -378,7 +676,7 @@ export class ListFiles implements OnInit {
   }
 
   openFolder(folder: FolderItem) {
-    clearTimeout(this.clickTimer); // отменяем одиночный клик
+    clearTimeout(this.clickTimer);
     this.fileSystem.openFolder(folder.id);
   }
 
