@@ -1,76 +1,134 @@
 <div class="card-toolbar">
-    <div class="toolbar">
-        <p-toolbar>
-            <ng-template #start>
-                    <p-fileUpload
-                        mode="basic"
-                        name="file"
-                        chooseIcon="pi pi-cloud-upload"
-                        chooseLabel="Загрузить файл"
-                        severity="secondary"
-                        maxFileSize="100000000"
-                        [multiple]="true"
-                        [auto]="true"
-                        [customUpload]="true"
-                        (uploadHandler)="onFilesSelected($event)"
-                    />
-                <hr style="border:0; border-left:1px solid #e0e0e068; height:25px; width:1px; margin:0 15px; display:inline-block;">
-                <p-button
-                    icon="pi pi-folder-plus"
-                    class="mr-2"
-                    text
-                    severity="secondary"
-                    label="создать папку"
-                    (onClick)="openDialog()"
-                />
-            </ng-template>
-            <ng-template #end>
-                <div class="buttons-selected">
-                    <p-button
-                        icon="pi pi-download"
-                        variant="outlined"
-                        [disabled]="!selectedItem()"
-                        pTooltip="Скачать"
-                        tooltipPosition="bottom"
-                        (click)="downloadSelected()"
-                    />
-                    <p-button
-                        icon="pi pi-trash"
-                        variant="outlined"
-                        [disabled]="!selectedItem()"
-                        pTooltip="Удалить"
-                        tooltipPosition="bottom"
-                        (onClick)="deleteSelected()"
-                    />
-                    <p-button
-                        icon="pi pi-share-alt"
-                        variant="outlined"
-                        label="переслать"
-                        [disabled]="!selectedItem() || !('downloadUrl' in selectedItem()!)"
-                        pTooltip="Скопировать ссылку"
-                        tooltipPosition="bottom"
-                        (onClick)="shareSelected()"
-                    />
-                </div>
-            </ng-template>
-        </p-toolbar>
-    </div>
+  <div class="toolbar">
+    <p-toolbar>
+      <ng-template #start>
+
+        <!-- Скрытый инпут для выбора папки -->
+        <input
+          #folderInput
+          type="file"
+          style="display:none"
+          webkitdirectory
+          multiple
+          (change)="onFolderSelected($event)"
+        />
+
+        <p-fileUpload
+          mode="basic"
+          name="file"
+          chooseIcon="pi pi-cloud-upload"
+          chooseLabel="Загрузить файл"
+          severity="secondary"
+          maxFileSize="100000000"
+          [multiple]="true"
+          [auto]="true"
+          [customUpload]="true"
+          (uploadHandler)="onFilesSelected($event)"
+        />
+
+        <p-button
+          icon="pi pi-folder-open"
+          text
+          severity="secondary"
+          label="Загрузить папку"
+          [loading]="folderUploading()"
+          [disabled]="folderUploading()"
+          (onClick)="triggerFolderUpload()"
+        />
+
+        <hr style="border:0; border-left:1px solid #e0e0e068; height:25px; width:1px; margin:0 15px; display:inline-block;">
+
+        <p-button
+          icon="pi pi-folder-plus"
+          text
+          severity="secondary"
+          label="создать папку"
+          (onClick)="openDialog()"
+        />
+
+        <hr style="border:0; border-left:1px solid #e0e0e068; height:25px; width:1px; margin:0 15px; display:inline-block;">
+
+        <!-- ─── Строка поиска ─── -->
+        <div class="search-wrap">
+          <i class="pi pi-search search-icon"></i>
+          <input
+            class="search-input"
+            type="text"
+            placeholder="Поиск файлов..."
+            [value]="searchQuery()"
+            (input)="onSearchInput($event)"
+          />
+          @if (searchQuery()) {
+            <button class="search-clear" (click)="clearSearch()">
+              <i class="pi pi-times"></i>
+            </button>
+          }
+        </div>
+
+        <hr style="border:0; border-left:1px solid #e0e0e068; height:25px; width:1px; margin:0 15px; display:inline-block;">
+
+        <div class="filter-tabs">
+          @for (f of filters; track f.value) {
+            <button
+              class="filter-tab"
+              [class.filter-tab--active]="activeFilter() === f.value"
+              (click)="setFilter(f.value)"
+            >
+              <i [class]="'pi ' + f.icon"></i>
+              <span>{{ f.label }}</span>
+            </button>
+          }
+        </div>
+
+      </ng-template>
+
+      <ng-template #end>
+        <div class="buttons-selected">
+          <p-button
+            icon="pi pi-download"
+            variant="outlined"
+            [disabled]="!selectedItem()"
+            pTooltip="Скачать"
+            tooltipPosition="bottom"
+            (click)="downloadSelected()"
+          />
+          <p-button
+            icon="pi pi-trash"
+            variant="outlined"
+            [disabled]="!selectedItem()"
+            pTooltip="Удалить"
+            tooltipPosition="bottom"
+            (onClick)="deleteSelected()"
+          />
+          <p-button
+            icon="pi pi-share-alt"
+            variant="outlined"
+            label="переслать"
+            [disabled]="!selectedItem() || !('downloadUrl' in selectedItem()!)"
+            pTooltip="Скопировать ссылку"
+            tooltipPosition="bottom"
+            (onClick)="shareSelected()"
+          />
+        </div>
+      </ng-template>
+    </p-toolbar>
+  </div>
 </div>
 
 <p-dialog
-    header="Новая папка"
-    [modal]="true"
-    [(visible)]="visible"
-    [style]="{ width: '25rem' }"
+  header="Новая папка"
+  [modal]="true"
+  [(visible)]="visible"
+  [style]="{ width: '25rem' }"
 >
-    <div class="name-folder">
-        <label for="nameFolder">Имя папки</label>
-        <input pInputText id="nameFolder" [(ngModel)]="folderName" autocomplete="off"/>
-    </div>
-    <div class="create-folder">
-        <p-button label="Отмена" severity="secondary" (onClick)="closeDialog()"/>
-        <p-button label="Создать" (onClick)="createFolder()"/>
-    </div>
+  <div class="name-folder">
+    <label for="nameFolder">Имя папки</label>
+    <input pInputText id="nameFolder" [(ngModel)]="folderName" autocomplete="off"/>
+  </div>
+  <div class="create-folder">
+    <p-button label="Отмена" severity="secondary" (onClick)="closeDialog()"/>
+    <p-button label="Создать" (onClick)="createFolder()"/>
+  </div>
 </p-dialog>
 
 <p-toast position="bottom-right" key="br"></p-toast>

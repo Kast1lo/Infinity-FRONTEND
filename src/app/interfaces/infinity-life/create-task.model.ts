@@ -1,6 +1,8 @@
 export interface CreateTaskDto {
   title: string;
   notes?: string;
-  priority?: 'HIGH' | 'MEDIUM' | 'LOW';
+  priority?: string;
   columnId?: string | null;
+  dueDate?: string | null;
+  color?: string | null;
 }

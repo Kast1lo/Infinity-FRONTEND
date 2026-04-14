@@ -1,20 +1,20 @@
 :host {
-  --bg:      #0a0a0a;
-  --bg2:     #111111;
-  --bg3:     #1a1a1a;
-  --bg4:     #202020;
-  --border:  #222222;
-  --border2: #2e2e2e;
-  --text:    #f0f0f0;
-  --text2:   #888888;
-  --text3:   #444444;
-
+  --bg:        #0a0a0a;
+  --bg2:       #111111;
+  --bg3:       #1a1a1a;
+  --bg4:       #202020;
+  --border:    #222222;
+  --border2:   #2e2e2e;
+  --text:      #f0f0f0;
+  --text2:     #888888;
+  --text3:     #444444;
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
 }
 
-/* ─── BOARD ─── */
+// ─── Board ───
+
 .kanban-board {
   display: flex;
   margin: 10px;
@@ -22,10 +22,10 @@
   height: calc(100vh - 40px);
   border-radius: var(--radius-lg);
   background: var(--bg2);
-  border: 1px solid var(--border);
-  overflow-y: hidden;
   background-image: radial-gradient(circle, rgba(255,255,255,.035) 1px, transparent 1px);
   background-size: 28px 28px;
+  border: 1px solid var(--border);
+  overflow-y: hidden;
 }
 
 .no-columns-info {
@@ -61,7 +61,8 @@
   }
 }
 
-/* ─── COLUMNS ─── */
+// ─── Columns ───
+
 .columns {
   display: flex;
   gap: 12px;
@@ -73,10 +74,7 @@
   scrollbar-color: rgba(255,255,255,.1) transparent;
 
   &::-webkit-scrollbar { height: 5px; }
-  &::-webkit-scrollbar-thumb {
-    background: rgba(255,255,255,.12);
-    border-radius: 10px;
-  }
+  &::-webkit-scrollbar-thumb { background: rgba(255,255,255,.12); border-radius: 10px; }
   &::-webkit-scrollbar-track { background: transparent; }
 }
 
@@ -126,7 +124,7 @@
   color: var(--text3) !important;
   background: transparent !important;
   border: none !important;
-  border-radius: var(--radius-sm) !important;
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm) !important;
 
   &:hover {
     color: var(--text2) !important;
@@ -134,7 +132,8 @@
   }
 }
 
-/* ─── TASKS ─── */
+// ─── Tasks list ───
+
 .tasks {
   display: flex;
   flex-direction: column;
@@ -145,10 +144,7 @@
   scrollbar-color: rgba(255,255,255,.08) transparent;
 
   &::-webkit-scrollbar { width: 3px; }
-  &::-webkit-scrollbar-thumb {
-    background: rgba(255,255,255,.1);
-    border-radius: 10px;
-  }
+  &::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 10px; }
 }
 
 .tasks-card {
@@ -212,25 +208,65 @@
   }
 }
 
+.file-card-inner {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  min-width: 0;
+}
+
+.task-color-bar {
+  width: 3px;
+  border-radius: 2px;
+  flex-shrink: 0;
+  min-height: 20px;
+}
+
 .info-task {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 8px;
   min-width: 0;
+  flex: 1;
   overflow: hidden;
+}
+
+.task-main {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
 }
 
 .task-title {
   font-size: 13px;
   font-weight: 400;
   color: var(--text);
-  overflow: hidden;
   white-space: nowrap;
+  overflow: hidden;
   text-overflow: ellipsis;
   margin: 0;
-  flex: 1;
-  min-width: 0;
+
+  &.task-completed {
+    text-decoration: line-through;
+    color: var(--text3);
+  }
+}
+
+.task-due {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text3);
+  font-family: 'DM Sans', sans-serif;
+
+  i { font-size: 10px !important; color: inherit !important; }
+
+  &--soon  { color: #d4b84a !important; i { color: #d4b84a !important; } }
+  &--overdue { color: #e05555 !important; i { color: #e05555 !important; } }
 }
 
 :host ::ng-deep .info-task .p-button {
@@ -243,6 +279,9 @@
   border: none !important;
   border-radius: var(--radius-sm) !important;
   opacity: 0;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   transition: opacity .15s, color .15s, background .15s !important;
 }
 
@@ -274,7 +313,8 @@
   .p-button-icon { font-size: 12px !important; }
 }
 
-/* ─── ADD COLUMN ─── */
+// ─── Add column ───
+
 .add-column-card {
   min-width: 260px;
   max-width: 260px;
@@ -329,11 +369,7 @@
   font-size: 13px !important;
   padding: 8px 10px !important;
 
-  &:focus {
-    border-color: var(--text3) !important;
-    box-shadow: none !important;
-  }
-
+  &:focus { border-color: var(--text3) !important; box-shadow: none !important; }
   &::placeholder { color: var(--text3) !important; }
 }
 
@@ -361,14 +397,12 @@
     background: transparent !important;
     border: none !important;
 
-    &:hover {
-      color: var(--text2) !important;
-      background: rgba(255,255,255,.05) !important;
-    }
+    &:hover { color: var(--text2) !important; background: rgba(255,255,255,.05) !important; }
   }
 }
 
-/* ─── ДИАЛОГИ ─── */
+// ─── Dialog base ───
+
 :host ::ng-deep .p-dialog {
   background: var(--bg2) !important;
   border: 1px solid var(--border) !important;
@@ -379,7 +413,7 @@
     background: var(--bg2) !important;
     border-bottom: 1px solid var(--border) !important;
     border-radius: var(--radius-lg) var(--radius-lg) 0 0 !important;
-    padding: 18px 24px !important;
+    padding: 16px 20px !important;
 
     .p-dialog-title {
       font-family: 'Syne', sans-serif !important;
@@ -391,28 +425,23 @@
 
     .p-dialog-header-icon {
       color: var(--text3) !important;
-
-      &:hover {
-        color: var(--text2) !important;
-        background: rgba(255,255,255,.06) !important;
-      }
+      &:hover { color: var(--text2) !important; background: rgba(255,255,255,.06) !important; }
     }
   }
 
   .p-dialog-content {
     background: var(--bg2) !important;
-    padding: 20px 24px 8px !important;
+    padding: 20px !important;
   }
 
   .p-dialog-footer {
     background: var(--bg2) !important;
     border-top: 1px solid var(--border) !important;
     border-radius: 0 0 var(--radius-lg) var(--radius-lg) !important;
-    padding: 12px 24px 24px !important;
+    padding: 12px 20px !important;
     display: flex !important;
     justify-content: flex-end !important;
     gap: 8px !important;
-    margin-top: 15px;
   }
 }
 
@@ -421,42 +450,8 @@
   backdrop-filter: blur(4px) !important;
 }
 
-/* ─── ПОЛЯ В ДИАЛОГАХ ─── */
+// ─── Dialog inputs ───
 
-/* контейнер формы создания задачи */
-.tasks-create {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-/* каждое поле — лейбл + инпут */
-.name-task,
-.priority,
-:host ::ng-deep .p-dialog .field {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  margin: 0;
-}
-
-/* убираем старые margin */
-.name-task   { margin-bottom: 0 !important; }
-.priority    { margin-bottom: 0 !important; }
-.input-name  { margin-top: 0 !important; }
-
-/* лейблы */
-:host ::ng-deep .p-dialog label,
-:host ::ng-deep .p-dialog .font-medium {
-  font-size: 12px !important;
-  font-weight: 500 !important;
-  color: var(--text2) !important;
-  font-family: 'DM Sans', sans-serif !important;
-  letter-spacing: .2px !important;
-  text-transform: uppercase !important;
-}
-
-/* инпуты */
 :host ::ng-deep .p-dialog .p-inputtext,
 :host ::ng-deep .p-dialog textarea {
   background: var(--bg3) !important;
@@ -466,45 +461,36 @@
   font-size: 14px !important;
   transition: border-color .2s !important;
 
-  &:focus {
-    border-color: var(--text3) !important;
-    box-shadow: none !important;
-  }
-
+  &:focus { border-color: var(--text3) !important; box-shadow: none !important; }
   &::placeholder { color: var(--text3) !important; }
 }
 
-/* select приоритета */
 :host ::ng-deep .p-dialog .p-select {
   background: var(--bg3) !important;
   border: 1px solid var(--border2) !important;
   border-radius: var(--radius-sm) !important;
-  color: var(--text) !important;
+  height: 42px !important;
 
   &:hover { border-color: var(--text3) !important; }
-
-  .p-select-label { color: var(--text) !important; font-size: 14px !important; }
+  .p-select-label { color: var(--text) !important; font-size: 14px !important; line-height: 42px !important; padding-top: 0 !important; padding-bottom: 0 !important; }
   .p-select-dropdown { color: var(--text3) !important; }
 }
 
-/* кнопки в футере */
+// ─── Dialog footer buttons ───
+
 :host ::ng-deep .p-dialog-footer .p-button {
   border-radius: var(--radius-sm) !important;
   font-size: 13px !important;
 
-  &.p-button-text,
-  &[severity="secondary"][text] {
+  &.p-button-text {
     color: var(--text2) !important;
     background: transparent !important;
     border: none !important;
 
-    &:hover {
-      color: var(--text) !important;
-      background: rgba(255,255,255,.05) !important;
-    }
+    &:hover { color: var(--text) !important; background: rgba(255,255,255,.05) !important; }
   }
 
-  &:not(.p-button-text):not([text]) {
+  &:not(.p-button-text) {
     color: var(--text) !important;
     background: rgba(255,255,255,.08) !important;
     border: 1px solid rgba(255,255,255,.14) !important;
@@ -514,94 +500,302 @@
   }
 }
 
-/* ─── ДЕТАЛИ ЗАДАЧИ ─── */
-.task-detail {
+// ─── Dialog form ───
+
+.tasks-create {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
-.main-info {
+.dialog-field {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  gap: 6px;
+
+  label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text3);
+    font-family: 'DM Sans', sans-serif;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+  }
+}
+
+.dialog-row {
+  display: flex;
+  flex-wrap: nowrap;
   gap: 12px;
 
-  h2 {
-    font-family: 'Syne', sans-serif;
-    font-size: 17px;
-    font-weight: 700;
-    color: var(--text);
-    letter-spacing: -.3px;
-    margin: 0;
+  .dialog-field {
+    flex: 1;
+    min-width: 0;
   }
 }
 
-.progress-bar { margin-top: 4px; }
+// ─── DatePicker ───
 
-:host ::ng-deep .progress-bar .p-progressbar {
-  background: var(--bg3) !important;
-  border-radius: 100px !important;
-  height: 5px !important;
+:host ::ng-deep .p-datepicker {
+  .p-datepicker-input {
+    background: var(--bg3) !important;
+    border: 1px solid var(--border2) !important;
+    border-radius: var(--radius-sm) 0 0 var(--radius-sm) !important;
+    color: var(--text) !important;
+    font-size: 14px !important;
+    font-family: 'DM Sans', sans-serif !important;
+    height: 42px !important;
 
-  .p-progressbar-value {
-    background: rgba(255,255,255,.35) !important;
-    border-radius: 100px !important;
+    &:focus { border-color: var(--text3) !important; box-shadow: none !important; }
+    &::placeholder { color: var(--text3) !important; }
   }
 
-  .p-progressbar-label { display: none !important; }
+  .p-datepicker-input-icon-container {
+    .p-datepicker-button {
+      width: 38px !important;
+      margin-left: 0 !important;
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0 !important;
+      background: rgba(255,255,255,.07) !important;
+      border: 1px solid var(--border2) !important;
+      border-left: 1px solid rgba(255,255,255,.08) !important;
+      color: var(--text2) !important;
+      transition: background .2s, color .2s !important;
+      flex-shrink: 0 !important;
+
+      &:hover {
+        background: rgba(255,255,255,.13) !important;
+        color: var(--text) !important;
+      }
+
+      .p-icon {
+        width: 14px !important;
+        height: 14px !important;
+      }
+    }
+  }
+
+  .p-datepicker-clear-icon {
+    color: var(--text3) !important;
+    &:hover { color: var(--text2) !important; }
+  }
 }
 
-.sub-tasks { margin-top: 4px; }
-
-:host ::ng-deep .sub-tasks .p-inplace-display {
+:host ::ng-deep .detail-datepicker .p-datepicker-input {
+  height: 34px !important;
   font-size: 13px !important;
-  color: var(--text3) !important;
-  padding: 4px 0 !important;
-  border-radius: var(--radius-sm) !important;
+  padding: 0 32px 0 10px !important;
+}
 
-  &:hover {
-    color: var(--text2) !important;
+:host ::ng-deep .p-datepicker-panel {
+  background: var(--bg3) !important;
+  border: 1px solid var(--border2) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: 0 16px 40px rgba(0,0,0,.5) !important;
+
+  .p-datepicker-header {
     background: transparent !important;
+    border-bottom: 1px solid var(--border) !important;
+    color: var(--text) !important;
+
+    button {
+      color: var(--text2) !important;
+      &:hover { background: rgba(255,255,255,.06) !important; }
+    }
+  }
+
+  .p-datepicker-day-view {
+    th { color: var(--text3) !important; font-size: 11px !important; }
+
+    td span {
+      color: var(--text2) !important;
+      border-radius: var(--radius-sm) !important;
+
+      &:hover { background: rgba(255,255,255,.08) !important; color: var(--text) !important; }
+    }
+
+    td.p-datepicker-today span    { background: rgba(255,255,255,.06) !important; color: var(--text) !important; }
+    td.p-datepicker-selected span { background: rgba(255,255,255,.15) !important; color: var(--text) !important; }
+    td.p-datepicker-other-month span { color: var(--text3) !important; }
+    td.p-disabled span { opacity: .3 !important; }
   }
 }
 
-.create-subtasks {
+// ─── Color picker ───
+
+.color-picker {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 8px;
+  flex-wrap: wrap;
 }
 
-.create-buttons {
+.color-dot {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform .15s, box-shadow .15s;
+  outline: none;
+  border: 2px solid transparent;
+  flex-shrink: 0;
+  line-height: 1;
+
+  &:hover { transform: scale(1.15); }
+
+  &--active { box-shadow: 0 0 0 2px #fff !important; transform: scale(1.1); }
+
+  &--empty {
+    border: 1.5px dashed var(--text3) !important;
+    background: transparent !important;
+    position: relative;
+
+    i {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 9px !important;
+      color: var(--text3) !important;
+      line-height: 1;
+      margin: 0;
+      padding: 0;
+    }
+  }
+
+  &--sm { width: 20px; height: 20px; }
+}
+
+// ─── Task detail ───
+
+::ng-deep .task-detail-dialog .p-dialog-header { padding: 16px 20px !important; }
+
+::ng-deep .task-detail-dialog .p-dialog-content {
+  padding: 0 !important;
+}
+
+.detail-dialog-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+}
+
+.detail-color-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.detail-dialog-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -.3px;
+  flex: 1;
+  min-width: 0;
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.4;
+}
+
+.task-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.detail-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+  padding: 0 20px;
+}
+
+.detail-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+
+  &:last-child { border-bottom: none; }
+}
+
+.meta-label {
   display: flex;
   align-items: center;
   gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text3);
+  font-family: 'DM Sans', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  min-width: 80px;
+  flex-shrink: 0;
+
+  i { font-size: 11px !important; color: inherit !important; }
 }
 
-:host ::ng-deep .create-buttons .p-button {
-  border-radius: var(--radius-sm) !important;
-  font-size: 12px !important;
+.detail-notes {
+  padding: 14px 20px;
+  font-size: 14px;
+  color: var(--text2);
+  font-family: 'DM Sans', sans-serif;
+  line-height: 1.6;
+  border-bottom: 1px solid var(--border);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
 
-  &:not(.p-button-text) {
-    color: var(--text) !important;
-    background: rgba(255,255,255,.08) !important;
-    border: 1px solid rgba(255,255,255,.12) !important;
+.detail-progress {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+}
 
-    &:hover { background: rgba(255,255,255,.14) !important; }
-  }
+.detail-progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
 
-  &.p-button-text {
-    color: var(--text3) !important;
-    &:hover { color: var(--text2) !important; background: rgba(255,255,255,.05) !important; }
-  }
+.progress-fraction {
+  font-size: 12px;
+  color: var(--text3);
+  font-family: 'DM Sans', sans-serif;
+}
+
+:host ::ng-deep .detail-progress .p-progressbar {
+  background: var(--bg3) !important;
+  border-radius: 100px !important;
+  height: 4px !important;
+
+  .p-progressbar-value { background: rgba(255,255,255,.4) !important; border-radius: 100px !important; }
+  .p-progressbar-label { display: none !important; }
+}
+
+// ─── Subtasks ───
+
+.detail-subtasks {
+  padding: 10px 20px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .subtasks-list {
-  margin-top: 6px;
   display: flex;
   flex-direction: column;
   gap: 2px;
+  margin-bottom: 8px;
 }
 
 .subtask-item {
@@ -616,34 +810,23 @@
   &:hover { background: rgba(255,255,255,.03); }
 }
 
-.main-function {
+.subtask-left {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex: 1;
+  min-width: 0;
 
   span {
     font-size: 13px;
     color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 
-    &.line-through {
-      text-decoration: line-through;
-      color: var(--text3);
-    }
+    &.line-through { text-decoration: line-through; color: var(--text3); }
   }
 }
-
-:host ::ng-deep .subtask-item .p-button {
-  width: 24px !important;
-  height: 24px !important;
-  padding: 0 !important;
-  color: var(--text3) !important;
-  opacity: 0;
-  transition: opacity .15s, color .15s !important;
-
-  &:hover { color: #e05555 !important; }
-}
-
-.subtask-item:hover ::ng-deep .p-button { opacity: 1 !important; }
 
 :host ::ng-deep .subtask-item p-checkbox {
   flex-shrink: 0;
@@ -674,7 +857,94 @@
   }
 }
 
-/* ─── MENU ─── */
+:host ::ng-deep .subtask-item .p-button {
+  width: 24px !important;
+  height: 24px !important;
+  padding: 0 !important;
+  color: var(--text3) !important;
+  opacity: 0;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: opacity .15s, color .15s !important;
+
+  &:hover { color: #e05555 !important; }
+}
+
+.subtask-item:hover ::ng-deep .p-button { opacity: 1 !important; }
+
+.add-subtask-hint {
+  font-size: 13px;
+  color: var(--text3);
+  cursor: pointer;
+  transition: color .15s;
+
+  &:hover { color: var(--text2); }
+}
+
+:host ::ng-deep .detail-subtasks .p-inplace-display {
+  padding: 4px 0 !important;
+  &:hover { background: transparent !important; }
+}
+
+.create-subtasks {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.create-buttons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+:host ::ng-deep .create-buttons .p-button {
+  border-radius: var(--radius-sm) !important;
+  font-size: 12px !important;
+
+  &:not(.p-button-text) {
+    color: var(--text) !important;
+    background: rgba(255,255,255,.08) !important;
+    border: 1px solid rgba(255,255,255,.12) !important;
+
+    &:hover { background: rgba(255,255,255,.14) !important; }
+  }
+
+  &.p-button-text {
+    color: var(--text3) !important;
+
+    &:hover { color: var(--text2) !important; background: rgba(255,255,255,.05) !important; }
+  }
+}
+
+// ─── Detail footer ───
+
+.detail-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+:host ::ng-deep .detail-footer .p-button[severity="danger"] {
+  width: 36px !important;
+  height: 36px !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: var(--radius-sm) !important;
+  color: #e05555 !important;
+  background: transparent !important;
+  border: none !important;
+
+  &:hover { background: rgba(224,85,85,.1) !important; }
+  .p-button-icon { font-size: 14px !important; line-height: 1 !important; }
+}
+
+// ─── Context menu ───
+
 :host ::ng-deep .p-menu {
   background: var(--bg3) !important;
   border: 1px solid var(--border2) !important;
@@ -690,10 +960,7 @@
     font-size: 13px !important;
     transition: background .15s, color .15s !important;
 
-    &:hover {
-      background: rgba(255,255,255,.06) !important;
-      color: var(--text) !important;
-    }
+    &:hover { background: rgba(255,255,255,.06) !important; color: var(--text) !important; }
 
     .p-menuitem-icon {
       color: var(--text3) !important;
@@ -703,6 +970,8 @@
   }
 }
 
+// ─── Checkbox global fix ───
+
 :host ::ng-deep [data-p-checked="true"] .p-checkbox-box {
   background: rgba(255,255,255,.2) !important;
   border-color: rgba(255,255,255,.45) !important;
@@ -711,4 +980,94 @@
 :host ::ng-deep [data-p-checked="true"] .p-checkbox-icon {
   color: var(--text) !important;
   stroke: var(--text) !important;
+}
+
+// ─── Confirm dialog ───
+
+::ng-deep .confirm-dialog.p-dialog {
+  border-radius: 14px !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(255,255,255,.08) !important;
+  box-shadow: 0 32px 80px rgba(0,0,0,.7) !important;
+
+  .p-dialog-header { display: none !important; }
+
+  .p-dialog-content {
+    padding: 0 !important;
+    background: #111 !important;
+    border-radius: 14px !important;
+  }
+}
+
+.confirm-root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 28px 24px;
+  gap: 16px;
+  text-align: center;
+}
+
+.confirm-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(224,85,85,.12);
+  border: 1px solid rgba(224,85,85,.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  i { font-size: 1.3rem !important; color: #e05555 !important; }
+}
+
+.confirm-body { display: flex; flex-direction: column; gap: 6px; }
+
+.confirm-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #f0f0f0;
+  margin: 0;
+  letter-spacing: -.3px;
+}
+
+.confirm-message {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: #888;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  justify-content: flex-end;
+  padding-top: 8px;
+  border-top: 1px solid #222;
+  margin-top: 4px;
+}
+
+::ng-deep .confirm-actions .p-button {
+  border-radius: 8px !important;
+  font-family: 'DM Sans', sans-serif !important;
+  font-size: 13px !important;
+
+  &.p-button-text {
+    color: #888 !important;
+    background: transparent !important;
+    border: none !important;
+
+    &:hover { color: #f0f0f0 !important; background: rgba(255,255,255,.05) !important; }
+  }
+}
+
+::ng-deep .confirm-btn-danger {
+  background: rgba(224,85,85,.15) !important;
+  border: 1px solid rgba(224,85,85,.3) !important;
+  color: #e05555 !important;
+
+  &:hover { background: rgba(224,85,85,.25) !important; }
 }

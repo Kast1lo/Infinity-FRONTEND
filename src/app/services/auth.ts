@@ -31,34 +31,35 @@ export class AuthService {
 
   login(credentials: LoginRequest): Observable<UserProfile> {
     this._isLoading.set(true);
-    this._error.set(null)
-    return this.http.post<apiResponse>(`${this.apiUrl}/auth/login`, credentials,{
+    this._error.set(null);
+    return this.http.post<apiResponse>(`${this.apiUrl}/auth/login`, credentials, {
       withCredentials: true
     }).pipe(
       switchMap(() => this.userService.getProfile()),
-      tap(() =>{
-        this._isLoading.set(false)
-        this.router.navigate(['/profile'])
+      tap(() => {
+        this._isLoading.set(false);
+        this.router.navigate(['/file-system']);
       }),
       catchError(err => {
-        console.error('Login error', err);
-        return throwError(() => new Error(err.error?.message || 'Ошибка входа'));
+        this._isLoading.set(false);
+        return throwError(() => err);
       })
     );
   }
 
-  register(data: RegisterData): Observable<UserProfile>{
-    return this.http.post(`${this.apiUrl}/auth/register`, data,{
+  register(data: RegisterData): Observable<UserProfile> {
+    this._isLoading.set(true);
+    this._error.set(null);
+    return this.http.post(`${this.apiUrl}/auth/register`, data, {
       withCredentials: true
     }).pipe(
       switchMap(() => this.userService.getProfile()),
-      tap(() =>{
-        this._isLoading.set(false)
-        this.router.navigate(['/profile'])
-      }),
-      catchError( err => {
+      tap(() => {
         this._isLoading.set(false);
-        this._error.set(err.error?.message || 'Ошибка регистрации');
+        this.router.navigate(['/file-system']);
+      }),
+      catchError(err => {
+        this._isLoading.set(false);
         return throwError(() => err);
       })
     );

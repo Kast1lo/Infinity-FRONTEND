@@ -1,39 +1,73 @@
 <div class="form-container">
-    <form class="form-position" (submit)="onSubmit($event)" novalidate>
-        <div class="form-card">
-            <img class="logotype" [src]="imagePath" alt="infinity">
-            <div class="inputs-form">
-                <p-floatlabel variant="in"  >
-                    <p-iconfield>
-                            <p-inputicon>
-                                <i class="pi pi-user"></i>
-                            </p-inputicon>
-                        <input pInputText [formField]="RegisterForm.username"/>
-                        <label>Придумайте логин</label>
-                    </p-iconfield>
-                </p-floatlabel>
-                <p-floatlabel variant="in">
-                    <p-iconfield>
-                            <p-inputicon>
-                                <i class="pi pi-at"></i>
-                            </p-inputicon>
-                        <input type="email" pInputText [formField]="RegisterForm.email"/>
-                        <label for="email">Введите e-mail</label>
-                    </p-iconfield>
-                </p-floatlabel>
-                <p-floatlabel variant="in">
-                    <p-iconfield>
-                        <p-inputicon>
-                            <i class="pi pi-lock"></i>
-                        </p-inputicon>
-                        <p-password formControlName="password" [toggleMask]="true" [formField]="$any(RegisterForm.passwordHash)"/>
-                        <label for="password">Придумайте пароль</label>
-                    </p-iconfield>
-                </p-floatlabel>
-            </div>
-            <p-button type="submit" label="Зарегистрироваться" />
-            <p class="notreg">Уже есть аккаунт</p>
-            <p-button class="go-login" routerLink="/login" label="Авторизоваться" link />
+  <form (submit)="onSubmit($event)" novalidate>
+    <div class="form-card">
+
+      <img class="logotype" [src]="imagePath" alt="infinity">
+
+      <div class="inputs-form">
+
+        <div class="field-wrap">
+          <div class="input-field" [class.input-field--error]="showUsernameError()">
+            <i class="pi pi-user field-icon"></i>
+            <input
+              pInputText
+              placeholder="Придумайте логин"
+              [formField]="registerForm.username"
+            />
+          </div>
+          @if (showUsernameError()) {
+            <span class="field-error">{{ usernameError() }}</span>
+          }
         </div>
-    </form>
+
+        <div class="field-wrap">
+          <div class="input-field" [class.input-field--error]="showEmailError()">
+            <i class="pi pi-at field-icon"></i>
+            <input
+              type="email"
+              pInputText
+              placeholder="Введите e-mail"
+              [formField]="registerForm.email"
+            />
+          </div>
+          @if (showEmailError()) {
+            <span class="field-error">{{ emailError() }}</span>
+          }
+        </div>
+
+        <div class="field-wrap">
+          <div class="input-field" [class.input-field--error]="showPasswordError()">
+            <i class="pi pi-lock field-icon"></i>
+            <p-password
+              placeholder="Придумайте пароль"
+              [toggleMask]="true"
+              [feedback]="false"
+              [formField]="$any(registerForm.passwordHash)"
+            />
+          </div>
+          @if (showPasswordError()) {
+            <span class="field-error">{{ passwordError() }}</span>
+          }
+        </div>
+
+      </div>
+
+      @if (errorMessage()) {
+        <div class="error-msg">{{ errorMessage() }}</div>
+      }
+
+      <div class="btn-submit">
+        <p-button
+          type="submit"
+          label="Зарегистрироваться"
+          [loading]="isSubmitting()"
+          [disabled]="isSubmitting()"
+        />
+      </div>
+
+      <p class="notreg">Уже есть аккаунт?</p>
+      <p-button class="go-login" routerLink="/login" label="Авторизоваться"/>
+
+    </div>
+  </form>
 </div>

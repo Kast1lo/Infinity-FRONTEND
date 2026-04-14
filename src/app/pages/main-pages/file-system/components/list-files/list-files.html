@@ -28,9 +28,6 @@
 
       @if (folders().length > 0) {
         <div class="folder-grid">
-          @if (fileSystem.currentFolderId()) {
-            <p-button label="назад" icon="pi pi-arrow-left" (onClick)="goBack()"/>
-          }
           @for (folder of folders(); track folder.id) {
             @if (folder.parentId === fileSystem.currentFolderId()) {
               <p-card (click)="selectFolder(folder)" (dblclick)="openFolder(folder)">
@@ -49,7 +46,7 @@
             }
           }
         </div>
-        <hr style="border: 0; border-top: 1px solid #e0e0e068; width: 97%; margin: 0 auto; margin-top: 20px;">
+        <hr style="border: 0; border-top: 1px solid #e0e0e068; width: 97%; margin: 0 auto; margin-top: 10px;">
       }
     }
 
@@ -309,6 +306,134 @@
           }
         </div>
       }
+    </div>
+  </div>
+</p-dialog>
+
+<!-- ─── ПЕРЕИМЕНОВАНИЕ ─── -->
+<p-dialog
+  header="Переименовать"
+  [(visible)]="renameDialogVisible"
+  [modal]="true"
+  [style]="{ width: '420px' }"
+  [dismissableMask]="true"
+  styleClass="rename-dialog">
+  <div class="rename-field">
+    <label>Новое название</label>
+    <input
+      pInputText
+      type="text"
+      [ngModel]="renameValue()"
+      (ngModelChange)="renameValue.set($event)"
+      placeholder="Введите название"
+      (keyup.enter)="submitRename()"
+      autofocus
+      fluid
+    />
+  </div>
+  <ng-template pTemplate="footer">
+    <p-button label="Отмена" severity="secondary" [text]="true" (onClick)="closeRenameDialog()"/>
+    <p-button
+      label="Сохранить"
+      icon="pi pi-check"
+      [disabled]="!renameValue().trim()"
+      (onClick)="submitRename()"
+    />
+  </ng-template>
+</p-dialog>
+
+<!-- ─── ПЕРЕМЕЩЕНИЕ ФАЙЛА ─── -->
+<p-dialog
+  header="Переместить файл"
+  [(visible)]="moveDialogVisible"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [dismissableMask]="true"
+  [style]="{ width: '420px' }"
+  styleClass="move-dialog">
+
+  <div class="move-content">
+    @if (moveTargetFile()) {
+      <div class="move-filename">
+        <i [class]="'pi ' + getFileIcon(moveTargetFile()!.mimeType)"></i>
+        <span>{{ moveTargetFile()!.name | decodeURIComponent }}</span>
+      </div>
+    }
+
+    <div class="move-tree">
+
+      <!-- Корень -->
+      <div class="move-folder-item"
+        [class.move-folder-item--active]="selectedFolderId() === null"
+        (click)="selectedFolderId.set(null)">
+        <i class="pi pi-home"></i>
+        <span>Корневая папка</span>
+        @if (selectedFolderId() === null) {
+          <i class="pi pi-check move-check"></i>
+        }
+      </div>
+
+      <!-- Папки рекурсивно -->
+      @for (folder of getRootFolders(); track folder.id) {
+        <ng-container *ngTemplateOutlet="folderNode; context: { folder: folder, depth: 0 }"/>
+      }
+
+    </div>
+  </div>
+
+  <ng-template #folderNode let-folder="folder" let-depth="depth">
+    <div class="move-folder-item"
+      [style.padding-left.px]="16 + depth * 20"
+      [class.move-folder-item--active]="selectedFolderId() === folder.id"
+      [class.move-folder-item--current]="moveTargetFile()?.folderId === folder.id"
+      (click)="moveTargetFile()?.folderId !== folder.id && selectedFolderId.set(folder.id)">
+      <i class="pi pi-folder"></i>
+      <span>{{ folder.name }}</span>
+      @if (moveTargetFile()?.folderId === folder.id) {
+        <span class="move-current-label">текущая</span>
+      }
+      @if (selectedFolderId() === folder.id) {
+        <i class="pi pi-check move-check"></i>
+      }
+    </div>
+    @for (child of getChildFolders(folder.id); track child.id) {
+      <ng-container *ngTemplateOutlet="folderNode; context: { folder: child, depth: depth + 1 }"/>
+    }
+  </ng-template>
+
+  <ng-template pTemplate="footer">
+    <p-button label="Отмена" severity="secondary" [text]="true" (onClick)="closeMoveDialog()"/>
+    <p-button
+      label="Переместить"
+      icon="pi pi-arrow-right-arrow-left"
+      [disabled]="selectedFolderId() === (moveTargetFile()?.folderId ?? null)"
+      (onClick)="submitMove()"
+    />
+  </ng-template>
+</p-dialog>
+
+<!-- ─── CONFIRM ЗАГРУЗКИ ПАПКИ ─── -->
+<p-dialog
+  [(visible)]="uploadConfirmVisible"
+  [modal]="true"
+  [closable]="false"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '400px' }"
+  styleClass="confirm-dialog">
+  <ng-template pTemplate="header"><span></span></ng-template>
+  <div class="confirm-root">
+    <div class="confirm-icon">
+      <i class="pi pi-folder-open"></i>
+    </div>
+    <div class="confirm-body">
+      <h3 class="confirm-title">{{ uploadConfirmTitle() }}</h3>
+      <p class="confirm-message">{{ uploadConfirmMessage() }}</p>
+    </div>
+    <div class="confirm-actions">
+      <p-button label="Отмена" [text]="true" severity="secondary" (onClick)="onUploadConfirmReject()"/>
+      <p-button label="Загрузить" icon="pi pi-upload" (onClick)="onUploadConfirmAccept()" styleClass="confirm-btn-upload"/>
     </div>
   </div>
 </p-dialog>
