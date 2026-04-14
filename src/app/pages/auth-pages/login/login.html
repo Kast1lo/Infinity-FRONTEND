@@ -1,30 +1,58 @@
 <div class="form-container">
-    <form class="form-position" (submit)="onSubmit($event)" novalidate>
-        <div class="form-card">
-            <img class="logotype" [src]="imagePath" alt="infinity">
-            <div class="inputs-form">
-                <p-floatlabel variant="in">
-                    <p-iconfield>
-                            <p-inputicon>
-                                <i class="pi pi-user"></i>
-                            </p-inputicon>
-                        <input pInputText [formField]="loginForm.username"/>
-                        <label>Введите логин</label>
-                    </p-iconfield>
-                </p-floatlabel>
-                <p-floatlabel variant="in">
-                    <p-iconfield>
-                        <p-inputicon>
-                            <i class="pi pi-lock"></i>
-                        </p-inputicon>
-                        <p-password [toggleMask]="true" [formField]="$any(loginForm.passwordHash)"/>
-                        <label for="password">Пароль</label>
-                    </p-iconfield>
-                </p-floatlabel>
-            </div>
-            <p-button type="submit" label="Войти" />
-            <p class="notreg">Ещё не зарегистрированы</p>
-            <p-button class="go-login" routerLink="/registration" label="Зарегистрироваться" link />
+  <form (submit)="onSubmit($event)" novalidate>
+    <div class="form-card">
+
+      <img class="logotype" [src]="imagePath" alt="infinity">
+
+      <div class="inputs-form">
+
+        <div class="field-wrap">
+          <div class="input-field" [class.input-field--error]="showUsernameError()">
+            <i class="pi pi-user field-icon"></i>
+            <input
+              pInputText
+              placeholder="Введите логин"
+              [formField]="loginForm.username"
+            />
+          </div>
+          @if (showUsernameError()) {
+            <span class="field-error">{{ usernameError() }}</span>
+          }
         </div>
-    </form>
+
+        <div class="field-wrap">
+          <div class="input-field" [class.input-field--error]="showPasswordError()">
+            <i class="pi pi-lock field-icon"></i>
+            <p-password
+              placeholder="Пароль"
+              [toggleMask]="true"
+              [feedback]="false"
+              [formField]="$any(loginForm.passwordHash)"
+            />
+          </div>
+          @if (showPasswordError()) {
+            <span class="field-error">{{ passwordError() }}</span>
+          }
+        </div>
+
+      </div>
+
+      @if (errorMessage()) {
+        <div class="error-msg">{{ errorMessage() }}</div>
+      }
+
+      <div class="btn-submit">
+        <p-button
+          type="submit"
+          label="Войти"
+          [loading]="isSubmitting()"
+          [disabled]="isSubmitting()"
+        />
+      </div>
+
+      <p class="notreg">Ещё не зарегистрированы?</p>
+      <p-button class="go-login" routerLink="/registration" label="Зарегистрироваться"/>
+
+    </div>
+  </form>
 </div>

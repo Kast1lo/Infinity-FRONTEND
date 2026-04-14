@@ -13,9 +13,8 @@
   --radius-lg: 16px;
 }
 
+// ─── Toolbar wrapper ───
 
-
-/* ─── TOOLBAR WRAPPER ─── */
 :host ::ng-deep .p-toolbar {
   background: var(--bg2) !important;
   border: 1px solid var(--border) !important;
@@ -24,30 +23,37 @@
   box-shadow: none !important;
   margin: 15px !important;
   padding: 10px 16px !important;
-
-  /* точечный фон */
   background-image: radial-gradient(circle, rgba(255,255,255,.035) 1px, transparent 1px) !important;
   background-size: 28px 28px !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
 }
 
-/* ─── РАЗДЕЛИТЕЛЬ В TOOLBAR ─── */
+:host ::ng-deep .p-toolbar-start {
+  flex-wrap: wrap !important;
+  gap: 6px !important;
+  align-items: center !important;
+}
+
+// ─── Разделитель ───
+
 :host ::ng-deep .p-toolbar hr {
   border: 0 !important;
   border-left: 1px solid var(--border2) !important;
   height: 22px !important;
   width: 1px !important;
-  margin: 0 14px !important;
+  margin: 0 10px !important;
   display: inline-block !important;
 }
 
-/* ─── КНОПКИ В TOOLBAR ─── */
+// ─── Кнопки в toolbar ───
+
 :host ::ng-deep .p-toolbar .p-button {
   font-family: 'DM Sans', sans-serif !important;
   font-size: 13px !important;
   border-radius: var(--radius-sm) !important;
   transition: background .2s, border-color .2s, color .2s !important;
 
-  /* text / ghost кнопки */
   &.p-button-text,
   &[text] {
     color: var(--text2) !important;
@@ -60,7 +66,6 @@
     }
   }
 
-  /* outlined кнопки */
   &.p-button-outlined,
   &[variant="outlined"] {
     color: var(--text2) !important;
@@ -73,30 +78,21 @@
       border-color: var(--text3) !important;
     }
 
-    &:disabled {
-      opacity: .3 !important;
-      cursor: not-allowed !important;
-    }
+    &:disabled { opacity: .3 !important; cursor: not-allowed !important; }
   }
 
-  /* filled кнопка (переслать) */
   &:not(.p-button-text):not(.p-button-outlined):not([text]):not([variant="outlined"]) {
     color: var(--text) !important;
     background: rgba(255,255,255,.08) !important;
     border: 1px solid rgba(255,255,255,.12) !important;
 
-    &:hover:not(:disabled) {
-      background: rgba(255,255,255,.14) !important;
-    }
-
-    &:disabled {
-      opacity: .3 !important;
-      cursor: not-allowed !important;
-    }
+    &:hover:not(:disabled) { background: rgba(255,255,255,.14) !important; }
+    &:disabled { opacity: .3 !important; cursor: not-allowed !important; }
   }
 }
 
-/* ─── FILE UPLOAD ─── */
+// ─── File upload ───
+
 :host ::ng-deep .p-fileupload-basic .p-button {
   font-family: 'DM Sans', sans-serif !important;
   font-size: 13px !important;
@@ -112,14 +108,118 @@
   }
 }
 
-/* ─── КНОПКИ СПРАВА ─── */
+// ─── Поиск ───
+
+.search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 220px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 10px;
+  font-size: 12px !important;
+  color: var(--text3);
+  pointer-events: none;
+  transition: color .2s;
+}
+
+.search-input {
+  width: 100%;
+  height: 32px;
+  padding: 0 32px 0 30px;
+  background: rgba(255,255,255,.035);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  outline: none;
+  transition: border-color .2s, background .2s;
+
+  &::placeholder { color: var(--text3); }
+
+  &:focus {
+    border-color: var(--border2);
+    background: rgba(255,255,255,.055);
+
+    & ~ .search-icon { color: var(--text2); }
+  }
+}
+
+.search-clear {
+  position: absolute;
+  right: 6px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+  color: var(--text3);
+  transition: color .15s, background .15s;
+
+  i { font-size: 10px !important; color: inherit !important; }
+
+  &:hover {
+    color: var(--text2);
+    background: rgba(255,255,255,.06);
+  }
+}
+
+// ─── Фильтры ───
+
+.filter-tabs {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.filter-tab {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 28px;
+  padding: 0 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--text3);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  cursor: pointer;
+  transition: color .15s, background .15s, border-color .15s;
+  white-space: nowrap;
+
+  i { font-size: 11px !important; color: inherit !important; }
+
+  &:hover {
+    color: var(--text2);
+    background: rgba(255,255,255,.04);
+  }
+
+  &--active {
+    color: var(--text) !important;
+    background: rgba(255,255,255,.07) !important;
+    border-color: var(--border2) !important;
+  }
+}
+
+// ─── Кнопки справа ───
+
 .buttons-selected {
   display: flex;
   gap: 8px;
   align-items: center;
 }
 
-/* ─── ДИАЛОГ «НОВАЯ ПАПКА» ─── */
+// ─── Диалог «Новая папка» ───
+
 :host ::ng-deep .p-dialog {
   background: var(--bg2) !important;
   border: 1px solid var(--border) !important;
@@ -142,7 +242,6 @@
 
     .p-dialog-header-icon {
       color: var(--text3) !important;
-
       &:hover {
         color: var(--text2) !important;
         background: rgba(255,255,255,.06) !important;
@@ -166,13 +265,13 @@
   }
 }
 
-/* затемнение фона диалога */
 :host ::ng-deep .p-dialog-mask {
   background: rgba(0,0,0,.7) !important;
   backdrop-filter: blur(4px) !important;
 }
 
-/* ─── ФОРМА В ДИАЛОГЕ ─── */
+// ─── Форма в диалоге ───
+
 .name-folder {
   display: flex;
   flex-direction: column;
@@ -201,9 +300,7 @@
     outline: none !important;
   }
 
-  &::placeholder {
-    color: var(--text3) !important;
-  }
+  &::placeholder { color: var(--text3) !important; }
 }
 
 .create-folder {

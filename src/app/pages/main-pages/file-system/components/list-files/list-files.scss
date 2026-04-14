@@ -13,6 +13,8 @@
   --radius-lg: 16px;
 }
 
+// ─── Основной контейнер ───
+
 .card-list-files {
   height: 87.5%;
   margin: 15px;
@@ -45,6 +47,8 @@
   align-items: center;
 }
 
+// ─── Папки ───
+
 .folder-grid {
   display: flex;
   flex-wrap: wrap;
@@ -52,6 +56,10 @@
   gap: 10px;
   padding: 20px 20px 0;
   width: 100%;
+
+  &:empty {
+    padding: 0;
+  }
 }
 
 .folder {
@@ -117,12 +125,25 @@
   text-overflow: ellipsis;
 }
 
+// ─── Разделитель — скрываем если folder-grid пустой ───
+
+.folder-divider {
+  border: 0;
+  border-top: 1px solid var(--border);
+  width: calc(100% - 40px);
+  margin: 20px auto 0;
+
+  &:empty { display: none; }
+}
+
 hr {
   border: 0 !important;
   border-top: 1px solid var(--border) !important;
   width: calc(100% - 40px) !important;
   margin: 20px auto 0 !important;
 }
+
+// ─── Файлы ───
 
 .file-grid {
   padding: 20px;
@@ -188,6 +209,8 @@ hr {
   flex-shrink: 0;
 }
 
+// ─── Превью ───
+
 .preview {
   height: 180px;
   background: rgba(255,255,255,.025);
@@ -217,65 +240,7 @@ hr {
   border-radius: var(--radius-sm);
 }
 
-/* ─── ДИАЛОГ ПРЕВЬЮ ИЗОБРАЖЕНИЙ ─── */
-::ng-deep .image-preview-dialog.p-dialog {
-  border-radius: 14px !important;
-  overflow: hidden !important;
-  border: 1px solid rgba(255,255,255,.1) !important;
-  box-shadow: 0 32px 80px rgba(0,0,0,.7) !important;
-
-  .p-dialog-header { display: none !important; }
-
-  .p-dialog-content {
-    padding: 0 !important;
-    background: #0a0a0a !important;
-    border-radius: 14px !important;
-    overflow: hidden !important;
-  }
-}
-
-.img-preview-root {
-  display: flex;
-  flex-direction: column;
-  max-height: 90vh;
-}
-
-.img-preview-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-  border-bottom: 1px solid #222;
-  flex-shrink: 0;
-  background: #111;
-}
-
-.img-preview-title {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 14px;
-  color: #f0f0f0;
-  font-weight: 500;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 700px;
-}
-
-.img-preview-body {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #0a0a0a;
-  overflow: auto;
-  max-height: calc(90vh - 52px);
-}
-
-.img-preview-full {
-  max-width: 100%;
-  max-height: calc(90vh - 52px);
-  object-fit: contain;
-  display: block;
-}
+// ─── Кнопки ───
 
 ::ng-deep {
   .p-button.p-button-text.p-button-outlined {
@@ -308,9 +273,10 @@ hr {
   }
 }
 
-/* ─── BREADCRUMBS ─── */
+// ─── Breadcrumbs ───
+
 .fs-breadcrumbs {
-  padding: 12px 20px 0;
+  padding: 19px 20px 0;
   position: relative;
   z-index: 1;
 }
@@ -370,7 +336,69 @@ hr {
   }
 }
 
-/* ─── ВИДЕО ─── */
+// ─── Превью изображений ───
+
+::ng-deep .image-preview-dialog.p-dialog {
+  border-radius: 14px !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(255,255,255,.1) !important;
+  box-shadow: 0 32px 80px rgba(0,0,0,.7) !important;
+
+  .p-dialog-header { display: none !important; }
+
+  .p-dialog-content {
+    padding: 0 !important;
+    background: #0a0a0a !important;
+    border-radius: 14px !important;
+    overflow: hidden !important;
+  }
+}
+
+.img-preview-root {
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+}
+
+.img-preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid #222;
+  flex-shrink: 0;
+  background: #111;
+}
+
+.img-preview-title {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: #f0f0f0;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 700px;
+}
+
+.img-preview-body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0a0a0a;
+  overflow: auto;
+  max-height: calc(90vh - 52px);
+}
+
+.img-preview-full {
+  max-width: 100%;
+  max-height: calc(90vh - 52px);
+  object-fit: contain;
+  display: block;
+}
+
+// ─── Видео ───
+
 .preview-video {
   cursor: pointer;
 
@@ -436,7 +464,8 @@ hr {
   }
 }
 
-/* ─── ВИДЕО ДИАЛОГ ─── */
+// ─── Видео диалог ───
+
 ::ng-deep .video-dialog.p-dialog {
   border-radius: 14px !important;
   overflow: hidden !important;
@@ -672,7 +701,8 @@ hr {
   display: inline-block;
 }
 
-/* ─── DRAG & DROP OVERLAY ─── */
+// ─── Drag & drop overlay ───
+
 .drop-overlay {
   position: absolute;
   inset: 0;
@@ -712,7 +742,8 @@ hr {
   }
 }
 
-/* ─── ДОКУМЕНТ / PDF / ZIP ПРЕВЬЮ В КАРТОЧКЕ ─── */
+// ─── Документ / PDF / ZIP превью ───
+
 .preview-doc {
   cursor: pointer;
   flex-direction: column !important;
@@ -721,7 +752,6 @@ hr {
   position: relative;
   overflow: hidden;
 
-  /* иконка — стандартное состояние */
   i {
     font-size: 3.8rem !important;
     color: var(--text3) !important;
@@ -729,7 +759,6 @@ hr {
     transform: translateY(0);
   }
 
-  /* подсказка — скрыта */
   .doc-open-hint {
     position: absolute;
     bottom: -20px;
@@ -745,13 +774,10 @@ hr {
     pointer-events: none;
   }
 
-  /* hover — иконка поднимается, текст появляется снизу */
   &:hover {
     background: rgba(255,255,255,.05) !important;
 
-    i {
-      transform: translateY(-10px);
-    }
+    i { transform: translateY(-10px); }
 
     .doc-open-hint {
       opacity: 1;
@@ -761,16 +787,14 @@ hr {
   }
 }
 
-/* PDF — красная иконка */
 .preview-pdf {
-  i { color: rgba(231, 76, 60, 0.45) !important; }
-  &:hover i { color: rgba(231, 76, 60, 0.8) !important; }
+  i { color: rgba(231,76,60,.45) !important; }
+  &:hover i { color: rgba(231,76,60,.8) !important; }
 }
 
-/* ZIP — оранжевая иконка */
 .preview-zip {
-  i { color: rgba(243, 156, 18, 0.45) !important; }
-  &:hover i { color: rgba(243, 156, 18, 0.8) !important; }
+  i { color: rgba(243,156,18,.45) !important; }
+  &:hover i { color: rgba(243,156,18,.8) !important; }
 }
 
 .doc-open-hint {
@@ -779,7 +803,8 @@ hr {
   font-family: 'DM Sans', sans-serif;
 }
 
-/* ─── ДИАЛОГ ПРОСМОТРА ДОКУМЕНТОВ ─── */
+// ─── Диалог просмотра документов ───
+
 ::ng-deep .doc-dialog.p-dialog {
   border-radius: 14px !important;
   overflow: hidden !important;
@@ -843,9 +868,7 @@ hr {
   scrollbar-width: thin;
 }
 
-.pdf-content {
-  background: #525659 !important;
-}
+.pdf-content { background: #525659 !important; }
 
 .zip-content {
   background: #0d0d0d !important;
@@ -882,7 +905,8 @@ hr {
   img { max-width: 100%; height: auto; }
 }
 
-/* ─── PDF ─── */
+// ─── PDF ───
+
 .pdf-pages {
   display: flex;
   flex-direction: column;
@@ -899,10 +923,9 @@ hr {
   border-radius: 2px;
 }
 
-/* ─── ZIP ДЕРЕВО ─── */
-.zip-tree {
-  padding: 8px 0;
-}
+// ─── ZIP дерево ───
+
+.zip-tree { padding: 8px 0; }
 
 .zip-entry {
   display: flex;
@@ -917,7 +940,6 @@ hr {
 
   &:hover {
     background: rgba(255,255,255,.04);
-
     .zip-download-btn { opacity: 1; }
   }
 }
@@ -930,17 +952,8 @@ hr {
   flex: 1;
 }
 
-.zip-icon-folder {
-  font-size: 14px !important;
-  color: #888 !important;
-  flex-shrink: 0;
-}
-
-.zip-icon-file {
-  font-size: 14px !important;
-  color: #555 !important;
-  flex-shrink: 0;
-}
+.zip-icon-folder { font-size: 14px !important; color: #888 !important; flex-shrink: 0; }
+.zip-icon-file   { font-size: 14px !important; color: #555 !important; flex-shrink: 0; }
 
 .zip-entry-name {
   font-family: 'DM Sans', sans-serif;
@@ -979,15 +992,11 @@ hr {
   opacity: 0;
   transition: opacity .15s, background .15s, border-color .15s;
 
-  i {
-    font-size: 11px !important;
-    color: #888 !important;
-  }
+  i { font-size: 11px !important; color: #888 !important; }
 
   &:hover {
     background: rgba(255,255,255,.08);
     border-color: #555;
-
     i { color: #f0f0f0 !important; }
   }
 }
@@ -1018,4 +1027,346 @@ hr {
 
   i { font-size: 2rem !important; color: #444; }
   p { font-size: 14px; line-height: 1.5; margin: 0; }
+}
+
+// ─── Диалог переименования ───
+
+::ng-deep .rename-dialog.p-dialog {
+  background: #111 !important;
+  border: 1px solid #222 !important;
+  border-radius: 16px !important;
+  box-shadow: 0 24px 64px rgba(0,0,0,.6) !important;
+
+  .p-dialog-header {
+    background: #111 !important;
+    border-bottom: 1px solid #222 !important;
+    border-radius: 16px 16px 0 0 !important;
+    padding: 16px 20px !important;
+
+    .p-dialog-title {
+      font-family: 'Syne', sans-serif !important;
+      font-size: 15px !important;
+      font-weight: 700 !important;
+      color: #f0f0f0 !important;
+      letter-spacing: -.3px !important;
+    }
+
+    .p-dialog-header-icon {
+      color: #444 !important;
+      &:hover { color: #888 !important; background: rgba(255,255,255,.06) !important; }
+    }
+  }
+
+  .p-dialog-content {
+    background: #111 !important;
+    padding: 20px !important;
+  }
+
+  .p-dialog-footer {
+    background: #111 !important;
+    border-top: 1px solid #222 !important;
+    border-radius: 0 0 16px 16px !important;
+    padding: 12px 20px !important;
+    display: flex !important;
+    justify-content: flex-end !important;
+    gap: 8px !important;
+
+    .p-button {
+      border-radius: 8px !important;
+      font-size: 13px !important;
+
+      &.p-button-text {
+        color: #888 !important;
+        background: transparent !important;
+        border: none !important;
+        &:hover { color: #f0f0f0 !important; background: rgba(255,255,255,.05) !important; }
+      }
+
+      &:not(.p-button-text) {
+        color: #f0f0f0 !important;
+        background: rgba(255,255,255,.08) !important;
+        border: 1px solid rgba(255,255,255,.14) !important;
+        &:hover:not(:disabled) { background: rgba(255,255,255,.14) !important; }
+        &:disabled { opacity: .3 !important; }
+      }
+    }
+  }
+}
+
+.rename-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #444;
+    font-family: 'DM Sans', sans-serif;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+  }
+
+  .p-inputtext {
+    background: #1a1a1a !important;
+    border: 1px solid #2e2e2e !important;
+    border-radius: 8px !important;
+    color: #f0f0f0 !important;
+    font-size: 14px !important;
+
+    &:focus { border-color: #444 !important; box-shadow: none !important; }
+    &::placeholder { color: #444 !important; }
+  }
+}
+
+// ─── Confirm диалог загрузки папки ───
+
+::ng-deep .confirm-dialog.p-dialog {
+  border-radius: 14px !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(255,255,255,.08) !important;
+  box-shadow: 0 32px 80px rgba(0,0,0,.7) !important;
+
+  .p-dialog-header { display: none !important; }
+
+  .p-dialog-content {
+    padding: 0 !important;
+    background: #111 !important;
+    border-radius: 14px !important;
+  }
+}
+
+.confirm-root {
+  display: flex;
+  flex-direction: column;
+  padding: 28px 28px 20px;
+  gap: 12px;
+}
+
+.confirm-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(74,158,255,.12);
+  border: 1px solid rgba(74,158,255,.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  i {
+    font-size: 1.1rem !important;
+    color: #4a9eff !important;
+  }
+}
+
+.confirm-body { display: flex; flex-direction: column; gap: 6px; }
+
+.confirm-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: #f0f0f0;
+  margin: 0;
+  letter-spacing: -.3px;
+}
+
+.confirm-message {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: #888;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  padding-top: 8px;
+  border-top: 1px solid #1e1e1e;
+  margin-top: 4px;
+}
+
+::ng-deep .confirm-actions .p-button {
+  border-radius: 8px !important;
+  font-family: 'DM Sans', sans-serif !important;
+  font-size: 13px !important;
+
+  &.p-button-text {
+    color: #888 !important;
+    background: transparent !important;
+    border: none !important;
+    &:hover { color: #f0f0f0 !important; background: rgba(255,255,255,.05) !important; }
+  }
+}
+
+::ng-deep .confirm-btn-upload {
+  background: rgba(255,255,255,.08) !important;
+  border: 1px solid rgba(255,255,255,.14) !important;
+  color: #f0f0f0 !important;
+
+  &:hover { background: rgba(255,255,255,.14) !important; }
+}
+
+// ─── Диалог перемещения файла ───
+
+::ng-deep .move-dialog.p-dialog {
+  background: #111 !important;
+  border: 1px solid #222 !important;
+  border-radius: 16px !important;
+  box-shadow: 0 24px 64px rgba(0,0,0,.6) !important;
+
+  .p-dialog-header {
+    background: #111 !important;
+    border-bottom: 1px solid #222 !important;
+    border-radius: 16px 16px 0 0 !important;
+    padding: 16px 20px !important;
+
+    .p-dialog-title {
+      font-family: 'Syne', sans-serif !important;
+      font-size: 15px !important;
+      font-weight: 700 !important;
+      color: #f0f0f0 !important;
+      letter-spacing: -.3px !important;
+    }
+
+    .p-dialog-header-icon {
+      color: #444 !important;
+      &:hover { color: #888 !important; background: rgba(255,255,255,.06) !important; }
+    }
+  }
+
+  .p-dialog-content {
+    background: #111 !important;
+    padding: 16px 20px !important;
+  }
+
+  .p-dialog-footer {
+    background: #111 !important;
+    border-top: 1px solid #222 !important;
+    border-radius: 0 0 16px 16px !important;
+    padding: 12px 20px !important;
+    display: flex !important;
+    justify-content: flex-end !important;
+    gap: 8px !important;
+
+    .p-button {
+      border-radius: 8px !important;
+      font-size: 13px !important;
+
+      &.p-button-text {
+        color: #888 !important;
+        background: transparent !important;
+        border: none !important;
+        &:hover { color: #f0f0f0 !important; background: rgba(255,255,255,.05) !important; }
+      }
+
+      &:not(.p-button-text) {
+        color: #f0f0f0 !important;
+        background: rgba(255,255,255,.08) !important;
+        border: 1px solid rgba(255,255,255,.14) !important;
+        &:hover:not(:disabled) { background: rgba(255,255,255,.14) !important; }
+        &:disabled { opacity: .3 !important; }
+      }
+    }
+  }
+}
+
+.move-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.move-filename {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid #222;
+  border-radius: 8px;
+
+  i {
+    font-size: 14px !important;
+    color: #888 !important;
+    flex-shrink: 0;
+  }
+
+  span {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: #f0f0f0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.move-tree {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 300px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,.08) transparent;
+}
+
+.move-folder-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background .15s;
+  border: 1px solid transparent;
+
+  i {
+    font-size: 13px !important;
+    color: #888 !important;
+    flex-shrink: 0;
+  }
+
+  span {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: #888;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &:hover {
+    background: rgba(255,255,255,.05);
+    span { color: #f0f0f0; }
+  }
+
+  &--active {
+    background: rgba(255,255,255,.07) !important;
+    border-color: #2e2e2e !important;
+    span { color: #f0f0f0 !important; }
+    i { color: #f0f0f0 !important; }
+  }
+
+  &--current {
+    cursor: default;
+    opacity: .45;
+    &:hover { background: transparent; }
+  }
+}
+
+.move-check {
+  font-size: 11px !important;
+  color: #f0f0f0 !important;
+  flex-shrink: 0;
+}
+
+.move-current-label {
+  font-size: 10px !important;
+  color: #444 !important;
+  font-family: 'DM Sans', sans-serif;
+  flex-shrink: 0;
 }

@@ -1,82 +1,116 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnInit, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { InfinityLife } from '../../../../services/infinity-life';
-import { MessageService } from 'primeng/api';
-import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
+import { MessageService, ConfirmationService, MenuItem } from 'primeng/api';
+import { CdkDragDrop, moveItemInArray, transferArrayItem, DragDropModule } from '@angular/cdk/drag-drop';
 import { Subtask, Task } from '../../../../interfaces/infinity-life/tasks.model';
-import { TableModule } from "primeng/table";
-import { ButtonModule } from 'primeng/button';
-import { Toast } from "primeng/toast";
-import { DialogModule } from 'primeng/dialog';
-import { InputTextModule } from 'primeng/inputtext';
+import { CreateTaskDto } from '../../../../interfaces/infinity-life/create-task.model';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
-import { InplaceModule } from 'primeng/inplace';
-import { TieredMenuModule } from 'primeng/tieredmenu';
-import { ConfirmationService } from 'primeng/api';
-import { MenuItem } from 'primeng/api';
-import { SelectModule } from 'primeng/select';
-import { TextareaModule } from 'primeng/textarea';
-import { ProgressBarModule } from 'primeng/progressbar';
-import { ToastModule } from 'primeng/toast';
-import { TagModule } from 'primeng/tag';
-import { MenuModule } from 'primeng/menu';
 import { CheckboxModule } from 'primeng/checkbox';
-import { CreateTaskDto } from '../../../../interfaces/infinity-life/create-task.model';
-import { CreateSubtaskDto } from '../../../../interfaces/infinity-life/create-subtask.model';
-import { DragDropModule } from '@angular/cdk/drag-drop';
+import { DatePickerModule } from 'primeng/datepicker';
+import { DialogModule } from 'primeng/dialog';
+import { InplaceModule } from 'primeng/inplace';
+import { InputTextModule } from 'primeng/inputtext';
+import { MenuModule } from 'primeng/menu';
+import { ProgressBarModule } from 'primeng/progressbar';
+import { SelectModule } from 'primeng/select';
+import { TagModule } from 'primeng/tag';
+import { TextareaModule } from 'primeng/textarea';
+import { Toast, ToastModule } from 'primeng/toast';
 
 @Component({
   selector: 'app-kanban-board',
   imports: [
-  DragDropModule,
-  CheckboxModule,
-  MenuModule,
-  TagModule,
-  ProgressBarModule,
-  ToastModule,
-  SelectModule,
-  TextareaModule,
-  TieredMenuModule,
-  InplaceModule,  
-  TableModule, 
-  ButtonModule, 
-  Toast, 
-  DialogModule, 
-  InputTextModule, 
-  CommonModule, 
-  FormsModule,
-  CardModule
+    CommonModule,
+    FormsModule,
+    DragDropModule,
+    ButtonModule,
+    CardModule,
+    CheckboxModule,
+    DatePickerModule,
+    DialogModule,
+    InplaceModule,
+    InputTextModule,
+    MenuModule,
+    ProgressBarModule,
+    SelectModule,
+    TagModule,
+    TextareaModule,
+    Toast,
+    ToastModule,
   ],
   templateUrl: './kanban-board.html',
   styleUrl: './kanban-board.scss',
-  providers:[MessageService, ConfirmationService,],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  providers: [MessageService, ConfirmationService],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KanbanBoard implements OnInit {
   private tasksService = inject(InfinityLife);
   private messageService = inject(MessageService);
   private cdr = inject(ChangeDetectorRef);
 
+  readonly today = new Date();
+
   columns = this.tasksService.columns;
   isLoading = this.tasksService.isLoading.asReadonly();
 
+  // ─── Column dialogs ───
+  showCreateColumnDialog = signal(false);
   showRenameColumnDialog = signal(false);
   columnToRename = signal<any>(null);
+  newColumnName = signal('');
   newColumnNameForRename = signal('');
-  showCreateColumnDialog = signal(false);
+
+  // ─── Task dialogs ───
   showCreateTaskDialog = signal(false);
   showTaskDetailDialog = signal(false);
   selectedTask = signal<Task | null>(null);
   currentColumnId = signal<string | null>(null);
-  newColumnName = signal('');
   newSubtaskTitle = signal('');
+
+  // ─── Date signals (Date | null для p-datepicker) ───
+  newTaskDueDate = signal<Date | null>(null);
+  detailDueDate = signal<Date | null>(null);
+
+  // ─── Confirm ───
+  confirmVisible = signal(false);
+  confirmTitle = signal('');
+  confirmMessage = signal('');
+  private confirmCallback: (() => void) | null = null;
+
   newTask = signal<CreateTaskDto>({
     title: '',
     notes: '',
     priority: 'MEDIUM',
-    columnId: null
+    columnId: null,
+    dueDate: null,
+    color: null,
   });
+
+  readonly labelColors = [
+    { value: null,      label: 'Нет',         hex: 'transparent' },
+    { value: '#e05555', label: 'Красный',     hex: '#e05555' },
+    { value: '#e08c2a', label: 'Оранжевый',   hex: '#e08c2a' },
+    { value: '#d4b84a', label: 'Жёлтый',     hex: '#d4b84a' },
+    { value: '#4caf76', label: 'Зелёный',     hex: '#4caf76' },
+    { value: '#4a9eff', label: 'Синий',       hex: '#4a9eff' },
+    { value: '#9c6bda', label: 'Фиолетовый',  hex: '#9c6bda' },
+  ];
+
+  readonly priorities = [
+    { label: 'Высокий', value: 'HIGH' },
+    { label: 'Средний', value: 'MEDIUM' },
+    { label: 'Низкий',  value: 'LOW' },
+  ];
 
   columnMenuItems: MenuItem[] | undefined;
 
@@ -84,20 +118,56 @@ export class KanbanBoard implements OnInit {
     this.loadBoard();
   }
 
+  ngOnInit() {
+    this.columnMenuItems = [
+      { label: 'Переименовать', icon: 'pi pi-pencil' },
+      { separator: true },
+      { label: 'Удалить колонку', icon: 'pi pi-trash' },
+    ];
+  }
+
+  // ─── Confirm ───
+
+  openConfirm(title: string, message: string, callback: () => void) {
+    this.confirmTitle.set(title);
+    this.confirmMessage.set(message);
+    this.confirmCallback = callback;
+    this.confirmVisible.set(true);
+  }
+
+  onConfirmAccept() {
+    this.confirmVisible.set(false);
+    if (this.confirmCallback) {
+      this.confirmCallback();
+      this.confirmCallback = null;
+    }
+  }
+
+  onConfirmReject() {
+    this.confirmVisible.set(false);
+    this.confirmCallback = null;
+  }
+
+  // ─── Date utils ───
+
+  isoToDate(iso: string | null | undefined): Date | null {
+    if (!iso) return null;
+    const d = new Date(iso);
+    return isNaN(d.getTime()) ? null : d;
+  }
+
+  dateToIso(date: Date | null): string | null {
+    return date ? date.toISOString() : null;
+  }
+
+  // ─── Board ───
+
   loadBoard() {
     this.tasksService.loadBoard().subscribe({
       next: (columns) => {
-        const newColumns = columns.map(col => ({ ...col, tasks: [...(col.tasks || [])] }));
-        this.columns.set(newColumns);
+        this.columns.set(columns.map(col => ({ ...col, tasks: [...(col.tasks || [])] })));
       },
-      error: () => {
-        this.messageService.add({ 
-          severity: 'secondary', 
-          summary: 'Ошибка', 
-          detail: 'Не удалось загрузить доску',
-          key: 'br'
-        });
-      }
+      error: () => this.toast('Не удалось загрузить доску'),
     });
   }
 
@@ -105,101 +175,76 @@ export class KanbanBoard implements OnInit {
     this.loadBoard();
   }
 
-  ngOnInit() {
-    this.columnMenuItems = [
-      {
-        label: 'Переименовать',
-        icon: 'pi pi-pencil',
-      },
-      {
-        separator: true
-      },
-      {
-        label: 'Удалить колонку',
-        icon: 'pi pi-trash',
-      }
-    ];
-  }
+  // ─── Columns ───
 
   openColumnMenu(event: Event, column: any, menu: any) {
     if (!menu || !this.columnMenuItems) return;
-    const menuItems = this.columnMenuItems.map(item => ({
+    menu.model = this.columnMenuItems.map(item => ({
       ...item,
-      data: column,
       command: () => {
-        if (item.label === 'Переименовать') {
-          this.renameColumn(column);
-        } 
-        else if (item.label === 'Удалить колонку') {
-          const overlay = document.querySelector('.p-menu-overlay');
-          if (overlay) {
-            overlay.remove();
-          }
-          this.deleteColumnAction(column);
+        if (item.label === 'Переименовать') this.renameColumn(column);
+        if (item.label === 'Удалить колонку') {
+          this.openConfirm(
+            'Удалить колонку',
+            `Удалить колонку «${column.name}» и все её задачи?`,
+            () => this.deleteColumnAction(column),
+          );
         }
-      }
+      },
     }));
-    menu.model = menuItems;
     menu.toggle(event);
   }
 
-deleteColumnAction(column: any) {
-  if (!column) return;
-  this.cdr.markForCheck();
-  this.tasksService.deleteColumn(column.id).subscribe({
-    next: () => {
-      this.messageService.add({ 
-        severity: 'seconadry', 
-        summary: 'Успех', 
-        detail: 'Колонка удалена' 
-      });
-      this.loadBoard();
-    },
-    error: () => {
-      this.messageService.add({ 
-        severity: 'secondary', 
-        summary: 'Ошибка', 
-        detail: 'Не удалось удалить колонку' 
-      });
-    }
-  });
-}
-
-  saveColumnRename() {
-    const column = this.columnToRename();
-    const newName = this.newColumnNameForRename().trim();
-
-    if (!column || !newName || newName === column.name) {
-      this.closeRenameDialog();
-      return;
-    }
-
-    this.tasksService.updateColumn(column.id, { name: newName }).subscribe({
+  createColumn() {
+    const name = this.newColumnName().trim();
+    if (!name) return;
+    this.tasksService.createColumn({ name }).subscribe({
       next: () => {
-        this.messageService.add({ 
-          severity: 'success', 
-          summary: 'Успех', 
-          detail: 'Колонка переименована' 
-        });
         this.refreshBoard();
-        this.closeRenameDialog();
+        this.showCreateColumnDialog.set(false);
+        this.newColumnName.set('');
+        this.toast('Колонка создана', true);
       },
-      error: () => {
-        this.messageService.add({ 
-          severity: 'error', 
-          summary: 'Ошибка', 
-          detail: 'Не удалось переименовать колонку' 
-        });
-      }
+      error: () => this.toast('Не удалось создать колонку'),
+    });
+  }
+
+  createColumnAndClose(inplace: any) {
+    const name = this.newColumnName().trim();
+    if (!name) return;
+    this.tasksService.createColumn({ name }).subscribe({
+      next: () => {
+        this.refreshBoard();
+        this.newColumnName.set('');
+        this.toast('Колонка создана', true);
+        inplace.deactivate();
+      },
+      error: () => this.toast('Не удалось создать колонку'),
     });
   }
 
   renameColumn(column: any) {
     if (!column) return;
-
     this.columnToRename.set({ ...column });
     this.newColumnNameForRename.set(column.name || '');
     this.showRenameColumnDialog.set(true);
+  }
+
+  saveColumnRename() {
+    const column = this.columnToRename();
+    const newName = this.newColumnNameForRename().trim();
+    if (!column || !newName || newName === column.name) {
+      this.closeRenameDialog();
+      return;
+    }
+    this.tasksService.updateColumn(column.id, { name: newName }).subscribe({
+      next: () => {
+        this.toast('Колонка переименована', true);
+        this.refreshBoard();
+        this.closeRenameDialog();
+      },
+      error: () => this.toast('Не удалось переименовать колонку'),
+    });
   }
 
   closeRenameDialog() {
@@ -208,334 +253,209 @@ deleteColumnAction(column: any) {
     this.newColumnNameForRename.set('');
   }
 
-  addSubtask(taskId: string, closeCallback: any) {
-    const title = this.newSubtaskTitle().trim();
-    if (!title) return;
-
-    const dto: CreateSubtaskDto = { title, taskId };
-
-    this.tasksService.createSubtask(dto).subscribe({
-      next: (newSubtask) => {
-        const current = this.selectedTask();
-        if (current && current.id === taskId) {
-          const newSubtasks = [...(current.subtasks || []), newSubtask];
-
-          const completedCount = newSubtasks.filter((s: any) => s.isCompleted).length;
-          const progress = newSubtasks.length > 0 
-            ? Math.round((completedCount / newSubtasks.length) * 100) 
-            : 0;
-
-          this.selectedTask.set({
-            ...current,
-            subtasks: newSubtasks,
-            progress
-          });
-        }
-
-        this.newSubtaskTitle.set('');
-        closeCallback();
-      },
-      error: () => this.messageService.add({ 
-        severity: 'secondary', 
-        summary: 'Ошибка', 
-        detail: 'Не удалось добавить подзадачу',
-        key: 'br'
-      })
-    });
-  }
-
-  deleteTask(taskId: string) {
-    if (!confirm('Удалить задачу и все её подзадачи?')) {
-      return;
-    }
-
-    this.tasksService.deleteTask(taskId).subscribe({
+  deleteColumnAction(column: any) {
+    if (!column) return;
+    this.cdr.markForCheck();
+    this.tasksService.deleteColumn(column.id).subscribe({
       next: () => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Успех',
-          detail: 'Задача удалена'
-        });
+        this.toast('Колонка удалена', true);
         this.loadBoard();
-        this.showTaskDetailDialog.set(false);
       },
-      error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Ошибка',
-          detail: 'Не удалось удалить задачу'
-        });
-      }
+      error: () => this.toast('Не удалось удалить колонку'),
     });
   }
 
-  deleteSubtask(subtaskId: string, taskId: string) {
-    if (!confirm('Удалить подзадачу?')) {
-      return;
-    }
+  // ─── Tasks ───
 
-    this.tasksService.deleteSubtask(subtaskId).subscribe({
-      next: () => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Успех',
-          detail: 'Подзадача удалена'
-        });
-        const current = this.selectedTask();
-        if (current && current.id === taskId) {
-          const newSubtasks = (current.subtasks || []).filter(s => s.id !== subtaskId);
-          
-          const completedCount = newSubtasks.filter(s => s.isCompleted).length;
-          const newProgress = newSubtasks.length > 0 
-            ? Math.round((completedCount / newSubtasks.length) * 100) 
-            : 0;
-
-          this.selectedTask.set({
-            ...current,
-            subtasks: newSubtasks,
-            progress: newProgress
-          });
-        }
-      },
-      error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Ошибка',
-          detail: 'Не удалось удалить подзадачу'
-        });
-      }
-    });
-  }
-drop(event: CdkDragDrop<Task[]>, newColumnId: string) {
-  if (event.previousContainer === event.container) {
-    moveItemInArray(
-      event.container.data, 
-      event.previousIndex, 
-      event.currentIndex
-    );
-  } else {
-    const task = event.previousContainer.data[event.previousIndex];
-    transferArrayItem(
-      event.previousContainer.data,
-      event.container.data,
-      event.previousIndex,
-      event.currentIndex
-    );
-
-    this.tasksService.moveTaskToColumn(task.id, newColumnId).subscribe({
-      next: () => {
-        this.messageService.add({
-          severity: 'secondary',
-          summary: 'Успех',
-          detail: 'Задача перемещена'
-        });
-      },
-      error: () => {
-        this.messageService.add({
-          severity: 'secondary',
-          summary: 'Ошибка',
-          detail: 'Не удалось переместить задачу'
-        });
-        this.loadBoard();
-      }
-    });
-  }
-}
-
-  priorities = [
-  { label: 'Высокий', value: 'HIGH' },
-  { label: 'Средний', value: 'MEDIUM' },
-  { label: 'Низкий', value: 'LOW' }
-];
   openCreateTaskDialog(columnId: string) {
     this.currentColumnId.set(columnId);
-    this.newTask.set({
-      title: '',
-      notes: '',
-      priority: 'MEDIUM',
-      columnId: columnId
-    });
+    this.newTask.set({ title: '', notes: '', priority: 'MEDIUM', columnId, dueDate: null, color: null });
+    this.newTaskDueDate.set(null);
     this.showCreateTaskDialog.set(true);
   }
 
-  private calculateProgress(subtasks: Subtask[] | undefined): number {
-    if (!subtasks || subtasks.length === 0) return 0;
-    const completedCount = subtasks.filter(s => s.isCompleted === true).length;
-    return Math.round((completedCount / subtasks.length) * 100);
-  }
-
   openTaskDetail(task: Task) {
-    const taskWithProgress = {
-      ...task,
-      progress: this.calculateProgress(task.subtasks)
-    };
-
-    this.selectedTask.set(taskWithProgress);
+    this.selectedTask.set({ ...task, progress: this.calculateProgress(task.subtasks) });
+    this.detailDueDate.set(this.isoToDate(task.dueDate));
     this.showTaskDetailDialog.set(true);
   }
 
   createTask() {
     const task = this.newTask();
-    
     if (!task.title?.trim()) {
-      this.messageService.add({ 
-        severity: 'secondary', 
-        summary: 'Ошибка', 
-        detail: 'Название задачи обязательно',
-        key: 'br'
-      });
+      this.toast('Название задачи обязательно');
       return;
     }
-
-    this.tasksService.createTask(task).subscribe({
+    const dto = { ...task, dueDate: this.dateToIso(this.newTaskDueDate()) };
+    this.tasksService.createTask(dto).subscribe({
       next: () => {
-        this.messageService.add({ 
-          severity: 'secondary', 
-          summary: 'Успех', 
-          detail: 'Задача создана',
-          key: 'br'
-        });
+        this.toast('Задача создана', true);
         this.loadBoard();
         this.showCreateTaskDialog.set(false);
       },
-      error: () => {
-        this.messageService.add({ 
-          severity: 'secondary', 
-          summary: 'Ошибка', 
-          detail: 'Не удалось создать задачу',
-          key: 'br'
-        });
-      }
+      error: () => this.toast('Не удалось создать задачу'),
     });
   }
-  
-  toggleCompletion(item: Task | Subtask) {
-    const isSubtask = 'taskId' in item;
 
-    if (isSubtask) {
+  saveTaskField(field: 'dueDate' | 'color', value: any) {
+    const task = this.selectedTask();
+    if (!task) return;
+    const dto: any = {};
+    if (field === 'dueDate') dto.dueDate = value instanceof Date ? value.toISOString() : null;
+    else dto.color = value;
+    this.tasksService.updateTask(task.id, dto).subscribe({
+      next: () => {
+        this.selectedTask.set({ ...task, ...dto });
+        this.loadBoard();
+      },
+      error: () => this.toast('Не удалось сохранить'),
+    });
+  }
+
+  onDetailDateChange(date: Date | null) {
+    this.detailDueDate.set(date);
+    this.saveTaskField('dueDate', date);
+  }
+
+  deleteTask(taskId: string) {
+    this.openConfirm('Удалить задачу', 'Удалить задачу и все её подзадачи?', () => {
+      this.tasksService.deleteTask(taskId).subscribe({
+        next: () => {
+          this.toast('Задача удалена', true);
+          this.loadBoard();
+          this.showTaskDetailDialog.set(false);
+        },
+        error: () => this.toast('Не удалось удалить задачу'),
+      });
+    });
+  }
+
+  // ─── Subtasks ───
+
+  addSubtask(taskId: string, closeCallback: any) {
+    const title = this.newSubtaskTitle().trim();
+    if (!title) return;
+    this.tasksService.createSubtask({ title, taskId }).subscribe({
+      next: (newSubtask) => {
+        const current = this.selectedTask();
+        if (current?.id === taskId) {
+          const newSubtasks = [...(current.subtasks || []), newSubtask];
+          this.selectedTask.set({ ...current, subtasks: newSubtasks, progress: this.calculateProgress(newSubtasks) });
+        }
+        this.newSubtaskTitle.set('');
+        closeCallback();
+      },
+      error: () => this.toast('Не удалось добавить подзадачу'),
+    });
+  }
+
+  deleteSubtask(subtaskId: string, taskId: string) {
+    this.openConfirm('Удалить подзадачу', 'Вы уверены?', () => {
+      this.tasksService.deleteSubtask(subtaskId).subscribe({
+        next: () => {
+          this.toast('Подзадача удалена', true);
+          const current = this.selectedTask();
+          if (current?.id === taskId) {
+            const newSubtasks = (current.subtasks || []).filter(s => s.id !== subtaskId);
+            this.selectedTask.set({ ...current, subtasks: newSubtasks, progress: this.calculateProgress(newSubtasks) });
+          }
+        },
+        error: () => this.toast('Не удалось удалить подзадачу'),
+      });
+    });
+  }
+
+  // ─── Completion ───
+
+  toggleCompletion(item: Task | Subtask) {
+    if ('taskId' in item) {
       this.optimisticSubtaskToggle(item as Subtask);
     } else {
       this.tasksService.toggleTaskCompletion(item.id).subscribe({
         next: () => this.refreshBoard(),
-        error: () => {
-          this.messageService.add({ 
-            severity: 'error', 
-            summary: 'Ошибка', 
-            detail: 'Не удалось изменить статус задачи' 
-          });
-        }
+        error: () => this.toast('Не удалось изменить статус задачи'),
       });
     }
   }
 
   private optimisticSubtaskToggle(subtask: Subtask) {
-    const currentTask = this.selectedTask();
-    if (!currentTask?.subtasks?.length) return;
-    const updatedSubtasks = currentTask.subtasks.map(s =>
-      s.id === subtask.id
-        ? { ...s, isCompleted: !s.isCompleted }
-        : s
+    const current = this.selectedTask();
+    if (!current?.subtasks?.length) return;
+    const updated = current.subtasks.map(s =>
+      s.id === subtask.id ? { ...s, isCompleted: !s.isCompleted } : s,
     );
-    const completedCount = updatedSubtasks.filter(s => s.isCompleted).length;
-    const newProgress = updatedSubtasks.length > 0
-      ? Math.round((completedCount / updatedSubtasks.length) * 100)
-      : 0;
-    this.selectedTask.set({
-      ...currentTask,
-      subtasks: updatedSubtasks,
-      progress: newProgress
-    });
+    this.selectedTask.set({ ...current, subtasks: updated, progress: this.calculateProgress(updated) });
     this.tasksService.toggleSubtaskCompletion(subtask.id).subscribe({
       error: () => {
         this.revertOptimisticSubtaskToggle(subtask.id);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Ошибка',
-          detail: 'Не удалось изменить статус подзадачи'
-        });
-      }
+        this.toast('Не удалось изменить статус подзадачи');
+      },
     });
   }
 
   private revertOptimisticSubtaskToggle(subtaskId: string) {
-    const currentTask = this.selectedTask();
-    if (!currentTask?.subtasks?.length) return;
-
-    const revertedSubtasks = currentTask.subtasks.map(s =>
-      s.id === subtaskId
-        ? { ...s, isCompleted: !s.isCompleted }
-        : s
+    const current = this.selectedTask();
+    if (!current?.subtasks?.length) return;
+    const reverted = current.subtasks.map(s =>
+      s.id === subtaskId ? { ...s, isCompleted: !s.isCompleted } : s,
     );
-
-    const completedCount = revertedSubtasks.filter(s => s.isCompleted).length;
-    const newProgress = revertedSubtasks.length > 0
-      ? Math.round((completedCount / revertedSubtasks.length) * 100)
-      : 0;
-
-    this.selectedTask.set({
-      ...currentTask,
-      subtasks: revertedSubtasks,
-      progress: newProgress
-    });
+    this.selectedTask.set({ ...current, subtasks: reverted, progress: this.calculateProgress(reverted) });
   }
 
-  createColumn() {
-    const name = this.newColumnName().trim();
-    if (!name) return;
-    this.tasksService.createColumn({ name }).subscribe({
-      next: () => {
-        this.refreshBoard();  
-        this.showCreateColumnDialog.set(false);
-        this.newColumnName.set('');
-        this.messageService.add({ severity: 'secondary', summary: 'Успех', detail: 'Колонка создана', key: 'br' });
-      },
-      error: () => this.messageService.add({ severity: 'secondary', summary: 'Ошибка', detail: 'Не удалось создать колонку', key: 'br' })
-    });
+  private calculateProgress(subtasks: Subtask[] | undefined): number {
+    if (!subtasks?.length) return 0;
+    return Math.round((subtasks.filter(s => s.isCompleted).length / subtasks.length) * 100);
   }
 
-  createColumnAndClose(inplace: any) {
-    const name = this.newColumnName().trim();
-    if (!name) return;
+  // ─── Drag & Drop ───
 
-    this.tasksService.createColumn({ name }).subscribe({
-      next: () => {
-        this.refreshBoard();  
-        this.newColumnName.set('');
-        this.messageService.add({ 
-          severity: 'secondary', 
-          summary: 'Успех', 
-          detail: 'Колонка создана',
-          key: 'br'
-        });
-        inplace.deactivate();
-      },
-      error: () => {
-        this.messageService.add({ 
-          severity: 'secondary', 
-          summary: 'Ошибка', 
-          detail: 'Не удалось создать колонку',
-          key: 'br'
-        });
-      }
-    });
-  }
-  
-  getPriorityLabel(p: string): string {
-    const map: any = { HIGH: 'Высокий', MEDIUM: 'Средний', LOW: 'Низкий' };
-    return map[p] || p;
-  }
-
-  getPrioritySeverity(p: string): 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast' | null {
-    switch (p) {
-      case 'HIGH':
-        return 'danger';
-      case 'MEDIUM':
-        return 'warn';
-      case 'LOW':
-        return 'info';       
-      default:
-        return 'secondary';
+  drop(event: CdkDragDrop<Task[]>, newColumnId: string) {
+    if (event.previousContainer === event.container) {
+      moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
+    } else {
+      const task = event.previousContainer.data[event.previousIndex];
+      transferArrayItem(event.previousContainer.data, event.container.data, event.previousIndex, event.currentIndex);
+      this.tasksService.moveTaskToColumn(task.id, newColumnId).subscribe({
+        next: () => this.toast('Задача перемещена', true),
+        error: () => { this.toast('Не удалось переместить задачу'); this.loadBoard(); },
+      });
     }
   }
 
+  // ─── Helpers ───
+
+  isDueSoon(dueDate: string | null | undefined): boolean {
+    if (!dueDate) return false;
+    const diff = new Date(dueDate).getTime() - Date.now();
+    return diff > 0 && diff < 48 * 60 * 60 * 1000;
+  }
+
+  isOverdue(dueDate: string | null | undefined): boolean {
+    if (!dueDate) return false;
+    return new Date(dueDate).getTime() < Date.now();
+  }
+
+  formatDueDate(dueDate: string | null | undefined): string {
+    if (!dueDate) return '';
+    return new Date(dueDate).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+  }
+
+  getPriorityLabel(p: string): string {
+    const map: Record<string, string> = { HIGH: 'Высокий', MEDIUM: 'Средний', LOW: 'Низкий' };
+    return map[p] ?? p;
+  }
+
+  getPrioritySeverity(p: string): 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast' | null {
+    const map: Record<string, any> = { HIGH: 'danger', MEDIUM: 'warn', LOW: 'info' };
+    return map[p] ?? 'secondary';
+  }
+
+  private toast(detail: string, success = false) {
+    this.messageService.add({
+      severity: 'secondary',
+      summary: success ? 'Готово' : 'Ошибка',
+      detail,
+      key: 'br',
+    });
+  }
 }

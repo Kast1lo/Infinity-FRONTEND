@@ -1,53 +1,236 @@
+:host {
+  --bg:      #0a0a0a;
+  --bg2:     #111111;
+  --bg3:     #1a1a1a;
+  --border:  #222222;
+  --border2: #2e2e2e;
+  --text:    #f0f0f0;
+  --text2:   #888888;
+  --text3:   #444444;
+  --error:   #e05555;
+  --radius-sm: 8px;
+  --radius-lg: 18px;
+}
+
 .form-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 98vh;
-    width: 100%;
-    overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  width: 100%;
 }
+
 .form-card {
-    display: grid;
-    justify-content: center;
-    max-width: 400px;
-    padding: 50px;
-    border-radius: 18px;
-    background-color: rgba(0, 0, 0, 0.250);
-    border-color: var(--border-color-card);
-    border-width: 1px;
-    border-style: groove;
-    will-change: transform, opacity; 
-    animation: slideUpFade 1.5s cubic-bezier(0.15, 1.15, 0.35, 1) forwards;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 360px;
+  padding: 36px 32px 32px;
+  border-radius: var(--radius-lg);
+  background: var(--bg2);
+  background-image: radial-gradient(circle, rgba(255,255,255,.035) 1px, transparent 1px);
+  background-size: 28px 28px;
+  border: 1px solid var(--border);
+  animation: slideUpFade .7s cubic-bezier(0.15, 1.05, 0.35, 1) forwards;
 }
+
 @keyframes slideUpFade {
-    0% {
-        opacity: 0;
-        transform: translateY(550px);
-    }
-    100% {
-        opacity: 1;
-        transform: translateY(0);
-    }
+  from { opacity: 0; transform: translateY(32px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
-.logotype{
-    width: 90%;
-    padding-left: 45px;
-    padding-top: 30px;
-    padding-bottom: 30px;
+
+/* ─── ЛОГОТИП ─── */
+.logotype {
+  width: 230px;
+  display: block;
+  margin: 40px auto 54px;
 }
-:host ::ng-deep .p-button {
-    width: 95%;
-    margin: 0.5rem;
-    margin-top: 30px;
+
+/* ─── ИНПУТЫ ─── */
+.inputs-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
-:host ::ng-deep .p-floatlabel{
-    display: grid;
-    justify-content: center;
-    padding-top: 20px;
+
+/* враппер поля + ошибка */
+.field-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 10px;
 }
-.notreg{
-    margin: auto;
-    margin-top: 40px;
-    font-size: 16px;
-    color: var(--shadow-color-text);
+
+/* контейнер инпута */
+.input-field {
+  position: relative;
+  width: 100%;
+  height: 48px;
+}
+
+/* красная рамка при ошибке */
+.input-field--error {
+  ::ng-deep input.p-inputtext,
+  ::ng-deep .p-password-input {
+    border-color: var(--error) !important;
+  }
+}
+
+/* иконка слева */
+.field-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  pointer-events: none;
+  color: var(--text3);
+  font-size: 14px;
+}
+
+/* обычные инпуты */
+::ng-deep .input-field input.p-inputtext {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 48px !important;
+  background: var(--bg3) !important;
+  border: 1px solid var(--border2) !important;
+  border-radius: var(--radius-sm) !important;
+  color: var(--text) !important;
+  font-family: 'DM Sans', sans-serif !important;
+  font-size: 14px !important;
+  padding: 0 14px 0 42px !important;
+  box-sizing: border-box !important;
+  transition: border-color .2s !important;
+  box-shadow: none !important;
+  outline: none !important;
+
+  &:focus { border-color: var(--text3) !important; }
+  &::placeholder { color: var(--text3) !important; }
+}
+
+/* p-password враппер */
+::ng-deep .input-field p-password,
+::ng-deep .input-field .p-password {
+  display: block !important;
+  width: 100% !important;
+  height: 48px !important;
+  position: relative !important;
+}
+
+/* инпут пароля */
+::ng-deep .input-field .p-password-input {
+  width: 100% !important;
+  height: 48px !important;
+  background: var(--bg3) !important;
+  border: 1px solid var(--border2) !important;
+  border-radius: var(--radius-sm) !important;
+  color: var(--text) !important;
+  font-family: 'DM Sans', sans-serif !important;
+  font-size: 14px !important;
+  padding: 0 42px !important;
+  box-sizing: border-box !important;
+  transition: border-color .2s !important;
+  box-shadow: none !important;
+  outline: none !important;
+
+  &:focus { border-color: var(--text3) !important; }
+  &::placeholder { color: var(--text3) !important; }
+}
+
+/* иконка глаза */
+::ng-deep .input-field .p-password-toggle-mask-icon {
+  position: absolute !important;
+  right: 12px !important;
+  top: 50% !important;
+  margin: 0 !important;
+  transform: translateY(-50%) !important;
+  z-index: 3 !important;
+  color: var(--text3) !important;
+  cursor: pointer !important;
+  width: 16px !important;
+  height: 16px !important;
+
+  &:hover { color: var(--text2) !important; }
+}
+
+::ng-deep .input-field .p-password-meter,
+::ng-deep .input-field .p-password-info { display: none !important; }
+
+/* ─── ОШИБКА ПОД ПОЛЕМ ─── */
+.field-error {
+  font-size: 11px;
+  color: var(--error);
+  font-family: 'DM Sans', sans-serif;
+  padding-left: 4px;
+  animation: fadeIn .15s ease;
+}
+
+/* ─── КНОПКА ОТПРАВКИ ─── */
+.btn-submit {
+  margin-top: 30px;
+}
+
+::ng-deep .btn-submit .p-button {
+  width: 100% !important;
+  height: 48px !important;
+  border-radius: var(--radius-sm) !important;
+  background: var(--text) !important;
+  border: none !important;
+  color: #0a0a0a !important;
+  font-family: 'DM Sans', sans-serif !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  transition: opacity .2s !important;
+
+  &:hover:not(:disabled) { opacity: .88 !important; }
+  &:disabled { opacity: .35 !important; cursor: not-allowed !important; }
+}
+
+/* ─── НИЖНЯЯ ЧАСТЬ ─── */
+.notreg {
+  text-align: center;
+  font-size: 13px;
+  color: var(--text3);
+  font-family: 'DM Sans', sans-serif;
+  margin: 20px 0 20px;
+}
+
+::ng-deep .go-login .p-button {
+  width: 100% !important;
+  height: 44px !important;
+  border-radius: var(--radius-sm) !important;
+  background: transparent !important;
+  border: 1px solid var(--border2) !important;
+  color: var(--text2) !important;
+  font-family: 'DM Sans', sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  transition: background .2s, border-color .2s, color .2s !important;
+
+  &:hover {
+    background: rgba(255,255,255,.05) !important;
+    border-color: var(--text3) !important;
+    color: var(--text) !important;
+  }
+}
+
+/* ─── ОБЩАЯ ОШИБКА ─── */
+.error-msg {
+  margin-top: 12px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  background: rgba(224,85,85,.1);
+  border: 1px solid rgba(224,85,85,.2);
+  color: var(--error);
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  text-align: center;
+  animation: fadeIn .2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
