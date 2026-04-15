@@ -14,7 +14,6 @@
   <!-- ─── СЕРЕДИНА: навигация ─── -->
   <nav class="sb-nav">
 
-    <!-- активные пункты -->
     <a class="sb-item" routerLink="/profile" routerLinkActive="sb-item--active" [routerLinkActiveOptions]="{ exact: true }" pTooltip="Профиль" tooltipPosition="right">
       <i class="pi pi-home"></i>
     </a>
@@ -29,7 +28,6 @@
 
     <div class="sb-divider"></div>
 
-    <!-- заглушки — скоро -->
     <div class="sb-item sb-item--soon" pTooltip="Заметки — скоро" tooltipPosition="right">
       <i class="pi pi-file-edit"></i>
       <span class="sb-soon-badge">soon</span>
@@ -47,8 +45,20 @@
 
   </nav>
 
-  <!-- ─── НИЗ: настройки и выход ─── -->
+  <!-- ─── НИЗ: тема, настройки, выход ─── -->
   <div class="sb-bottom">
+
+    <!-- Переключатель темы -->
+    <button
+      class="sb-item sb-item--theme"
+      (click)="themeService.toggle()"
+      [pTooltip]="isDark() ? 'Светлая тема' : 'Тёмная тема'"
+      tooltipPosition="right">
+      <i [class]="isDark() ? 'pi pi-sun' : 'pi pi-moon'"></i>
+    </button>
+
+    <div class="sb-divider"></div>
+
     <a class="sb-item" routerLink="/edit" routerLinkActive="sb-item--active" pTooltip="Настройки" tooltipPosition="right">
       <i class="pi pi-cog"></i>
     </a>

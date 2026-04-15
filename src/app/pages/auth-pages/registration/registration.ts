@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { FloatLabelModule } from 'primeng/floatlabel';
@@ -6,9 +13,11 @@ import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
+import { TooltipModule } from 'primeng/tooltip';
 import { RegisterData } from '../../../interfaces/auth-interfaces/register-data.model';
 import { email, form, FormField, maxLength, minLength, required } from '@angular/forms/signals';
 import { AuthService } from '../../../services/auth';
+import { ThemeService } from '../../../services/theme';
 
 @Component({
   selector: 'app-registration',
@@ -21,34 +30,49 @@ import { AuthService } from '../../../services/auth';
     InputIconModule,
     PasswordModule,
     InputTextModule,
+    TooltipModule,
   ],
   templateUrl: './registration.html',
-  styleUrl: './registration.scss',
+  styleUrl:    './registration.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Registration {
-  private readonly router = inject(Router);
+  private readonly router      = inject(Router);
   private readonly authService = inject(AuthService);
-  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly cdr         = inject(ChangeDetectorRef);
+  readonly themeService        = inject(ThemeService);
 
   imagePath = 'infinityLogo.svg';
+  isDark    = computed(() => this.themeService.theme() === 'dark');
 
+  // ─── Экраны: 'register' | 'verify' ───
+  screen        = signal<'register' | 'verify'>('register');
+  pendingEmail  = signal('');
+
+  // ─── Код из 6 цифр — каждая цифра отдельно ───
+  codeDigits    = signal<string[]>(['', '', '', '', '', '']);
+  codeError     = signal<string | null>(null);
+  isVerifying   = signal(false);
+  isResending   = signal(false);
+  resendCooldown = signal(0); // секунды до повторной отправки
+
+  // ─── Форма регистрации ───
   registerModel = signal<RegisterData>({
-    username: '',
-    email: '',
+    username:     '',
+    email:        '',
     passwordHash: '',
   });
 
   registerForm = form(this.registerModel, (s) => {
-    required(s.username, { message: 'Логин обязателен' });
-    minLength(s.username, 3, { message: 'Логин должен содержать минимум 3 символа' });
+    required(s.username,      { message: 'Логин обязателен' });
+    minLength(s.username, 3,  { message: 'Логин должен содержать минимум 3 символа' });
     maxLength(s.username, 30, { message: 'Логин не должен превышать 30 символов' });
 
     required(s.email, { message: 'Email обязателен' });
-    email(s.email, { message: 'Введите корректный email' });
+    email(s.email,    { message: 'Введите корректный email' });
 
-    required(s.passwordHash, { message: 'Пароль обязателен' });
-    minLength(s.passwordHash, 6, { message: 'Пароль должен содержать минимум 6 символов' });
+    required(s.passwordHash,       { message: 'Пароль обязателен' });
+    minLength(s.passwordHash, 6,   { message: 'Пароль должен содержать минимум 6 символов' });
     maxLength(s.passwordHash, 128, { message: 'Пароль не должен превышать 128 символов' });
   });
 
@@ -59,54 +83,167 @@ export class Registration {
   get emailField()    { return this.registerForm.email(); }
   get passwordField() { return this.registerForm.passwordHash(); }
 
-  showUsernameError(): boolean {
-    return this.usernameField.touched() && !this.usernameField.valid();
-  }
+  showUsernameError(): boolean { return this.usernameField.touched() && !this.usernameField.valid(); }
+  showEmailError():    boolean { return this.emailField.touched()    && !this.emailField.valid(); }
+  showPasswordError(): boolean { return this.passwordField.touched() && !this.passwordField.valid(); }
 
-  showEmailError(): boolean {
-    return this.emailField.touched() && !this.emailField.valid();
-  }
+  usernameError(): string | null { return this.usernameField.errors()?.[0]?.message ?? null; }
+  emailError():    string | null { return this.emailField.errors()?.[0]?.message    ?? null; }
+  passwordError(): string | null { return this.passwordField.errors()?.[0]?.message ?? null; }
 
-  showPasswordError(): boolean {
-    return this.passwordField.touched() && !this.passwordField.valid();
-  }
-
-  usernameError(): string | null {
-    const errors = this.usernameField.errors();
-    return errors?.[0]?.message ?? null;
-  }
-
-  emailError(): string | null {
-    const errors = this.emailField.errors();
-    return errors?.[0]?.message ?? null;
-  }
-
-  passwordError(): string | null {
-    const errors = this.passwordField.errors();
-    return errors?.[0]?.message ?? null;
-  }
-
+  // ─── Отправка формы регистрации ───
   onSubmit(event: Event) {
     event.preventDefault();
-
     this.usernameField.markAsTouched();
     this.emailField.markAsTouched();
     this.passwordField.markAsTouched();
     this.cdr.markForCheck();
-
     if (!this.registerForm().valid()) return;
 
     this.isSubmitting.set(true);
     this.errorMessage.set(null);
 
     this.authService.register(this.registerModel()).subscribe({
-      next: () => {
+      next: (res) => {
         this.isSubmitting.set(false);
+        this.pendingEmail.set(res.email);
+        this.screen.set('verify');
+        this.startResendCooldown();
+        this.cdr.markForCheck();
       },
       error: (err) => {
         this.isSubmitting.set(false);
         this.errorMessage.set(err.error?.message || 'Ошибка регистрации. Попробуйте позже.');
+        this.cdr.markForCheck();
       },
     });
+  }
+
+  // ─── Ввод цифры кода ───
+  onDigitInput(event: Event, index: number) {
+    const input = event.target as HTMLInputElement;
+    const val   = input.value.replace(/\D/g, '').slice(-1);
+
+    const digits = [...this.codeDigits()];
+    digits[index] = val;
+    this.codeDigits.set(digits);
+    this.codeError.set(null);
+    this.cdr.markForCheck();
+
+    // Переходим к следующему полю
+    if (val && index < 5) {
+      const next = document.getElementById(`code-${index + 1}`) as HTMLInputElement;
+      next?.focus();
+    }
+
+    // Автоотправка когда все 6 цифр введены
+    if (digits.every(d => d !== '')) {
+      this.submitCode();
+    }
+  }
+
+  onDigitKeydown(event: KeyboardEvent, index: number) {
+    if (event.key === 'Backspace') {
+      const digits = [...this.codeDigits()];
+      if (!digits[index] && index > 0) {
+        const prev = document.getElementById(`code-${index - 1}`) as HTMLInputElement;
+        prev?.focus();
+        digits[index - 1] = '';
+        this.codeDigits.set(digits);
+        this.cdr.markForCheck();
+      }
+    }
+  }
+
+  onDigitPaste(event: ClipboardEvent) {
+    event.preventDefault();
+    const text   = event.clipboardData?.getData('text') ?? '';
+    const digits = text.replace(/\D/g, '').slice(0, 6).split('');
+    const filled = [...Array(6)].map((_, i) => digits[i] ?? '');
+    this.codeDigits.set(filled);
+    this.cdr.markForCheck();
+
+    // Фокус на последнее заполненное поле
+    const lastIndex = Math.min(digits.length - 1, 5);
+    const el = document.getElementById(`code-${lastIndex}`) as HTMLInputElement;
+    el?.focus();
+
+    if (filled.every(d => d !== '')) {
+      this.submitCode();
+    }
+  }
+
+  // ─── Отправка кода ───
+  submitCode() {
+    const code = this.codeDigits().join('');
+    if (code.length !== 6) return;
+
+    this.isVerifying.set(true);
+    this.codeError.set(null);
+    this.cdr.markForCheck();
+
+    this.authService.verifyEmail(this.pendingEmail(), code).subscribe({
+      next: () => {
+        this.isVerifying.set(false);
+        this.cdr.markForCheck();
+        // router.navigate вызывается внутри authService
+      },
+      error: (err) => {
+        this.isVerifying.set(false);
+        this.codeDigits.set(['', '', '', '', '', '']);
+        this.codeError.set(err.error?.message || 'Неверный код. Попробуйте ещё раз.');
+        this.cdr.markForCheck();
+        // Фокус на первое поле
+        setTimeout(() => {
+          (document.getElementById('code-0') as HTMLInputElement)?.focus();
+        }, 50);
+      },
+    });
+  }
+
+  // ─── Повторная отправка кода ───
+  resendCode() {
+    if (this.resendCooldown() > 0) return;
+    this.isResending.set(true);
+    this.cdr.markForCheck();
+
+    this.authService.resendCode(this.pendingEmail()).subscribe({
+      next: () => {
+        this.isResending.set(false);
+        this.codeDigits.set(['', '', '', '', '', '']);
+        this.codeError.set(null);
+        this.startResendCooldown();
+        this.cdr.markForCheck();
+        setTimeout(() => {
+          (document.getElementById('code-0') as HTMLInputElement)?.focus();
+        }, 50);
+      },
+      error: (err) => {
+        this.isResending.set(false);
+        this.codeError.set(err.error?.message || 'Ошибка отправки. Попробуйте позже.');
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  // ─── Таймер cooldown ───
+  private startResendCooldown() {
+    this.resendCooldown.set(60);
+    const interval = setInterval(() => {
+      const current = this.resendCooldown();
+      if (current <= 1) {
+        clearInterval(interval);
+        this.resendCooldown.set(0);
+      } else {
+        this.resendCooldown.set(current - 1);
+      }
+      this.cdr.markForCheck();
+    }, 1000);
+  }
+
+  goBack() {
+    this.screen.set('register');
+    this.codeDigits.set(['', '', '', '', '', '']);
+    this.codeError.set(null);
   }
 }

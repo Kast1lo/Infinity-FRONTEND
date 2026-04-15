@@ -9,6 +9,10 @@
   </ul>
 
   <div class="nav-cta">
+    <button class="theme-toggle" (click)="themeService.toggle()"
+      [pTooltip]="isDark() ? 'Светлая тема' : 'Тёмная тема'" tooltipPosition="bottom">
+      <i [class]="isDark() ? 'pi pi-sun' : 'pi pi-moon'"></i>
+    </button>
     <p-button label="Войти" [text]="true" severity="secondary" size="small" routerLink="/login"/>
     <p-button label="Зарегистрироваться" [outlined]="true" severity="secondary" size="small" routerLink="/registration"/>
   </div>
@@ -50,16 +54,16 @@
     <span class="hero-meta-item"><i class="pi pi-share-alt"></i> Пересылка файлов</span>
   </div>
 
-      <div class="cta-actions">
-        <a class="btn-hero-primary" routerLink="/registration">
-          <i class="pi pi-user-plus"></i>
-          Зарегистрироваться
-        </a>
-        <a class="btn-hero-ghost" routerLink="/login">
-          <i class="pi pi-sign-in"></i>
-          Войти
-        </a>
-      </div>
+  <div class="cta-actions">
+    <a class="btn-hero-primary" routerLink="/registration">
+      <i class="pi pi-user-plus"></i>
+      Зарегистрироваться
+    </a>
+    <a class="btn-hero-ghost" routerLink="/login">
+      <i class="pi pi-sign-in"></i>
+      Войти
+    </a>
+  </div>
 
   <div class="hero-preview">
     <div class="preview-bar">
@@ -92,9 +96,7 @@
               @for (task of col.tasks; track task.label) {
                 <div class="k-card">
                   <div class="k-check" [class.done]="task.done">
-                    @if (task.done) {
-                      <i class="pi pi-check"></i>
-                    }
+                    @if (task.done) { <i class="pi pi-check"></i> }
                   </div>
                   {{ task.label }}
                 </div>
@@ -127,23 +129,15 @@
     <div class="section-header reveal">
       <div class="section-label">Возможности</div>
       <h2 class="section-title">Всё что нужно для работы</h2>
-      <p class="section-sub">
-        Никаких переключений между приложениями. Всё в одном месте —
-        быстро, чисто, продуктивно.
-      </p>
+      <p class="section-sub">Никаких переключений между приложениями. Всё в одном месте — быстро, чисто, продуктивно.</p>
     </div>
-
     <div class="features-grid">
       @for (f of features; let i = $index; track f.title) {
-        <div
-          class="feat-card reveal"
+        <div class="feat-card reveal"
           [class.reveal-delay-1]="i % 3 === 0"
           [class.reveal-delay-2]="i % 3 === 1"
-          [class.reveal-delay-3]="i % 3 === 2"
-        >
-          <div class="feat-icon">
-            <i [class]="f.icon"></i>
-          </div>
+          [class.reveal-delay-3]="i % 3 === 2">
+          <div class="feat-icon"><i [class]="f.icon"></i></div>
           <h3>{{ f.title }}</h3>
           <p>{{ f.desc }}</p>
         </div>
@@ -160,10 +154,7 @@
       <div class="split-text">
         <div class="section-label">Kanban</div>
         <h2 class="section-title">Задачи под контролем</h2>
-        <p class="section-sub">
-          Создавайте собственные колонки, добавляйте задачи
-          и отмечайте выполненные. Гибкость без лишней сложности.
-        </p>
+        <p class="section-sub">Создавайте собственные колонки, добавляйте задачи и отмечайте выполненные. Гибкость без лишней сложности.</p>
         <ul class="split-list">
           <li><i class="pi pi-check"></i> Drag & Drop между колонками</li>
           <li><i class="pi pi-check"></i> Подзадачи с прогресс-баром</li>
@@ -171,20 +162,11 @@
           <li><i class="pi pi-check"></i> Неограниченное количество колонок</li>
         </ul>
         <div class="split-actions">
-          <p-button
-            label="Попробовать Kanban"
-            icon="pi pi-th-large"
-            iconPos="left"
-            severity="secondary"
-            [outlined]="true"
-            routerLink="/login"
-          />
+          <p-button label="Попробовать Kanban" icon="pi pi-th-large" iconPos="left" severity="secondary" [outlined]="true" routerLink="/login"/>
         </div>
       </div>
       <div class="split-visual">
-        <div class="sv-topbar">
-          <span class="sv-logo">INFINITY</span>
-        </div>
+        <div class="sv-topbar"><span class="sv-logo">INFINITY</span></div>
         <div class="sv-body">
           <div class="kanban-cols">
             @for (col of kanbanCols; track col.title) {
@@ -193,9 +175,7 @@
                 @for (task of col.tasks; track task.label) {
                   <div class="k-card">
                     <div class="k-check" [class.done]="task.done">
-                      @if (task.done) {
-                        <i class="pi pi-check"></i>
-                      }
+                      @if (task.done) { <i class="pi pi-check"></i> }
                     </div>
                     {{ task.label }}
                   </div>
@@ -217,10 +197,7 @@
       <div class="split-text">
         <div class="section-label">Хранилище</div>
         <h2 class="section-title">Все файлы рядом</h2>
-        <p class="section-sub">
-          Папки, изображения, документы — загружайте и организуйте
-          как в Google Drive, не выходя из рабочего пространства.
-        </p>
+        <p class="section-sub">Папки, изображения, документы — загружайте и организуйте как в Google Drive, не выходя из рабочего пространства.</p>
         <ul class="split-list">
           <li><i class="pi pi-check"></i> Папки и подпапки</li>
           <li><i class="pi pi-check"></i> Превью изображений</li>
@@ -228,14 +205,7 @@
           <li><i class="pi pi-check"></i> Скачивание ZIP-архивом</li>
         </ul>
         <div class="split-actions">
-          <p-button
-            label="Открыть хранилище"
-            icon="pi pi-folder-open"
-            iconPos="left"
-            severity="secondary"
-            [outlined]="true"
-            routerLink="/login"
-          />
+          <p-button label="Открыть хранилище" icon="pi pi-folder-open" iconPos="left" severity="secondary" [outlined]="true" routerLink="/login"/>
         </div>
       </div>
       <div class="split-visual">
@@ -252,18 +222,14 @@
           <div class="folder-row">
             @for (f of folders; track f) {
               <div class="folder-card">
-                <i class="pi pi-folder"></i>
-                {{ f }}
+                <i class="pi pi-folder"></i>{{ f }}
                 <i class="pi pi-ellipsis-v folder-menu"></i>
               </div>
             }
           </div>
           <div class="file-grid">
             @for (c of thumbColors; let i = $index; track i) {
-              <div
-                class="file-thumb"
-                [style.background]="'linear-gradient(135deg,' + c[0] + ',' + c[1] + ')'"
-              >
+              <div class="file-thumb" [style.background]="'linear-gradient(135deg,' + c[0] + ',' + c[1] + ')'">
                 <span class="thumb-label">img_{{ i + 1 }}.jpg</span>
                 <i class="pi pi-ellipsis-v thumb-menu"></i>
               </div>
@@ -284,37 +250,38 @@
       <h2 class="section-title">Простые и прозрачные цены</h2>
       <p class="section-sub" style="margin:0 auto;">Начните бесплатно. Переходите когда будете готовы.</p>
     </div>
-
     <div class="plans-grid">
 
+      <!-- Free -->
       <div class="plan-card reveal reveal-delay-1">
         <div class="plan-header">
-          <div class="plan-badge">Бесплатно</div>
-          <h3 class="plan-name">Пробный период</h3>
-          <p class="plan-duration">7 дней</p>
+          <div class="plan-badge">Пробный период</div>
+          <h3 class="plan-name">Free</h3>
+          <p class="plan-duration">7 дней бесплатно</p>
           <div class="plan-price">
             <span class="price-num">0</span>
             <span class="price-currency">₽</span>
           </div>
         </div>
         <ul class="plan-features">
-          <li class="feature-item"><i class="pi pi-check fi"></i><span>Безлимитные задачи</span></li>
-          <li class="feature-item"><i class="pi pi-check fi"></i><span>10 ГБ хранилища</span></li>
-          <li class="feature-item"><i class="pi pi-check fi"></i><span>Полный доступ к функциям</span></li>
-          <li class="feature-item"><i class="pi pi-check fi"></i><span>Хранение данных: 7 дней</span></li>
+          <li class="feature-item"><i class="pi pi-check fi"></i><span>Полный доступ 7 дней</span></li>
+          <li class="feature-item"><i class="pi pi-check fi"></i><span>5 ГБ хранилища</span></li>
+          <li class="feature-item"><i class="pi pi-check fi"></i><span>До 30 задач</span></li>
+          <li class="feature-item"><i class="pi pi-clock fi" style="color: #d4b84a !important"></i><span>После 7 дней — данные замораживаются</span></li>
+          <li class="feature-item"><i class="pi pi-trash fi" style="color: #e05555 !important"></i><span>Через 14 дней — данные удаляются</span></li>
           <li class="feature-item feature-muted"><i class="pi pi-minus fi"></i><span>Шифрование данных</span></li>
         </ul>
         <p-button label="Начать бесплатно" [outlined]="true" severity="secondary" styleClass="plan-btn" routerLink="/registration"/>
       </div>
 
+      <!-- Monthly -->
       <div class="plan-card plan-featured reveal">
-        <div class="plan-popular">Популярный</div>
         <div class="plan-header">
           <div class="plan-badge plan-badge-accent">Ежемесячно</div>
           <h3 class="plan-name">Подписка</h3>
           <p class="plan-duration">в месяц</p>
           <div class="plan-price">
-            <span class="price-num">299</span>
+            <span class="price-num">399</span>
             <span class="price-currency">₽</span>
             <span class="price-period">/мес</span>
           </div>
@@ -324,31 +291,35 @@
           <li class="feature-item"><i class="pi pi-check fi"></i><span>250 ГБ+ хранилища</span></li>
           <li class="feature-item"><i class="pi pi-check fi"></i><span>Полный доступ к функциям</span></li>
           <li class="feature-item"><i class="pi pi-check fi"></i><span>Приоритетная поддержка</span></li>
-          <li class="feature-item"><i class="pi pi-check fi"></i><span>Безопасное хранение</span></li>
+          <li class="feature-item"><i class="pi pi-check fi"></i><span>Шифрование данных</span></li>
         </ul>
-        <p-button label="Оформить подписку" severity="secondary" styleClass="plan-btn plan-btn-primary" routerLink="/registration"/>
+        <p class="plan-guarantee"><i class="pi pi-shield"></i> 14 дней на возврат денег</p>
+        <p-button label="Оформить подписку" [outlined]="true" severity="secondary" styleClass="plan-btn" routerLink="/registration"/>
       </div>
 
-      <div class="plan-card reveal reveal-delay-2">
+      <!-- Annual — featured -->
+      <div class="plan-card plan-annual reveal reveal-delay-2">
+        <div class="plan-popular">⭐ Лучший выбор</div>
         <div class="plan-header">
-          <div class="plan-badge plan-badge-save">Выгода 15%</div>
+          <div class="plan-badge plan-badge-save">Выгода 25%</div>
           <h3 class="plan-name">Годовой план</h3>
           <p class="plan-duration">в год</p>
           <div class="plan-price">
-            <span class="price-num">3049</span>
+            <span class="price-num">3599</span>
             <span class="price-currency">₽</span>
             <span class="price-period">/год</span>
           </div>
-          <p class="price-note">≈ 269 ₽/мес · экономия 538 ₽</p>
+          <p class="price-note">≈ 300 ₽/мес вместо 399 ₽ · экономия 1189 ₽</p>
         </div>
         <ul class="plan-features">
           <li class="feature-item"><i class="pi pi-check fi"></i><span>Безлимитные задачи</span></li>
           <li class="feature-item"><i class="pi pi-check fi"></i><span>1 ТБ хранилища</span></li>
           <li class="feature-item"><i class="pi pi-check fi"></i><span>Полный доступ к функциям</span></li>
           <li class="feature-item"><i class="pi pi-check fi"></i><span>Приоритетная поддержка</span></li>
-          <li class="feature-item"><i class="pi pi-check fi"></i><span>Безопасное хранение</span></li>
+          <li class="feature-item"><i class="pi pi-check fi"></i><span>Шифрование данных</span></li>
         </ul>
-        <p-button label="Выбрать годовой" [outlined]="true" severity="secondary" styleClass="plan-btn" routerLink="/registration"/>
+        <p class="plan-guarantee"><i class="pi pi-shield"></i> 14 дней на возврат денег</p>
+        <p-button label="Выбрать годовой" severity="secondary" styleClass="plan-btn plan-btn-primary" routerLink="/registration"/>
       </div>
 
     </div>
@@ -365,12 +336,10 @@
       <p class="section-sub">Бесплатно. Без кредитной карты. Всё в одном.</p>
       <div class="cta-actions">
         <a class="btn-hero-primary" routerLink="/registration">
-          <i class="pi pi-user-plus"></i>
-          Зарегистрироваться
+          <i class="pi pi-user-plus"></i> Зарегистрироваться
         </a>
         <a class="btn-hero-ghost" routerLink="/login">
-          <i class="pi pi-sign-in"></i>
-          Войти
+          <i class="pi pi-sign-in"></i> Войти
         </a>
       </div>
     </div>

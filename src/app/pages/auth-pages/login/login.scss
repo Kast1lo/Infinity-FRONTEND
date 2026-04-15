@@ -8,9 +8,66 @@
   --text2:   #888888;
   --text3:   #444444;
   --error:   #e05555;
+
   --radius-sm: 8px;
   --radius-lg: 18px;
 }
+
+:host-context(.light-theme) {
+  --bg:      #f8f8f8;
+  --bg2:     #ffffff;
+  --bg3:     #f2f2f2;
+  --border:  #e0e0e0;
+  --border2: #d0d0d0;
+  --text:    #111111;
+  --text2:   #555555;
+  --text3:   #aaaaaa;
+}
+
+// ─── Кнопки на углах страницы ───
+
+.page-actions {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: space-between;
+  padding: 16px 20px;
+  pointer-events: none;
+
+  > * { pointer-events: auto; }
+}
+
+.page-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  color: var(--text2);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color .2s, background .2s, border-color .2s;
+
+  i {
+    font-size: 14px;
+    transition: transform .2s;
+  }
+
+  &:hover {
+    color: var(--text);
+    background: var(--bg3);
+    border-color: var(--border2);
+  }
+
+  &:last-child:hover i { transform: rotate(20deg); }
+}
+
+// ─── Основной контейнер ───
 
 .form-container {
   display: flex;
@@ -18,7 +75,17 @@
   align-items: center;
   min-height: 100vh;
   width: 100%;
+  background: var(--bg);
+  background-image: radial-gradient(circle, var(--dot-color, rgba(255,255,255,.06)) 1px, transparent 1px);
+  background-size: 28px 28px;
+  transition: background .3s;
 }
+
+:host-context(.light-theme) .form-container {
+  --dot-color: rgba(0,0,0,.06);
+}
+
+// ─── Карточка ───
 
 .form-card {
   display: flex;
@@ -28,10 +95,11 @@
   padding: 36px 32px 32px;
   border-radius: var(--radius-lg);
   background: var(--bg2);
-  background-image: radial-gradient(circle, rgba(255,255,255,.035) 1px, transparent 1px);
+  background-image: radial-gradient(circle, var(--dot-color, rgba(255,255,255,.018)) 1px, transparent 1px);
   background-size: 28px 28px;
   border: 1px solid var(--border);
   animation: slideUpFade .7s cubic-bezier(0.15, 1.05, 0.35, 1) forwards;
+  transition: background .3s, border-color .3s;
 }
 
 @keyframes slideUpFade {
@@ -39,21 +107,22 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ─── ЛОГОТИП ─── */
+// ─── Логотип ───
+
 .logotype {
   width: 230px;
   display: block;
   margin: 40px auto 54px;
 }
 
-/* ─── ИНПУТЫ ─── */
+// ─── Инпуты ───
+
 .inputs-form {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-/* враппер поля + ошибка */
 .field-wrap {
   display: flex;
   flex-direction: column;
@@ -61,14 +130,12 @@
   margin-bottom: 10px;
 }
 
-/* контейнер инпута */
 .input-field {
   position: relative;
   width: 100%;
   height: 48px;
 }
 
-/* красная рамка при ошибке */
 .input-field--error {
   ::ng-deep input.p-inputtext,
   ::ng-deep .p-password-input {
@@ -76,7 +143,6 @@
   }
 }
 
-/* иконка слева */
 .field-icon {
   position: absolute;
   left: 14px;
@@ -88,7 +154,6 @@
   font-size: 14px;
 }
 
-/* обычные инпуты */
 ::ng-deep .input-field input.p-inputtext {
   position: absolute !important;
   inset: 0 !important;
@@ -106,11 +171,10 @@
   box-shadow: none !important;
   outline: none !important;
 
-  &:focus { border-color: var(--text3) !important; }
+  &:focus        { border-color: var(--text3) !important; }
   &::placeholder { color: var(--text3) !important; }
 }
 
-/* p-password враппер */
 ::ng-deep .input-field p-password,
 ::ng-deep .input-field .p-password {
   display: block !important;
@@ -119,7 +183,6 @@
   position: relative !important;
 }
 
-/* инпут пароля */
 ::ng-deep .input-field .p-password-input {
   width: 100% !important;
   height: 48px !important;
@@ -135,11 +198,10 @@
   box-shadow: none !important;
   outline: none !important;
 
-  &:focus { border-color: var(--text3) !important; }
+  &:focus        { border-color: var(--text3) !important; }
   &::placeholder { color: var(--text3) !important; }
 }
 
-/* иконка глаза */
 ::ng-deep .input-field .p-password-toggle-mask-icon {
   position: absolute !important;
   right: 12px !important;
@@ -158,7 +220,8 @@
 ::ng-deep .input-field .p-password-meter,
 ::ng-deep .input-field .p-password-info { display: none !important; }
 
-/* ─── ОШИБКА ПОД ПОЛЕМ ─── */
+// ─── Ошибка под полем ───
+
 .field-error {
   font-size: 11px;
   color: var(--error);
@@ -167,10 +230,9 @@
   animation: fadeIn .15s ease;
 }
 
-/* ─── КНОПКА ОТПРАВКИ ─── */
-.btn-submit {
-  margin-top: 30px;
-}
+// ─── Кнопка отправки ───
+
+.btn-submit { margin-top: 30px; }
 
 ::ng-deep .btn-submit .p-button {
   width: 100% !important;
@@ -178,17 +240,74 @@
   border-radius: var(--radius-sm) !important;
   background: var(--text) !important;
   border: none !important;
-  color: #0a0a0a !important;
+  color: var(--bg) !important;
   font-family: 'DM Sans', sans-serif !important;
   font-size: 15px !important;
   font-weight: 600 !important;
   transition: opacity .2s !important;
 
   &:hover:not(:disabled) { opacity: .88 !important; }
-  &:disabled { opacity: .35 !important; cursor: not-allowed !important; }
+  &:disabled             { opacity: .35 !important; cursor: not-allowed !important; }
 }
 
-/* ─── НИЖНЯЯ ЧАСТЬ ─── */
+// ─── Разделитель ───
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0 0;
+}
+
+.auth-divider-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.auth-divider-text {
+  font-size: 12px;
+  color: var(--text3);
+  font-family: 'DM Sans', sans-serif;
+  white-space: nowrap;
+}
+
+// ─── Кнопка Google ───
+
+.btn-google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  height: 46px;
+  margin-top: 12px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--text2);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background .2s, border-color .2s, color .2s;
+
+  &:hover {
+    background: rgba(128,128,128,.08);
+    border-color: var(--text3);
+    color: var(--text);
+  }
+}
+
+.btn-google-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+// ─── Нижняя часть ───
+
 .notreg {
   text-align: center;
   font-size: 13px;
@@ -210,13 +329,14 @@
   transition: background .2s, border-color .2s, color .2s !important;
 
   &:hover {
-    background: rgba(255,255,255,.05) !important;
+    background: rgba(128,128,128,.08) !important;
     border-color: var(--text3) !important;
     color: var(--text) !important;
   }
 }
 
-/* ─── ОБЩАЯ ОШИБКА ─── */
+// ─── Общая ошибка ───
+
 .error-msg {
   margin-top: 12px;
   padding: 10px 14px;
@@ -228,6 +348,13 @@
   font-family: 'DM Sans', sans-serif;
   text-align: center;
   animation: fadeIn .2s ease;
+}
+
+// ─── Animations ───
+
+@keyframes slideUpFade {
+  from { opacity: 0; transform: translateY(32px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes fadeIn {

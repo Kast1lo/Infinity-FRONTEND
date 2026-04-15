@@ -1,27 +1,260 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Michroma&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Syne:wght@400..800&family=Unbounded:wght@200..900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Bruno+Ace+SC&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Michroma&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Syncopate:wght@400;700&family=Syne:wght@400..800&family=Unbounded:wght@200..900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Bruno+Ace+SC&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Michroma&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Syne:wght@400..800&family=Unbounded:wght@200..900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Bruno+Ace+SC&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Michroma&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Syncopate:wght@400;700&family=Syne:wght@400..800&family=Unbounded:wght@200..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap');
 @import "primeicons/primeicons.css";
 
+// ─── CSS переменные темы ───
+
+:root,
+.dark-theme {
+  --bg:      #0a0a0a;
+  --bg2:     #111111;
+  --bg3:     #1a1a1a;
+  --bg4:     #202020;
+  --border:  #222222;
+  --border2: #2e2e2e;
+  --text:    #f0f0f0;
+  --text2:   #888888;
+  --text3:   #444444;
+  --shadow:  rgba(0,0,0,.6);
+  --overlay: rgba(0,0,0,.7);
+  --dot-color: rgba(255,255,255,.035);
+  --popular-text: #000000;
+}
+
+.light-theme {
+  --bg:      #f8f8f8;
+  --bg2:     #ffffff;
+  --bg3:     #f2f2f2;
+  --bg4:     #ebebeb;
+  --border:  #e0e0e0;
+  --border2: #d0d0d0;
+  --text:    #111111;
+  --text2:   #555555;
+  --text3:   #aaaaaa;
+  --shadow:  rgba(0,0,0,.12);
+  --overlay: rgba(0,0,0,.4);
+  --dot-color: rgba(0,0,0,.09);
+  --popular-text: #ffffff;
+}
+
+// Для Angular компонентов с :host-context
+.light-theme,
+.light-theme * {
+  --bg:      #f8f8f8;
+  --bg2:     #ffffff;
+  --bg3:     #f2f2f2;
+  --bg4:     #ebebeb;
+  --border:  #e0e0e0;
+  --border2: #d0d0d0;
+  --text:    #111111;
+  --text2:   #555555;
+  --text3:   #aaaaaa;
+  --dot-color: rgba(0,0,0,.09);
+  --popular-text: #ffffff;
+}
+
+.dark-theme,
+.dark-theme * {
+  --bg:      #0a0a0a;
+  --bg2:     #111111;
+  --bg3:     #1a1a1a;
+  --bg4:     #202020;
+  --border:  #222222;
+  --border2: #2e2e2e;
+  --text:    #f0f0f0;
+  --text2:   #888888;
+  --text3:   #444444;
+  --dot-color: rgba(255,255,255,.09);
+  --popular-text: #000000;
+}
+
+// ─── Body ───
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   font-size: 14px;
   line-height: 1.5;
-  background-color: rgba(0, 0, 0, 0.600);
-  background-image: radial-gradient(rgba(255, 255, 255, 0.155) 1px, transparent 1px);
+  background-color: #0a0a0a;
+  background-image: radial-gradient(rgba(255,255,255,.06) 1px, transparent 1px);
   background-size: 50px 50px;
+  transition: background-color .3s, background-image .3s;
 }
 
-html {
-  scroll-behavior: smooth;
-}
-::-webkit-scrollbar{width: 0;}
-
-:root{
-  --border-color-card: #55585ca7;
-  --shadow-color-text: #646973;
+body.light-theme {
+  background-color: #efefef;
+  background-image: radial-gradient(rgba(0,0,0,.07) 1px, transparent 1px);
 }
 
+body.dark-theme {
+  background-color: #0a0a0a;
+  background-image: radial-gradient(rgba(255,255,255,.06) 1px, transparent 1px);
+}
+
+html { scroll-behavior: smooth; }
+::-webkit-scrollbar { width: 0; }
+
+// ─── p-tieredmenu (рендерится в body) ───
+
+body.dark-theme .p-tieredmenu,
+body:not(.light-theme) .p-tieredmenu {
+  background-color: #111111 !important;
+  border: 1px solid #222222 !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,.5) !important;
+}
+
+body.dark-theme .p-tieredmenu .p-tieredmenu-item-link,
+body:not(.light-theme) .p-tieredmenu .p-tieredmenu-item-link {
+  color: #888888 !important;
+}
+
+body.dark-theme .p-tieredmenu .p-tieredmenu-item-link:hover,
+body:not(.light-theme) .p-tieredmenu .p-tieredmenu-item-link:hover {
+  background: #1a1a1a !important;
+  color: #f0f0f0 !important;
+}
+
+body.dark-theme .p-tieredmenu .p-tieredmenu-item-icon,
+body:not(.light-theme) .p-tieredmenu .p-tieredmenu-item-icon {
+  color: #444444 !important;
+}
+
+body.light-theme .p-tieredmenu {
+  background-color: #ffffff !important;
+  border: 1px solid #e0e0e0 !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,.1) !important;
+}
+
+body.light-theme .p-tieredmenu .p-tieredmenu-item-link {
+  color: #555555 !important;
+}
+
+body.light-theme .p-tieredmenu .p-tieredmenu-item-link:hover {
+  background: #f2f2f2 !important;
+  color: #111111 !important;
+}
+
+body.light-theme .p-tieredmenu .p-tieredmenu-item-icon {
+  color: #aaaaaa !important;
+}
+
+// ─── p-datepicker-panel (рендерится в body) ───
+
+body.dark-theme .p-datepicker-panel,
+body.dark-theme .p-datepicker-panel.p-component,
+body:not(.light-theme) .p-datepicker-panel,
+body:not(.light-theme) .p-datepicker-panel.p-component {
+  background: #1a1a1a !important;
+  border: 1px solid #222222 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 16px 40px rgba(0,0,0,.5) !important;
+  color: #f0f0f0 !important;
+}
+
+body.dark-theme .p-datepicker-panel .p-datepicker-header,
+body:not(.light-theme) .p-datepicker-panel .p-datepicker-header {
+  background: #1a1a1a !important;
+  border-bottom: 1px solid #222222 !important;
+  color: #f0f0f0 !important;
+}
+
+body.dark-theme .p-datepicker-panel .p-datepicker-header button,
+body:not(.light-theme) .p-datepicker-panel .p-datepicker-header button {
+  color: #888888 !important;
+  background: transparent !important;
+  border: none !important;
+
+  &:hover {
+    background: rgba(255,255,255,.06) !important;
+    color: #f0f0f0 !important;
+  }
+}
+
+body.dark-theme .p-datepicker-panel th,
+body:not(.light-theme) .p-datepicker-panel th {
+  color: #444444 !important;
+  font-size: 11px !important;
+}
+
+body.dark-theme .p-datepicker-panel td span,
+body:not(.light-theme) .p-datepicker-panel td span {
+  color: #888888 !important;
+  border-radius: 8px !important;
+
+  &:hover {
+    background: rgba(255,255,255,.08) !important;
+    color: #f0f0f0 !important;
+  }
+}
+
+body.dark-theme .p-datepicker-panel td.p-datepicker-today span,
+body:not(.light-theme) .p-datepicker-panel td.p-datepicker-today span {
+  background: rgba(255,255,255,.06) !important;
+  color: #f0f0f0 !important;
+}
+
+body.dark-theme .p-datepicker-panel td.p-datepicker-selected span,
+body:not(.light-theme) .p-datepicker-panel td.p-datepicker-selected span {
+  background: rgba(255,255,255,.15) !important;
+  color: #f0f0f0 !important;
+}
+
+body.dark-theme .p-datepicker-panel td.p-datepicker-other-month span,
+body:not(.light-theme) .p-datepicker-panel td.p-datepicker-other-month span {
+  color: #333333 !important;
+}
+
+body.light-theme .p-datepicker-panel {
+  background: #ffffff !important;
+  border: 1px solid #e0e0e0 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,.1) !important;
+}
+
+// ─── p-select-overlay (рендерится в body) ───
+
+body.dark-theme .p-select-overlay,
+body:not(.light-theme) .p-select-overlay {
+  background: #1a1a1a !important;
+  border: 1px solid #2e2e2e !important;
+  border-radius: 10px !important;
+  box-shadow: 0 16px 40px rgba(0,0,0,.5) !important;
+}
+
+body.dark-theme .p-select-overlay .p-select-option,
+body:not(.light-theme) .p-select-overlay .p-select-option {
+  color: #888888 !important;
+  border-radius: 6px !important;
+}
+
+body.dark-theme .p-select-overlay .p-select-option:hover,
+body:not(.light-theme) .p-select-overlay .p-select-option:hover {
+  background: rgba(255,255,255,.06) !important;
+  color: #f0f0f0 !important;
+}
+
+body.dark-theme .p-select-overlay .p-select-option.p-select-option-selected,
+body:not(.light-theme) .p-select-overlay .p-select-option.p-select-option-selected {
+  background: rgba(255,255,255,.08) !important;
+  color: #f0f0f0 !important;
+}
+
+body.light-theme .p-select-overlay {
+  background: #ffffff !important;
+  border: 1px solid #e0e0e0 !important;
+  border-radius: 10px !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,.1) !important;
+}
+
+body.light-theme .p-select-overlay .p-select-option {
+  color: #555555 !important;
+}
+
+body.light-theme .p-select-overlay .p-select-option:hover {
+  background: #f2f2f2 !important;
+  color: #111111 !important;
+}
+
+body.light-theme .p-select-overlay .p-select-option.p-select-option-selected {
+  background: #ebebeb !important;
+  color: #111111 !important;
+}

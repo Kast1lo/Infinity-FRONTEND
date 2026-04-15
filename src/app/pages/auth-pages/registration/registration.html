@@ -1,73 +1,145 @@
+<!-- ─── Кнопки в углах ─── -->
+<div class="page-actions">
+  <button class="page-btn" (click)="screen() === 'verify' ? goBack() : null"
+    [routerLink]="screen() === 'register' ? '/' : null"
+    pTooltip="{{ screen() === 'verify' ? 'Назад' : 'На главную' }}" tooltipPosition="right">
+    <i class="pi pi-arrow-left"></i>
+  </button>
+  <button class="page-btn" (click)="themeService.toggle()"
+    [pTooltip]="isDark() ? 'Светлая тема' : 'Тёмная тема'" tooltipPosition="left">
+    <i [class]="isDark() ? 'pi pi-sun' : 'pi pi-moon'"></i>
+  </button>
+</div>
+
 <div class="form-container">
-  <form (submit)="onSubmit($event)" novalidate>
-    <div class="form-card">
 
-      <img class="logotype" [src]="imagePath" alt="infinity">
+  <!-- ─── Экран регистрации ─── -->
+  @if (screen() === 'register') {
+    <form (submit)="onSubmit($event)" novalidate>
+      <div class="form-card">
 
-      <div class="inputs-form">
+        <img class="logotype" [src]="imagePath" alt="infinity">
 
-        <div class="field-wrap">
-          <div class="input-field" [class.input-field--error]="showUsernameError()">
-            <i class="pi pi-user field-icon"></i>
-            <input
-              pInputText
-              placeholder="Придумайте логин"
-              [formField]="registerForm.username"
-            />
+        <div class="inputs-form">
+
+          <div class="field-wrap">
+            <div class="input-field" [class.input-field--error]="showUsernameError()">
+              <i class="pi pi-user field-icon"></i>
+              <input pInputText placeholder="Придумайте логин" [formField]="registerForm.username"/>
+            </div>
+            @if (showUsernameError()) {
+              <span class="field-error">{{ usernameError() }}</span>
+            }
           </div>
-          @if (showUsernameError()) {
-            <span class="field-error">{{ usernameError() }}</span>
-          }
+
+          <div class="field-wrap">
+            <div class="input-field" [class.input-field--error]="showEmailError()">
+              <i class="pi pi-at field-icon"></i>
+              <input type="email" pInputText placeholder="Введите e-mail" [formField]="registerForm.email"/>
+            </div>
+            @if (showEmailError()) {
+              <span class="field-error">{{ emailError() }}</span>
+            }
+          </div>
+
+          <div class="field-wrap">
+            <div class="input-field" [class.input-field--error]="showPasswordError()">
+              <i class="pi pi-lock field-icon"></i>
+              <p-password
+                placeholder="Придумайте пароль"
+                [toggleMask]="true"
+                [feedback]="false"
+                [formField]="$any(registerForm.passwordHash)"
+              />
+            </div>
+            @if (showPasswordError()) {
+              <span class="field-error">{{ passwordError() }}</span>
+            }
+          </div>
+
         </div>
 
-        <div class="field-wrap">
-          <div class="input-field" [class.input-field--error]="showEmailError()">
-            <i class="pi pi-at field-icon"></i>
-            <input
-              type="email"
-              pInputText
-              placeholder="Введите e-mail"
-              [formField]="registerForm.email"
-            />
-          </div>
-          @if (showEmailError()) {
-            <span class="field-error">{{ emailError() }}</span>
-          }
+        @if (errorMessage()) {
+          <div class="error-msg">{{ errorMessage() }}</div>
+        }
+
+        <div class="btn-submit">
+          <p-button
+            type="submit"
+            label="Зарегистрироваться"
+            [loading]="isSubmitting()"
+            [disabled]="isSubmitting()"
+          />
         </div>
 
-        <div class="field-wrap">
-          <div class="input-field" [class.input-field--error]="showPasswordError()">
-            <i class="pi pi-lock field-icon"></i>
-            <p-password
-              placeholder="Придумайте пароль"
-              [toggleMask]="true"
-              [feedback]="false"
-              [formField]="$any(registerForm.passwordHash)"
-            />
-          </div>
-          @if (showPasswordError()) {
-            <span class="field-error">{{ passwordError() }}</span>
-          }
-        </div>
+        <p class="notreg">Уже есть аккаунт?</p>
+        <p-button class="go-login" routerLink="/login" label="Авторизоваться"/>
 
       </div>
+    </form>
+  }
 
-      @if (errorMessage()) {
-        <div class="error-msg">{{ errorMessage() }}</div>
+  <!-- ─── Экран верификации ─── -->
+  @if (screen() === 'verify') {
+    <div class="form-card verify-card">
+
+      <div class="verify-header">
+        <div class="verify-icon">
+          <i class="pi pi-envelope"></i>
+        </div>
+        <h2 class="verify-title">Проверьте почту</h2>
+        <p class="verify-subtitle">
+          Мы отправили 6-значный код на<br>
+          <strong>{{ pendingEmail() }}</strong>
+        </p>
+      </div>
+
+      <!-- Поля для кода -->
+      <div class="code-inputs">
+        @for (digit of codeDigits(); track $index) {
+          <input
+            [id]="'code-' + $index"
+            class="code-input"
+            [class.code-input--error]="!!codeError()"
+            [class.code-input--filled]="digit !== ''"
+            type="text"
+            inputmode="numeric"
+            maxlength="1"
+            [value]="digit"
+            (input)="onDigitInput($event, $index)"
+            (keydown)="onDigitKeydown($event, $index)"
+            (paste)="onDigitPaste($event)"
+            [disabled]="isVerifying()"
+          />
+        }
+      </div>
+
+      @if (codeError()) {
+        <div class="error-msg">{{ codeError() }}</div>
       }
 
+      <!-- Кнопка подтверждения -->
       <div class="btn-submit">
         <p-button
-          type="submit"
-          label="Зарегистрироваться"
-          [loading]="isSubmitting()"
-          [disabled]="isSubmitting()"
+          label="Подтвердить"
+          [loading]="isVerifying()"
+          [disabled]="isVerifying() || codeDigits().join('').length !== 6"
+          (onClick)="submitCode()"
         />
       </div>
 
-      <p class="notreg">Уже есть аккаунт?</p>
-      <p-button class="go-login" routerLink="/login" label="Авторизоваться"/>
+      <!-- Повторная отправка -->
+      <div class="resend-wrap">
+        @if (resendCooldown() > 0) {
+          <span class="resend-timer">Отправить повторно через {{ resendCooldown() }} с</span>
+        } @else {
+          <button class="resend-btn" (click)="resendCode()" [disabled]="isResending()">
+            {{ isResending() ? 'Отправляем...' : 'Отправить код повторно' }}
+          </button>
+        }
+      </div>
 
     </div>
-  </form>
+  }
+
 </div>

@@ -42,7 +42,7 @@
   border-left: 1px solid var(--border2) !important;
   height: 22px !important;
   width: 1px !important;
-  margin: 0 10px !important;
+  margin: 0 8px !important;
   display: inline-block !important;
 }
 
@@ -177,26 +177,26 @@
 .filter-tabs {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 1px;
 }
 
 .filter-tab {
   display: flex;
   align-items: center;
-  gap: 5px;
-  height: 28px;
-  padding: 0 10px;
+  gap: 4px;
+  height: 26px;
+  padding: 0 7px;
   background: transparent;
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
   color: var(--text3);
   font-family: 'DM Sans', sans-serif;
-  font-size: 12px;
+  font-size: 11px;
   cursor: pointer;
   transition: color .15s, background .15s, border-color .15s;
   white-space: nowrap;
 
-  i { font-size: 11px !important; color: inherit !important; }
+  i { font-size: 10px !important; color: inherit !important; }
 
   &:hover {
     color: var(--text2);
@@ -225,6 +225,7 @@
   border: 1px solid var(--border) !important;
   border-radius: var(--radius-lg) !important;
   box-shadow: 0 24px 64px rgba(0,0,0,.6) !important;
+  overflow: hidden !important;
 
   .p-dialog-header {
     background: var(--bg2) !important;
@@ -244,7 +245,7 @@
       color: var(--text3) !important;
       &:hover {
         color: var(--text2) !important;
-        background: rgba(255,255,255,.06) !important;
+        background: rgba(128,128,128,.08) !important;
       }
     }
   }
@@ -270,6 +271,36 @@
   backdrop-filter: blur(4px) !important;
 }
 
+// ─── Кнопки в диалоге ───
+
+:host ::ng-deep .create-folder .p-button {
+  border-radius: var(--radius-sm) !important;
+  font-family: 'DM Sans', sans-serif !important;
+  font-size: 13px !important;
+  height: 36px !important;
+  padding: 0 16px !important;
+
+  &.p-button-secondary {
+    color: var(--text2) !important;
+    background: transparent !important;
+    border: 1px solid var(--border2) !important;
+
+    &:hover {
+      color: var(--text) !important;
+      background: rgba(128,128,128,.08) !important;
+      border-color: var(--text3) !important;
+    }
+  }
+
+  &:not(.p-button-secondary) {
+    color: var(--bg) !important;
+    background: var(--text) !important;
+    border: none !important;
+
+    &:hover { opacity: .88 !important; }
+  }
+}
+
 // ─── Форма в диалоге ───
 
 .name-folder {
@@ -278,9 +309,12 @@
   gap: 8px;
 
   label {
-    font-size: 12px;
-    color: var(--text2);
-    letter-spacing: .3px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text3);
+    font-family: 'DM Sans', sans-serif;
+    letter-spacing: .5px;
+    text-transform: uppercase;
   }
 }
 
@@ -293,6 +327,7 @@
   font-size: 14px !important;
   padding: 9px 12px !important;
   transition: border-color .2s !important;
+  width: 100% !important;
 
   &:focus {
     border-color: var(--text3) !important;
@@ -308,5 +343,108 @@
   justify-content: flex-end;
   align-items: center;
   padding-top: 20px;
-  gap: 10px;
+  gap: 8px;
+}
+
+// ─── Confirm диалог загрузки папки ───
+
+::ng-deep .confirm-dialog.p-dialog {
+  border-radius: 14px !important;
+  overflow: hidden !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: 0 32px 80px rgba(0,0,0,.7) !important;
+
+  .p-dialog-header { display: none !important; }
+
+  .p-dialog-content {
+    padding: 0 !important;
+    background: var(--bg2) !important;
+    border-radius: 14px !important;
+  }
+}
+
+.confirm-root {
+  display: flex;
+  flex-direction: column;
+  padding: 28px 28px 20px;
+  gap: 12px;
+}
+
+.confirm-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(74,158,255,.12);
+  border: 1px solid rgba(74,158,255,.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  i {
+    font-size: 1.1rem !important;
+    color: #4a9eff !important;
+  }
+}
+
+.confirm-body { display: flex; flex-direction: column; gap: 6px; }
+
+.confirm-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+  letter-spacing: -.3px;
+}
+
+.confirm-message {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: var(--text2);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  margin-top: 4px;
+}
+
+::ng-deep .confirm-actions .p-button {
+  border-radius: 8px !important;
+  font-family: 'DM Sans', sans-serif !important;
+  font-size: 13px !important;
+
+  &.p-button-text {
+    color: var(--text2) !important;
+    background: transparent !important;
+    border: none !important;
+
+    &:hover { color: var(--text) !important; background: rgba(128,128,128,.08) !important; }
+  }
+}
+
+::ng-deep .confirm-btn-upload {
+  background: rgba(255,255,255,.08) !important;
+  border: 1px solid rgba(255,255,255,.14) !important;
+  color: #f0f0f0 !important;
+
+  &:hover { background: rgba(255,255,255,.14) !important; }
+}
+
+// ─── Светлая тема ───
+
+:host-context(.light-theme) {
+  --bg:      #f8f8f8;
+  --bg2:     #ffffff;
+  --bg3:     #f2f2f2;
+  --border:  #e0e0e0;
+  --border2: #d0d0d0;
+  --text:    #111111;
+  --text2:   #555555;
+  --text3:   #aaaaaa;
 }

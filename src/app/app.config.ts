@@ -12,8 +12,11 @@ export const appConfig: ApplicationConfig = {
       withInterceptors([AuthInterceptor])
     ),
     providePrimeNG({
-      theme:{
-        preset: ZincPreset
+      theme: {
+        preset: ZincPreset,
+        options: {
+          darkModeSelector: '.dark-theme',
+        }
       }
     }),
     provideBrowserGlobalErrorListeners(),
