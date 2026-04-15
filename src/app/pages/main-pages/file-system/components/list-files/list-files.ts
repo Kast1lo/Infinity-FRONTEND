@@ -36,22 +36,10 @@ import { ZipEntry } from '../../../../../interfaces/file-system-interfeces/zip-e
 @Component({
   selector: 'app-list-files',
   imports: [
-    ScrollPanelModule,
-    TableModule,
-    ToastModule,
-    ButtonModule,
-    MenuModule,
-    CardModule,
-    ProgressSpinner,
-    TieredMenuModule,
-    DecodeURIComponentPipe,
-    BreadcrumbModule,
-    RippleModule,
-    ImageModule,
-    DialogModule,
-    InputTextModule,
-    FormsModule,
-    NgTemplateOutlet,
+    ScrollPanelModule, TableModule, ToastModule, ButtonModule, MenuModule,
+    CardModule, ProgressSpinner, TieredMenuModule, DecodeURIComponentPipe,
+    BreadcrumbModule, RippleModule, ImageModule, DialogModule,
+    InputTextModule, FormsModule, NgTemplateOutlet,
   ],
   templateUrl: './list-files.html',
   styleUrl: './list-files.scss',
@@ -60,6 +48,7 @@ import { ZipEntry } from '../../../../../interfaces/file-system-interfeces/zip-e
 })
 export class ListFiles implements OnInit {
   @ViewChild('videoPlayer') videoPlayerRef?: ElementRef<HTMLVideoElement>;
+  @ViewChild('audioPlayer') audioPlayerRef?: ElementRef<HTMLAudioElement>;
 
   protected readonly messageService = inject(MessageService);
   protected readonly fileSystem = inject(FileSystem);
@@ -79,14 +68,26 @@ export class ListFiles implements OnInit {
   private renameTarget: { id: string; type: 'file' | 'folder' } | null = null;
 
   // ─── Перемещение файла ───
-  moveDialogVisible  = signal(false);
-  moveTargetFile     = signal<FileItem | null>(null);
-  selectedFolderId   = signal<string | null>(null);
+  moveDialogVisible = signal(false);
+  moveTargetFile    = signal<FileItem | null>(null);
+  selectedFolderId  = signal<string | null>(null);
 
   // ─── Видео плеер ───
   videoDialogVisible = false;
   videoUrl: string | null = null;
   videoTitle = '';
+
+  // ─── Аудио плеер ───
+  audioDialogVisible = signal(false);
+  audioUrl           = signal<string | null>(null);
+  audioTitle         = signal('');
+  audioIsPlaying     = signal(false);
+  audioIsMuted       = signal(false);
+  audioVolume        = signal(1);
+  audioProgress      = signal(0);
+  audioCurrentTime   = signal('0:00');
+  audioDuration      = signal('0:00');
+  private audioRafId: any;
 
   // ─── Превью изображений ───
   imagePreviewVisible = false;
@@ -113,7 +114,7 @@ export class ListFiles implements OnInit {
   zipEntries = signal<ZipEntry[]>([]);
   private zipRef: any = null;
 
-  // ─── Плеер ───
+  // ─── Видео плеер состояние ───
   isPlaying = false;
   isMuted = false;
   volume = 1;
@@ -170,26 +171,16 @@ export class ListFiles implements OnInit {
     if (isFile) {
       const file = selected as FileItem;
       const menuItems: MenuItem[] = [
-        {
-          label: 'скачать',
-          icon: PrimeIcons.DOWNLOAD,
-          command: () => this.fileSystem.downloadFile(file),
-        },
+        { label: 'скачать', icon: PrimeIcons.DOWNLOAD, command: () => this.fileSystem.downloadFile(file) },
         renameItem,
-        {
-          label: 'переместить',
-          icon: PrimeIcons.ARROW_RIGHT_ARROW_LEFT,
-          command: () => this.openMoveDialog(file),
-        },
+        { label: 'переместить', icon: PrimeIcons.ARROW_RIGHT_ARROW_LEFT, command: () => this.openMoveDialog(file) },
         deleteItem,
-        {
-          label: 'переслать',
-          icon: PrimeIcons.SEND,
-          command: () => this.shareFile(),
-        },
+        { label: 'переслать', icon: PrimeIcons.SEND, command: () => this.shareFile() },
       ];
 
-      if (this.isVideo(file)) {
+      if (this.isAudio(file)) {
+        menuItems.unshift({ label: 'слушать', icon: PrimeIcons.VOLUME_UP, command: () => this.openAudio(file) });
+      } else if (this.isVideo(file)) {
         menuItems.unshift({ label: 'смотреть', icon: PrimeIcons.PLAY, command: () => this.openVideo(file) });
       }
       if (this.isPdf(file)) {
@@ -203,11 +194,7 @@ export class ListFiles implements OnInit {
       return menuItems;
     } else {
       return [
-        {
-          label: 'скачать',
-          icon: PrimeIcons.DOWNLOAD,
-          command: () => this.fileSystem.downloadFolder(selected.id, selected.name),
-        },
+        { label: 'скачать', icon: PrimeIcons.DOWNLOAD, command: () => this.fileSystem.downloadFolder(selected.id, selected.name) },
         renameItem,
         deleteItem,
       ];
@@ -219,111 +206,18 @@ export class ListFiles implements OnInit {
     this.fileSystem.loadFiles(null);
   }
 
-  // ─── Переименование ───
-
-  openRenameDialog(item: FileItem | FolderItem, type: 'file' | 'folder') {
-    const currentName = decodeURIComponent(item.name);
-    this.renameValue.set(currentName);
-    this.renameTarget = { id: item.id, type };
-    this.renameDialogVisible.set(true);
-  }
-
-  submitRename() {
-    const newName = this.renameValue().trim();
-    if (!newName || !this.renameTarget) return;
-
-    const { id, type } = this.renameTarget;
-
-    this.fileSystem.renameItem(id, type, newName).subscribe({
-      next: () => {
-        this.messageService.add({
-          severity: 'secondary',
-          summary: 'Готово',
-          detail: `${type === 'file' ? 'Файл' : 'Папка'} переименован(а)`,
-          key: 'br',
-        });
-        this.closeRenameDialog();
-      },
-      error: (err) => {
-        this.messageService.add({
-          severity: 'secondary',
-          summary: 'Ошибка',
-          detail: err?.message || 'Не удалось переименовать',
-          key: 'br',
-        });
-      },
-    });
-  }
-
-  closeRenameDialog() {
-    this.renameDialogVisible.set(false);
-    this.renameValue.set('');
-    this.renameTarget = null;
-  }
-
-  // ─── Перемещение файла ───
-
-  openMoveDialog(file: FileItem) {
-    this.moveTargetFile.set(file);
-    this.selectedFolderId.set(file.folderId ?? null);
-    this.moveDialogVisible.set(true);
-  }
-
-  closeMoveDialog() {
-    this.moveDialogVisible.set(false);
-    this.moveTargetFile.set(null);
-    this.selectedFolderId.set(null);
-  }
-
-  submitMove() {
-    const file     = this.moveTargetFile();
-    const folderId = this.selectedFolderId();
-    if (!file) return;
-
-    this.fileSystem.moveFile(file.id, folderId).subscribe({
-      next: () => {
-        this.messageService.add({
-          severity: 'secondary', summary: 'Готово',
-          detail: 'Файл перемещён', key: 'br',
-        });
-        this.closeMoveDialog();
-      },
-      error: () => {
-        this.messageService.add({
-          severity: 'secondary', summary: 'Ошибка',
-          detail: 'Не удалось переместить файл', key: 'br',
-        });
-      },
-    });
-  }
-
-  // Папки для дерева — всё кроме текущей папки файла
-  getFolderTree(): FolderItem[] {
-    return this.fileSystem.folders().filter(
-      f => f.id !== this.moveTargetFile()?.folderId
-    );
-  }
-
-  getRootFolders(): FolderItem[] {
-    return this.fileSystem.folders().filter(f => !f.parentId);
-  }
-
-  getChildFolders(parentId: string): FolderItem[] {
-    return this.fileSystem.folders().filter(f => f.parentId === parentId);
-  }
-
   // ─── Типы файлов ───
 
-  isImage(file: FileItem): boolean {
-    return file.mimeType.startsWith('image/');
-  }
+  isImage(file: FileItem): boolean { return file.mimeType.startsWith('image/'); }
+  isVideo(file: FileItem): boolean { return file.mimeType.startsWith('video/'); }
+  isPdf(file: FileItem):   boolean { return file.mimeType === 'application/pdf'; }
 
-  isVideo(file: FileItem): boolean {
-    return file.mimeType.startsWith('video/');
-  }
-
-  isPdf(file: FileItem): boolean {
-    return file.mimeType === 'application/pdf';
+  isAudio(file: FileItem): boolean {
+    const name = file.name.toLowerCase();
+    return (
+      file.mimeType.startsWith('audio/') ||
+      /\.(mp3|wav|ogg|flac|aac|m4a|wma|opus)$/.test(name)
+    );
   }
 
   isZip(file: FileItem): boolean {
@@ -356,6 +250,163 @@ export class ListFiles implements OnInit {
     return null;
   }
 
+  // ─── Аудио плеер ───
+
+  openAudio(file: FileItem) {
+    this.audioUrl.set(file.downloadUrl);
+    this.audioTitle.set(decodeURIComponent(file.name));
+    this.audioIsPlaying.set(false);
+    this.audioProgress.set(0);
+    this.audioCurrentTime.set('0:00');
+    this.audioDuration.set('0:00');
+    this.audioDialogVisible.set(true);
+    this.cdr.markForCheck();
+  }
+
+  closeAudio() {
+    const audio = this.audioPlayerRef?.nativeElement;
+    if (audio) { audio.pause(); audio.currentTime = 0; }
+    this.audioIsPlaying.set(false);
+    this.audioDialogVisible.set(false);
+    this.audioUrl.set(null);
+    this.stopAudioLoop();
+    this.cdr.markForCheck();
+  }
+
+  toggleAudioPlay() {
+    const audio = this.audioPlayerRef?.nativeElement;
+    if (!audio) return;
+    if (audio.paused) {
+      audio.play();
+      this.audioIsPlaying.set(true);
+      this.startAudioLoop();
+    } else {
+      audio.pause();
+      this.audioIsPlaying.set(false);
+      this.stopAudioLoop();
+    }
+    this.cdr.markForCheck();
+  }
+
+  toggleAudioMute() {
+    const audio = this.audioPlayerRef?.nativeElement;
+    if (!audio) return;
+    audio.muted = !audio.muted;
+    this.audioIsMuted.set(audio.muted);
+    this.cdr.markForCheck();
+  }
+
+  onAudioVolumeChange(event: Event) {
+    const audio = this.audioPlayerRef?.nativeElement;
+    if (!audio) return;
+    const input = event.target as HTMLInputElement;
+    const val = parseFloat(input.value);
+    audio.volume = val;
+    this.audioVolume.set(val);
+    this.audioIsMuted.set(val === 0);
+    // Обновляем CSS переменную для цветного ползунка
+    input.style.setProperty('--volume-pct', `${val * 100}%`);
+    this.cdr.markForCheck();
+  }
+
+  onAudioMetaLoaded() {
+    const audio = this.audioPlayerRef?.nativeElement;
+    if (!audio) return;
+    this.audioDuration.set(this.formatTime(audio.duration));
+    this.cdr.markForCheck();
+  }
+
+  onAudioEnded() {
+    this.audioIsPlaying.set(false);
+    this.audioProgress.set(0);
+    this.stopAudioLoop();
+    this.cdr.markForCheck();
+  }
+
+  seekAudio(event: MouseEvent) {
+    const audio = this.audioPlayerRef?.nativeElement;
+    const bar = event.currentTarget as HTMLElement;
+    if (!audio || !bar) return;
+    const rect = bar.getBoundingClientRect();
+    const ratio = (event.clientX - rect.left) / rect.width;
+    audio.currentTime = ratio * audio.duration;
+    this.cdr.markForCheck();
+  }
+
+  private startAudioLoop() {
+    this.stopAudioLoop();
+    const audio = this.audioPlayerRef?.nativeElement;
+    if (!audio) return;
+    const tick = () => {
+      if (!audio.paused && !audio.ended) {
+        this.audioProgress.set(audio.duration ? (audio.currentTime / audio.duration) * 100 : 0);
+        this.audioCurrentTime.set(this.formatTime(audio.currentTime));
+        this.cdr.markForCheck();
+        this.audioRafId = requestAnimationFrame(tick);
+      }
+    };
+    this.audioRafId = requestAnimationFrame(tick);
+  }
+
+  private stopAudioLoop() {
+    if (this.audioRafId) { cancelAnimationFrame(this.audioRafId); this.audioRafId = null; }
+  }
+
+  // ─── Переименование ───
+
+  openRenameDialog(item: FileItem | FolderItem, type: 'file' | 'folder') {
+    this.renameValue.set(decodeURIComponent(item.name));
+    this.renameTarget = { id: item.id, type };
+    this.renameDialogVisible.set(true);
+  }
+
+  submitRename() {
+    const newName = this.renameValue().trim();
+    if (!newName || !this.renameTarget) return;
+    const { id, type } = this.renameTarget;
+    this.fileSystem.renameItem(id, type, newName).subscribe({
+      next: () => {
+        this.messageService.add({ severity: 'secondary', summary: 'Готово', detail: `${type === 'file' ? 'Файл' : 'Папка'} переименован(а)`, key: 'br' });
+        this.closeRenameDialog();
+      },
+      error: (err) => this.messageService.add({ severity: 'secondary', summary: 'Ошибка', detail: err?.message || 'Не удалось переименовать', key: 'br' }),
+    });
+  }
+
+  closeRenameDialog() {
+    this.renameDialogVisible.set(false);
+    this.renameValue.set('');
+    this.renameTarget = null;
+  }
+
+  // ─── Перемещение ───
+
+  openMoveDialog(file: FileItem) {
+    this.moveTargetFile.set(file);
+    this.selectedFolderId.set(file.folderId ?? null);
+    this.moveDialogVisible.set(true);
+  }
+
+  closeMoveDialog() {
+    this.moveDialogVisible.set(false);
+    this.moveTargetFile.set(null);
+    this.selectedFolderId.set(null);
+  }
+
+  submitMove() {
+    const file = this.moveTargetFile();
+    const folderId = this.selectedFolderId();
+    if (!file) return;
+    this.fileSystem.moveFile(file.id, folderId).subscribe({
+      next: () => { this.messageService.add({ severity: 'secondary', summary: 'Готово', detail: 'Файл перемещён', key: 'br' }); this.closeMoveDialog(); },
+      error: () => this.messageService.add({ severity: 'secondary', summary: 'Ошибка', detail: 'Не удалось переместить файл', key: 'br' }),
+    });
+  }
+
+  getFolderTree(): FolderItem[] { return this.fileSystem.folders().filter(f => f.id !== this.moveTargetFile()?.folderId); }
+  getRootFolders(): FolderItem[] { return this.fileSystem.folders().filter(f => !f.parentId); }
+  getChildFolders(parentId: string): FolderItem[] { return this.fileSystem.folders().filter(f => f.parentId === parentId); }
+
   // ─── Превью изображений ───
 
   openImagePreview(file: FileItem) {
@@ -378,42 +429,28 @@ export class ListFiles implements OnInit {
     this.pdfLoading = true;
     this.pdfDialogVisible = true;
     this.cdr.detectChanges();
-
     try {
       const arrayBuffer = await this.fileSystem.fetchFileAsArrayBuffer(file.id);
       const pdfjsLib = (window as any).pdfjsLib;
       if (!pdfjsLib) throw new Error('pdf.js not loaded');
-
       const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
       const pages: string[] = [];
-
       for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i);
         const viewport = page.getViewport({ scale: 1.5 });
         const canvas = document.createElement('canvas');
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
-        const ctx = canvas.getContext('2d')!;
-        await page.render({ canvasContext: ctx, viewport }).promise;
+        canvas.width = viewport.width; canvas.height = viewport.height;
+        await page.render({ canvasContext: canvas.getContext('2d')!, viewport }).promise;
         pages.push(canvas.toDataURL('image/png'));
         this.pdfPages.set([...pages]);
         this.cdr.detectChanges();
       }
-    } catch (e) {
-      console.error('Ошибка загрузки PDF:', e);
-      this.pdfPages.set([]);
-    }
-
+    } catch (e) { console.error('PDF error:', e); this.pdfPages.set([]); }
     this.pdfLoading = false;
     this.cdr.detectChanges();
   }
 
-  closePdf() {
-    this.pdfDialogVisible = false;
-    this.pdfPages.set([]);
-    this.pdfTitle = '';
-    this.pdfLoading = false;
-  }
+  closePdf() { this.pdfDialogVisible = false; this.pdfPages.set([]); this.pdfTitle = ''; this.pdfLoading = false; }
 
   // ─── ZIP ───
 
@@ -424,83 +461,47 @@ export class ListFiles implements OnInit {
     this.zipDialogVisible = true;
     this.zipRef = null;
     this.cdr.detectChanges();
-
     try {
       const arrayBuffer = await this.fileSystem.fetchFileAsArrayBuffer(file.id);
       const JSZip = (window as any).JSZip;
       if (!JSZip) throw new Error('JSZip not loaded');
-
       const zip = await JSZip.loadAsync(arrayBuffer);
       this.zipRef = zip;
-
       const entries: ZipEntry[] = [];
-
       zip.forEach((relativePath: string, zipEntry: any) => {
         const parts = relativePath.split('/').filter((p: string) => p.length > 0);
-        const depth = parts.length - 1;
-        const isDir = zipEntry.dir;
-        const size = zipEntry._data?.uncompressedSize ?? 0;
-
-        entries.push({
-          name: parts[parts.length - 1] || relativePath,
-          path: relativePath,
-          isDir,
-          size,
-          depth,
-          expanded: depth === 0,
-        });
+        entries.push({ name: parts[parts.length - 1] || relativePath, path: relativePath, isDir: zipEntry.dir, size: zipEntry._data?.uncompressedSize ?? 0, depth: parts.length - 1, expanded: parts.length - 1 === 0 });
       });
-
-      entries.sort((a, b) => {
-        if (a.depth !== b.depth) return a.depth - b.depth;
-        if (a.isDir !== b.isDir) return a.isDir ? -1 : 1;
-        return a.path.localeCompare(b.path);
-      });
-
+      entries.sort((a, b) => { if (a.depth !== b.depth) return a.depth - b.depth; if (a.isDir !== b.isDir) return a.isDir ? -1 : 1; return a.path.localeCompare(b.path); });
       this.zipEntries.set(entries);
-    } catch (e) {
-      console.error('Ошибка загрузки ZIP:', e);
-      this.zipEntries.set([]);
-    }
-
+    } catch (e) { console.error('ZIP error:', e); this.zipEntries.set([]); }
     this.zipLoading = false;
     this.cdr.detectChanges();
   }
 
-  closeZip() {
-    this.zipDialogVisible = false;
-    this.zipEntries.set([]);
-    this.zipTitle = '';
-    this.zipLoading = false;
-    this.zipRef = null;
-  }
+  closeZip() { this.zipDialogVisible = false; this.zipEntries.set([]); this.zipTitle = ''; this.zipLoading = false; this.zipRef = null; }
 
   async downloadZipEntry(entry: ZipEntry) {
     if (!this.zipRef || entry.isDir) return;
     try {
-      const zipFile = this.zipRef.file(entry.path);
-      if (!zipFile) return;
-      const blob = await zipFile.async('blob');
+      const blob = await this.zipRef.file(entry.path).async('blob');
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
-      link.href = url;
-      link.download = entry.name;
-      link.click();
+      link.href = url; link.download = entry.name; link.click();
       URL.revokeObjectURL(url);
-    } catch (e) {
-      console.error('Ошибка извлечения файла:', e);
-    }
+    } catch (e) { console.error('ZIP entry error:', e); }
   }
 
   getZipIcon(entry: ZipEntry): string {
     if (entry.isDir) return 'pi-folder';
-    const name = entry.name.toLowerCase();
-    if (/\.(jpg|jpeg|png|gif|webp|svg)$/.test(name)) return 'pi-image';
-    if (/\.(mp4|mov|avi|mkv|webm)$/.test(name)) return 'pi-video';
-    if (/\.(pdf)$/.test(name)) return 'pi-file-pdf';
-    if (/\.(doc|docx)$/.test(name)) return 'pi-file-word';
-    if (/\.(xls|xlsx)$/.test(name)) return 'pi-file-excel';
-    if (/\.(zip|rar|7z|tar|gz)$/.test(name)) return 'pi-box';
+    const n = entry.name.toLowerCase();
+    if (/\.(jpg|jpeg|png|gif|webp|svg)$/.test(n)) return 'pi-image';
+    if (/\.(mp4|mov|avi|mkv|webm)$/.test(n)) return 'pi-video';
+    if (/\.(mp3|wav|ogg|flac|aac|m4a)$/.test(n)) return 'pi-volume-up';
+    if (/\.(pdf)$/.test(n)) return 'pi-file-pdf';
+    if (/\.(doc|docx)$/.test(n)) return 'pi-file-word';
+    if (/\.(xls|xlsx)$/.test(n)) return 'pi-file-excel';
+    if (/\.(zip|rar|7z|tar|gz)$/.test(n)) return 'pi-box';
     return 'pi-file';
   }
 
@@ -520,10 +521,8 @@ export class ListFiles implements OnInit {
     this.docLoading = true;
     this.docDialogVisible = true;
     this.cdr.detectChanges();
-
     try {
       const arrayBuffer = await this.fileSystem.fetchFileAsArrayBuffer(file.id);
-
       if (this.docType === 'word') {
         const mammoth = (window as any).mammoth;
         if (!mammoth) throw new Error('mammoth not loaded');
@@ -534,172 +533,84 @@ export class ListFiles implements OnInit {
         if (!XLSX) throw new Error('XLSX not loaded');
         const wb = XLSX.read(arrayBuffer, { type: 'array' });
         let html = '';
-        wb.SheetNames.forEach((name: string) => {
-          const ws = wb.Sheets[name];
-          html += `<div class="sheet-tab">${name}</div>`;
-          html += XLSX.utils.sheet_to_html(ws, { editable: false });
-        });
+        wb.SheetNames.forEach((name: string) => { const ws = wb.Sheets[name]; html += `<div class="sheet-tab">${name}</div>` + XLSX.utils.sheet_to_html(ws, { editable: false }); });
         this.docHtml.set(html);
       } else if (this.docType === 'ppt') {
         this.docHtml.set('<div class="doc-ppt-msg"><i class="pi pi-info-circle"></i><p>Предпросмотр PowerPoint ограничен.<br>Скачайте файл для полного просмотра.</p></div>');
       }
     } catch (e) {
-      console.error('Ошибка загрузки документа:', e);
       this.docHtml.set('<div class="doc-error"><i class="pi pi-exclamation-circle"></i><p>Не удалось загрузить документ</p></div>');
     }
-
     this.docLoading = false;
     this.cdr.detectChanges();
   }
 
-  closeDocument() {
-    this.docDialogVisible = false;
-    this.docHtml.set('');
-    this.docTitle = '';
-    this.docType = null;
-    this.docLoading = false;
-  }
-
-  getSafeHtml(html: string): SafeHtml {
-    return this.sanitizer.bypassSecurityTrustHtml(html);
-  }
+  closeDocument() { this.docDialogVisible = false; this.docHtml.set(''); this.docTitle = ''; this.docType = null; this.docLoading = false; }
+  getSafeHtml(html: string): SafeHtml { return this.sanitizer.bypassSecurityTrustHtml(html); }
 
   // ─── Видео ───
 
-  openVideo(file: FileItem) {
-    this.videoUrl = file.downloadUrl;
-    this.videoTitle = decodeURIComponent(file.name);
-    this.videoDialogVisible = true;
-  }
+  openVideo(file: FileItem) { this.videoUrl = file.downloadUrl; this.videoTitle = decodeURIComponent(file.name); this.videoDialogVisible = true; }
 
   closeVideo() {
     const video = this.videoPlayerRef?.nativeElement;
-    if (video) {
-      video.pause();
-      video.currentTime = 0;
-    }
-    this.isPlaying = false;
-    this.progress = 0;
-    this.currentTimeStr = '0:00';
-    this.durationStr = '0:00';
-    this.videoUrl = null;
-    this.videoTitle = '';
-    this.videoDialogVisible = false;
-    clearTimeout(this.controlsTimer);
-    this.stopProgressLoop();
+    if (video) { video.pause(); video.currentTime = 0; }
+    this.isPlaying = false; this.progress = 0; this.currentTimeStr = '0:00'; this.durationStr = '0:00';
+    this.videoUrl = null; this.videoTitle = ''; this.videoDialogVisible = false;
+    clearTimeout(this.controlsTimer); this.stopProgressLoop();
   }
 
   togglePlay() {
     const video = this.videoPlayerRef?.nativeElement;
     if (!video) return;
-    if (video.paused) {
-      video.play();
-      this.isPlaying = true;
-      this.startProgressLoop();
-    } else {
-      video.pause();
-      this.isPlaying = false;
-      this.stopProgressLoop();
-    }
+    if (video.paused) { video.play(); this.isPlaying = true; this.startProgressLoop(); }
+    else { video.pause(); this.isPlaying = false; this.stopProgressLoop(); }
   }
 
-  toggleMute() {
-    const video = this.videoPlayerRef?.nativeElement;
-    if (!video) return;
-    video.muted = !video.muted;
-    this.isMuted = video.muted;
-  }
+  toggleMute() { const video = this.videoPlayerRef?.nativeElement; if (!video) return; video.muted = !video.muted; this.isMuted = video.muted; }
 
   onVolumeChange(event: Event) {
-    const video = this.videoPlayerRef?.nativeElement;
-    if (!video) return;
+    const video = this.videoPlayerRef?.nativeElement; if (!video) return;
     const val = parseFloat((event.target as HTMLInputElement).value);
-    video.volume = val;
-    this.volume = val;
-    this.isMuted = val === 0;
+    video.volume = val; this.volume = val; this.isMuted = val === 0;
   }
 
-  onTimeUpdate() {
-    const video = this.videoPlayerRef?.nativeElement;
-    if (!video) return;
-    this.progress = video.duration ? (video.currentTime / video.duration) * 100 : 0;
-    this.currentTimeStr = this.formatTime(video.currentTime);
-  }
+  onTimeUpdate() { const video = this.videoPlayerRef?.nativeElement; if (!video) return; this.progress = video.duration ? (video.currentTime / video.duration) * 100 : 0; this.currentTimeStr = this.formatTime(video.currentTime); }
 
-  onMetaLoaded() {
-    const video = this.videoPlayerRef?.nativeElement;
-    if (!video) return;
-    this.durationStr = this.formatTime(video.duration);
-    video.play();
-    this.isPlaying = true;
-    this.startProgressLoop();
-  }
+  onMetaLoaded() { const video = this.videoPlayerRef?.nativeElement; if (!video) return; this.durationStr = this.formatTime(video.duration); video.play(); this.isPlaying = true; this.startProgressLoop(); }
 
-  onEnded() {
-    this.isPlaying = false;
-    this.progress = 0;
-    this.stopProgressLoop();
-  }
+  onEnded() { this.isPlaying = false; this.progress = 0; this.stopProgressLoop(); }
 
   seek(event: MouseEvent) {
-    const video = this.videoPlayerRef?.nativeElement;
-    const bar = event.currentTarget as HTMLElement;
+    const video = this.videoPlayerRef?.nativeElement; const bar = event.currentTarget as HTMLElement;
     if (!video || !bar) return;
     const rect = bar.getBoundingClientRect();
-    const ratio = (event.clientX - rect.left) / rect.width;
-    video.currentTime = ratio * video.duration;
+    video.currentTime = ((event.clientX - rect.left) / rect.width) * video.duration;
   }
 
-  toggleFullscreen() {
-    const video = this.videoPlayerRef?.nativeElement;
-    if (!video) return;
-    if (document.fullscreenElement) {
-      document.exitFullscreen();
-    } else {
-      video.requestFullscreen();
-    }
-  }
+  toggleFullscreen() { const video = this.videoPlayerRef?.nativeElement; if (!video) return; document.fullscreenElement ? document.exitFullscreen() : video.requestFullscreen(); }
 
   onPlayerMouseMove() {
-    this.controlsHidden = false;
-    clearTimeout(this.controlsTimer);
-    this.controlsTimer = setTimeout(() => {
-      if (this.isPlaying) this.controlsHidden = true;
-    }, 2500);
+    this.controlsHidden = false; clearTimeout(this.controlsTimer);
+    this.controlsTimer = setTimeout(() => { if (this.isPlaying) this.controlsHidden = true; }, 2500);
   }
 
   onPlayerMouseLeave() {
-    if (this.isPlaying) {
-      clearTimeout(this.controlsTimer);
-      this.controlsTimer = setTimeout(() => { this.controlsHidden = true; }, 800);
-    }
+    if (this.isPlaying) { clearTimeout(this.controlsTimer); this.controlsTimer = setTimeout(() => { this.controlsHidden = true; }, 800); }
   }
 
   private startProgressLoop() {
     this.stopProgressLoop();
-    const video = this.videoPlayerRef?.nativeElement;
-    if (!video) return;
-    const tick = () => {
-      if (!video.paused && !video.ended) {
-        this.progress = video.duration ? (video.currentTime / video.duration) * 100 : 0;
-        this.currentTimeStr = this.formatTime(video.currentTime);
-        this.rafId = requestAnimationFrame(tick);
-      }
-    };
+    const video = this.videoPlayerRef?.nativeElement; if (!video) return;
+    const tick = () => { if (!video.paused && !video.ended) { this.progress = video.duration ? (video.currentTime / video.duration) * 100 : 0; this.currentTimeStr = this.formatTime(video.currentTime); this.rafId = requestAnimationFrame(tick); } };
     this.rafId = requestAnimationFrame(tick);
   }
 
-  private stopProgressLoop() {
-    if (this.rafId) {
-      cancelAnimationFrame(this.rafId);
-      this.rafId = null;
-    }
-  }
+  private stopProgressLoop() { if (this.rafId) { cancelAnimationFrame(this.rafId); this.rafId = null; } }
 
   private formatTime(sec: number): string {
     if (!sec || isNaN(sec)) return '0:00';
-    const m = Math.floor(sec / 60);
-    const s = Math.floor(sec % 60);
+    const m = Math.floor(sec / 60); const s = Math.floor(sec % 60);
     return `${m}:${s.toString().padStart(2, '0')}`;
   }
 
@@ -709,204 +620,109 @@ export class ListFiles implements OnInit {
     if (mimeType.includes('word') || mimeType.includes('document')) return 'pi-file-word';
     if (mimeType.includes('excel') || mimeType.includes('spreadsheet')) return 'pi-file-excel';
     if (mimeType.startsWith('video/')) return 'pi-video';
+    if (mimeType.startsWith('audio/')) return 'pi-volume-up';
     if (mimeType.includes('zip')) return 'pi-box';
     return 'pi-file';
   }
 
   formatSize(size: string): string {
-    const bytes = parseInt(size, 10);
-    if (isNaN(bytes)) return size;
+    const bytes = parseInt(size, 10); if (isNaN(bytes)) return size;
     if (bytes < 1024) return `${bytes} Б`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} КБ`;
     if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} МБ`;
     return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} ГБ`;
   }
 
-  goBack() {
-    this.fileSystem.goBack();
-  }
+  goBack() { this.fileSystem.goBack(); }
 
   // ─── Drag & Drop ───
 
-  onDragEnter(event: DragEvent) {
-    event.preventDefault();
-    this.dragCounter++;
-    this.isDragging.set(true);
-  }
+  onDragEnter(event: DragEvent) { event.preventDefault(); this.dragCounter++; this.isDragging.set(true); }
+  onDragOver(event: DragEvent) { event.preventDefault(); }
 
-  onDragOver(event: DragEvent) {
-    event.preventDefault();
-  }
-
-  onDragLeave(event: DragEvent) {
-    this.dragCounter--;
-    if (this.dragCounter === 0) {
-      this.isDragging.set(false);
-    }
-  }
+  onDragLeave(event: DragEvent) { this.dragCounter--; if (this.dragCounter === 0) this.isDragging.set(false); }
 
   onDrop(event: DragEvent) {
     event.preventDefault();
-    this.dragCounter = 0;
-    this.isDragging.set(false);
-
+    this.dragCounter = 0; this.isDragging.set(false);
     const items = event.dataTransfer?.items;
     const folderId = this.fileSystem.currentFolderId();
-
     if (!items || items.length === 0) return;
-
-    // Проверяем — есть ли среди дропнутых папки
     const entries: FileSystemEntry[] = [];
-    for (let i = 0; i < items.length; i++) {
-      const entry = items[i].webkitGetAsEntry();
-      if (entry) entries.push(entry);
-    }
-
+    for (let i = 0; i < items.length; i++) { const entry = items[i].webkitGetAsEntry(); if (entry) entries.push(entry); }
     const hasFolder = entries.some(e => e.isDirectory);
-
     if (hasFolder) {
-      // Показываем confirm перед загрузкой структуры папок
-      const folderNames = entries
-        .filter(e => e.isDirectory)
-        .map(e => `«${e.name}»`)
-        .join(', ');
-
+      const folderNames = entries.filter(e => e.isDirectory).map(e => `«${e.name}»`).join(', ');
       this.uploadConfirmTitle.set('Загрузить папку?');
-      this.uploadConfirmMessage.set(
-        `Будет загружена структура папок: ${folderNames} со всеми файлами внутри.`
-      );
+      this.uploadConfirmMessage.set(`Будет загружена структура папок: ${folderNames} со всеми файлами внутри.`);
       this.pendingUpload = async () => {
         try {
           const allFiles = await this.readEntriesRecursive(entries);
           await this.fileSystem.uploadFolderStructure(allFiles, folderId);
-          this.messageService.add({
-            severity: 'secondary', summary: 'Готово',
-            detail: 'Папка загружена', life: 2000, key: 'br',
-          });
-        } catch {
-          this.messageService.add({
-            severity: 'secondary', summary: 'Ошибка',
-            detail: 'Не удалось загрузить папку', key: 'br',
-          });
-        }
+          this.messageService.add({ severity: 'secondary', summary: 'Готово', detail: 'Папка загружена', life: 2000, key: 'br' });
+        } catch { this.messageService.add({ severity: 'secondary', summary: 'Ошибка', detail: 'Не удалось загрузить папку', key: 'br' }); }
       };
       this.uploadConfirmVisible.set(true);
     } else {
-      // Обычные файлы — грузим сразу
       const files = event.dataTransfer!.files;
       this.fileSystem.uploadFiles(files, folderId);
-      this.messageService.add({
-        severity: 'secondary', summary: 'Загрузка',
-        detail: `${files.length} файл(ов) отправлено`, life: 2000, key: 'br',
-      });
+      this.messageService.add({ severity: 'secondary', summary: 'Загрузка', detail: `${files.length} файл(ов) отправлено`, life: 2000, key: 'br' });
     }
   }
 
-  onUploadConfirmAccept() {
-    this.uploadConfirmVisible.set(false);
-    if (this.pendingUpload) {
-      this.pendingUpload();
-      this.pendingUpload = null;
-    }
-  }
+  onUploadConfirmAccept() { this.uploadConfirmVisible.set(false); if (this.pendingUpload) { this.pendingUpload(); this.pendingUpload = null; } }
+  onUploadConfirmReject() { this.uploadConfirmVisible.set(false); this.pendingUpload = null; }
 
-  onUploadConfirmReject() {
-    this.uploadConfirmVisible.set(false);
-    this.pendingUpload = null;
-  }
-
-  // Рекурсивно читает все файлы из FileSystemEntry[]
-  // Восстанавливает webkitRelativePath через path
   private async readEntriesRecursive(entries: FileSystemEntry[], basePath = ''): Promise<File[]> {
     const result: File[] = [];
-
     for (const entry of entries) {
       if (entry.isFile) {
-        const file = await new Promise<File>((resolve, reject) =>
-          (entry as FileSystemFileEntry).file(resolve, reject)
-        );
-        // Создаём новый File с webkitRelativePath через basePath
+        const file = await new Promise<File>((resolve, reject) => (entry as FileSystemFileEntry).file(resolve, reject));
         const path = basePath ? `${basePath}/${entry.name}` : entry.name;
         const fileWithPath = new File([file], file.name, { type: file.type });
         Object.defineProperty(fileWithPath, 'webkitRelativePath', { value: path });
         result.push(fileWithPath);
       } else if (entry.isDirectory) {
-        const dirEntry = entry as FileSystemDirectoryEntry;
-        const dirPath  = basePath ? `${basePath}/${entry.name}` : entry.name;
-        const children = await this.readDirectoryEntries(dirEntry);
-        const nested   = await this.readEntriesRecursive(children, dirPath);
-        result.push(...nested);
+        const dirPath = basePath ? `${basePath}/${entry.name}` : entry.name;
+        const children = await this.readDirectoryEntries(entry as FileSystemDirectoryEntry);
+        result.push(...await this.readEntriesRecursive(children, dirPath));
       }
     }
-
     return result;
   }
 
-  // Читает содержимое директории через FileSystemDirectoryReader
   private readDirectoryEntries(dir: FileSystemDirectoryEntry): Promise<FileSystemEntry[]> {
     return new Promise((resolve, reject) => {
-      const reader  = dir.createReader();
-      const entries: FileSystemEntry[] = [];
-
-      const readBatch = () => {
-        reader.readEntries((batch) => {
-          if (batch.length === 0) {
-            resolve(entries);
-          } else {
-            entries.push(...batch);
-            readBatch(); // читаем следующий батч (браузер отдаёт по 100 штук)
-          }
-        }, reject);
-      };
-
+      const reader = dir.createReader(); const entries: FileSystemEntry[] = [];
+      const readBatch = () => reader.readEntries(batch => { if (batch.length === 0) resolve(entries); else { entries.push(...batch); readBatch(); } }, reject);
       readBatch();
     });
   }
 
-  onFileDropped(files: FileList) {
-    this.fileSystem.uploadFiles(files);
-  }
+  onFileDropped(files: FileList) { this.fileSystem.uploadFiles(files); }
 
-  // ─── Выбор ───
-
-  selectFile(file: FileItem) {
-    this.fileSystem.selectItem(file);
-  }
+  selectFile(file: FileItem) { this.fileSystem.selectItem(file); }
 
   selectFolder(folder: FolderItem) {
     clearTimeout(this.clickTimer);
     this.clickTimer = setTimeout(() => {
       const current = this.selectedItem();
-      if (current && current.id === folder.id) {
-        this.fileSystem.selectItem(null);
-      } else {
-        this.fileSystem.selectItem(folder);
-      }
+      if (current && current.id === folder.id) this.fileSystem.selectItem(null);
+      else this.fileSystem.selectItem(folder);
     }, 200);
   }
 
-  openFolder(folder: FolderItem) {
-    clearTimeout(this.clickTimer);
-    this.fileSystem.openFolder(folder.id);
-  }
+  openFolder(folder: FolderItem) { clearTimeout(this.clickTimer); this.fileSystem.openFolder(folder.id); }
 
   shareFile() {
     const item = this.selectedItem();
-    if (!item || !('name' in item)) {
-      this.messageService.add({ severity: 'secondary', summary: 'Внимание', detail: 'Выберите файл для пересылки', life: 1000, key: 'br' });
-      return;
-    }
-    try {
-      this.shareService.copyShareLink(item.name);
-      this.messageService.add({ severity: 'secondary', summary: 'Успешно', detail: `Ссылка на "${item.name}" скопирована`, life: 1000, key: 'br' });
-    } catch {
-      this.messageService.add({ severity: 'secondary', summary: 'Ошибка', detail: 'Не удалось скопировать ссылку', life: 1000, key: 'br' });
-    }
+    if (!item || !('name' in item)) { this.messageService.add({ severity: 'secondary', summary: 'Внимание', detail: 'Выберите файл для пересылки', life: 1000, key: 'br' }); return; }
+    try { this.shareService.copyShareLink(item.name); this.messageService.add({ severity: 'secondary', summary: 'Успешно', detail: `Ссылка на "${item.name}" скопирована`, life: 1000, key: 'br' }); }
+    catch { this.messageService.add({ severity: 'secondary', summary: 'Ошибка', detail: 'Не удалось скопировать ссылку', life: 1000, key: 'br' }); }
   }
 
   deleteSelected() {
-    const item = this.selectedItem();
-    if (!item) return;
+    const item = this.selectedItem(); if (!item) return;
     const isFile = 'downloadUrl' in item && 'mimeType' in item;
     const type: 'file' | 'folder' = isFile ? 'file' : 'folder';
     this.fileSystem.deleteItem(item.id, type);

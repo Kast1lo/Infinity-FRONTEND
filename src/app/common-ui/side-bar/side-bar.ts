@@ -6,6 +6,7 @@ import { AvatarGroupModule } from 'primeng/avatargroup';
 import { ButtonModule } from 'primeng/button';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { TooltipModule } from 'primeng/tooltip';
+import { ThemeService } from '../../services/theme';
 
 @Component({
   selector: 'app-side-bar',
@@ -22,15 +23,15 @@ import { TooltipModule } from 'primeng/tooltip';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SideBar {
-  public authService = inject(AuthService);
-  public userService = inject(UserService);
+  public authService   = inject(AuthService);
+  public userService   = inject(UserService);
+  public themeService  = inject(ThemeService);
 
-  profile = this.userService.profile;
+  profile   = this.userService.profile;
   isLoading = this.userService.isLoading;
-  error = this.userService.error;
+  error     = this.userService.error;
 
-  avatarUrl = computed(() => {
-    const profile = this.profile();
-    return profile?.avatarUrl || '';
-  });
+  avatarUrl = computed(() => this.profile()?.avatarUrl || '');
+
+  isDark = computed(() => this.themeService.theme() === 'dark');
 }

@@ -4,7 +4,7 @@ import { FolderItem } from '../interfaces/file-system-interfeces/folder-item.mod
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { catchError, firstValueFrom, tap, throwError } from 'rxjs';
 
-export type FileFilter = 'all' | 'image' | 'video' | 'document' | 'archive' | 'other';
+export type FileFilter = 'all' | 'image' | 'video' | 'audio' | 'document' | 'archive' | 'other';
 
 @Injectable({
   providedIn: 'root',
@@ -42,6 +42,9 @@ export class FileSystem {
       let matchesFilter = true;
       if (filter === 'image')    matchesFilter = file.mimeType.startsWith('image/');
       if (filter === 'video')    matchesFilter = file.mimeType.startsWith('video/');
+      if (filter === 'audio')    matchesFilter =
+        file.mimeType.startsWith('audio/') ||
+        /\.(mp3|wav|ogg|flac|aac|m4a|wma|opus)$/i.test(file.name);
       if (filter === 'document') matchesFilter =
         file.mimeType.includes('word') || file.mimeType.includes('document') ||
         file.mimeType.includes('excel') || file.mimeType.includes('spreadsheet') ||
@@ -53,6 +56,8 @@ export class FileSystem {
       if (filter === 'other')    matchesFilter =
         !file.mimeType.startsWith('image/') &&
         !file.mimeType.startsWith('video/') &&
+        !file.mimeType.startsWith('audio/') &&
+        !/\.(mp3|wav|ogg|flac|aac|m4a|wma|opus)$/i.test(file.name) &&
         !file.mimeType.includes('word') && !file.mimeType.includes('document') &&
         !file.mimeType.includes('excel') && !file.mimeType.includes('spreadsheet') &&
         !file.mimeType.includes('powerpoint') && !file.mimeType.includes('presentation') &&

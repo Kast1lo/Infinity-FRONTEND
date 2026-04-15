@@ -164,17 +164,17 @@
     width: 16px !important;
     height: 16px !important;
     border-radius: 4px !important;
-    border: 1.5px solid rgba(255,255,255,.3) !important;
+    border: 1.5px solid var(--text3) !important;
     background: transparent !important;
     transition: border-color .2s, background .2s !important;
   }
 
-  &:hover .p-checkbox-box { border-color: rgba(255,255,255,.55) !important; }
+  &:hover .p-checkbox-box { border-color: var(--text2) !important; }
 
   .p-checkbox.p-checkbox-checked .p-checkbox-box,
   .p-checkbox[data-p-checked="true"] .p-checkbox-box {
-    background: rgba(255,255,255,.2) !important;
-    border-color: rgba(255,255,255,.45) !important;
+    background: var(--text3) !important;
+    border-color: var(--text2) !important;
   }
 
   .p-checkbox-icon {
@@ -837,17 +837,17 @@
     width: 16px !important;
     height: 16px !important;
     border-radius: 4px !important;
-    border: 1.5px solid rgba(255,255,255,.3) !important;
+    border: 1.5px solid var(--text3) !important;
     background: transparent !important;
     transition: border-color .2s, background .2s !important;
   }
 
-  &:hover .p-checkbox-box { border-color: rgba(255,255,255,.55) !important; }
+  &:hover .p-checkbox-box { border-color: var(--text2) !important; }
 
   .p-checkbox.p-checkbox-checked .p-checkbox-box,
   .p-checkbox[data-p-checked="true"] .p-checkbox-box {
-    background: rgba(255,255,255,.2) !important;
-    border-color: rgba(255,255,255,.45) !important;
+    background: var(--text3) !important;
+    border-color: var(--text2) !important;
   }
 
   .p-checkbox-icon {
@@ -973,8 +973,8 @@
 // ─── Checkbox global fix ───
 
 :host ::ng-deep [data-p-checked="true"] .p-checkbox-box {
-  background: rgba(255,255,255,.2) !important;
-  border-color: rgba(255,255,255,.45) !important;
+  background: var(--text3) !important;
+  border-color: var(--text2) !important;
 }
 
 :host ::ng-deep [data-p-checked="true"] .p-checkbox-icon {

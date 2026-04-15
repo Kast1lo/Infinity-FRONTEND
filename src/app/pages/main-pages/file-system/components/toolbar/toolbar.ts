@@ -37,7 +37,9 @@ export class Toolbar implements OnInit {
 
   visible         = signal(false);
   folderName      = signal<string>('');
-  folderUploading = signal(false);
+  folderUploading        = signal(false);
+  folderConfirmVisible   = signal(false);
+  private pendingFolderInput: HTMLInputElement | null = null;
 
   files        = this.fileSystem.files;
   folder       = this.fileSystem.folders;
@@ -52,6 +54,7 @@ export class Toolbar implements OnInit {
     { label: 'Все',       value: 'all',      icon: 'pi-list' },
     { label: 'Фото',      value: 'image',    icon: 'pi-image' },
     { label: 'Видео',     value: 'video',    icon: 'pi-video' },
+    { label: 'Аудио',     value: 'audio',    icon: 'pi-volume-up' },
     { label: 'Документы', value: 'document', icon: 'pi-file' },
     { label: 'Архивы',    value: 'archive',  icon: 'pi-box' },
     { label: 'Прочее',    value: 'other',    icon: 'pi-file' },
@@ -97,11 +100,23 @@ export class Toolbar implements OnInit {
 
   // ─── Загрузка папки ───
 
+  // Шаг 1: показываем свой confirm до открытия системного диалога
   triggerFolderUpload() {
+    this.folderConfirmVisible.set(true);
+  }
+
+  // Шаг 2: пользователь подтвердил — открываем системный диалог
+  onFolderConfirmAccept() {
+    this.folderConfirmVisible.set(false);
     this.folderInputRef.nativeElement.value = '';
     this.folderInputRef.nativeElement.click();
   }
 
+  onFolderConfirmReject() {
+    this.folderConfirmVisible.set(false);
+  }
+
+  // Шаг 3: файлы выбраны — загружаем
   async onFolderSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     const files = input.files;
