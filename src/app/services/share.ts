@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { UserService } from './user-service';
+import { environment } from '../../environments/environment.prod';
 
 
 @Injectable({
@@ -7,7 +8,7 @@ import { UserService } from './user-service';
 })
 export class ShareService {
 
-  private apiUrl = 'http://localhost:4400/share';
+  private readonly apiUrl = environment.apiUrl;
 
   constructor(
     private userService: UserService

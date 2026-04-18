@@ -3,12 +3,13 @@ import { UserProfile } from '../interfaces/profile-interfaces/user-profile.model
 import { HttpClient } from '@angular/common/http';
 import { catchError, Observable, tap, throwError } from 'rxjs';
 import { UpdateProfile } from '../interfaces/profile-interfaces/update-profile.model';
+import { environment } from '../../environments/environment.prod';
 
 @Injectable({
   providedIn: 'root',
 })
 export class UserService {
-  private apiUrl = 'http://localhost:4400/user';
+  private readonly apiUrl = environment.apiUrl;
 
   private _profile   = signal<UserProfile | null | undefined>(undefined);
   private _isLoading = signal(false);

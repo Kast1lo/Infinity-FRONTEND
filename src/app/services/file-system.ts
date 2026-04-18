@@ -3,6 +3,7 @@ import { FileItem } from '../interfaces/file-system-interfeces/file-item.model';
 import { FolderItem } from '../interfaces/file-system-interfeces/folder-item.model';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { catchError, firstValueFrom, tap, throwError } from 'rxjs';
+import { environment } from '../../environments/environment.prod';
 
 export type FileFilter = 'all' | 'image' | 'video' | 'audio' | 'document' | 'archive' | 'other';
 
@@ -10,7 +11,7 @@ export type FileFilter = 'all' | 'image' | 'video' | 'audio' | 'document' | 'arc
   providedIn: 'root',
 })
 export class FileSystem {
-  private apiUrl = 'http://localhost:4400/file-system';
+  private readonly apiUrl = environment.apiUrl;
 
   private _files   = signal<FileItem[]>([]);
   private _folders = signal<FolderItem[]>([]);
