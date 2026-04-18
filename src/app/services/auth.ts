@@ -7,12 +7,14 @@ import { apiResponse } from '../interfaces/auth-interfaces/api-response.model';
 import { RegisterData } from '../interfaces/auth-interfaces/register-data.model';
 import { UserProfile } from '../interfaces/profile-interfaces/user-profile.model';
 import { UserService } from './user-service';
+import { environment } from '../../environments/environment.prod';
+
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  private readonly apiUrl = 'http://localhost:4400';
+  private readonly apiUrl = environment.apiUrl;
 
   private _isLoading = signal(false);
   private _error     = signal<string | null>(null);
