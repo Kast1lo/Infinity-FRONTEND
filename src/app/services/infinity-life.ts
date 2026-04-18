@@ -23,11 +23,10 @@ export class InfinityLife {
 
   constructor() {}
 
-  // ─── COLUMNS ───
   loadBoard(): Observable<any[]> {
     this.isLoading.set(true);
     this.error.set(null);
-    return this.http.get<any[]>(`${this.baseUrl}/columns`, { withCredentials: true }).pipe(
+    return this.http.get<any[]>(`${this.baseUrl}/infinity-life/columns`, { withCredentials: true }).pipe(
       tap(columns => this.columns.set(columns)),
       catchError(err => this.handleError(err, 'Не удалось загрузить доску')),
       finalize(() => this.isLoading.set(false))
@@ -37,7 +36,7 @@ export class InfinityLife {
   createColumn(dto: CreateColumnDto): Observable<any> {
     this.isLoading.set(true);
     this.error.set(null);
-    return this.http.post(`${this.baseUrl}/columns`, dto, { withCredentials: true }).pipe(
+    return this.http.post(`${this.baseUrl}/infinity-life/columns`, dto, { withCredentials: true }).pipe(
       catchError(err => this.handleError(err, 'Ошибка создания колонки')),
       finalize(() => this.isLoading.set(false))
     );
@@ -46,7 +45,7 @@ export class InfinityLife {
   updateColumn(columnId: string, dto: UpdateColumnDto): Observable<any> {
     this.isLoading.set(true);
     this.error.set(null);
-    return this.http.patch(`${this.baseUrl}/columns/${columnId}`, dto, { withCredentials: true }).pipe(
+    return this.http.patch(`${this.baseUrl}/infinity-life/columns/${columnId}`, dto, { withCredentials: true }).pipe(
       catchError(err => this.handleError(err, 'Ошибка обновления колонки')),
       finalize(() => this.isLoading.set(false))
     );
@@ -55,17 +54,16 @@ export class InfinityLife {
   deleteColumn(columnId: string): Observable<any> {
     this.isLoading.set(true);
     this.error.set(null);
-    return this.http.delete(`${this.baseUrl}/columns/${columnId}`, { withCredentials: true }).pipe(
+    return this.http.delete(`${this.baseUrl}/infinity-life/columns/${columnId}`, { withCredentials: true }).pipe(
       catchError(err => this.handleError(err, 'Ошибка удаления колонки')),
       finalize(() => this.isLoading.set(false))
     );
   }
 
-  // ─── TASKS ───
   createTask(dto: CreateTaskDto): Observable<Task> {
     this.isLoading.set(true);
     this.error.set(null);
-    return this.http.post<Task>(`${this.baseUrl}/tasks`, dto, { withCredentials: true }).pipe(
+    return this.http.post<Task>(`${this.baseUrl}/infinity-life/tasks`, dto, { withCredentials: true }).pipe(
       catchError(err => this.handleError(err, 'Ошибка создания задачи')),
       finalize(() => this.isLoading.set(false))
     );
@@ -74,7 +72,7 @@ export class InfinityLife {
   updateTask(taskId: string, dto: Partial<CreateTaskDto>): Observable<Task> {
     this.isLoading.set(true);
     this.error.set(null);
-    return this.http.patch<Task>(`${this.baseUrl}/tasks/${taskId}`, dto, { withCredentials: true }).pipe(
+    return this.http.patch<Task>(`${this.baseUrl}/infinity-life/tasks/${taskId}`, dto, { withCredentials: true }).pipe(
       catchError(err => this.handleError(err, 'Ошибка обновления задачи')),
       finalize(() => this.isLoading.set(false))
     );
@@ -83,7 +81,7 @@ export class InfinityLife {
   moveTaskToColumn(id: string, newColumnId: string): Observable<any> {
     this.isLoading.set(true);
     this.error.set(null);
-    return this.http.patch(`${this.baseUrl}/tasks/${id}/move`, { columnId: newColumnId }, { withCredentials: true }).pipe(
+    return this.http.patch(`${this.baseUrl}/infinity-life/tasks/${id}/move`, { columnId: newColumnId }, { withCredentials: true }).pipe(
       catchError(err => this.handleError(err, 'Не удалось переместить задачу')),
       finalize(() => this.isLoading.set(false))
     );
@@ -92,7 +90,7 @@ export class InfinityLife {
   toggleTaskCompletion(taskId: string): Observable<any> {
     this.isLoading.set(true);
     this.error.set(null);
-    return this.http.patch(`${this.baseUrl}/tasks/${taskId}/toggle`, {}, { withCredentials: true }).pipe(
+    return this.http.patch(`${this.baseUrl}/infinity-life/tasks/${taskId}/toggle`, {}, { withCredentials: true }).pipe(
       catchError(err => this.handleError(err, 'Ошибка изменения статуса задачи')),
       finalize(() => this.isLoading.set(false))
     );
@@ -101,17 +99,16 @@ export class InfinityLife {
   deleteTask(taskId: string): Observable<any> {
     this.isLoading.set(true);
     this.error.set(null);
-    return this.http.delete(`${this.baseUrl}/tasks/${taskId}`, { withCredentials: true }).pipe(
+    return this.http.delete(`${this.baseUrl}/infinity-life/tasks/${taskId}`, { withCredentials: true }).pipe(
       catchError(err => this.handleError(err, 'Ошибка удаления задачи')),
       finalize(() => this.isLoading.set(false))
     );
   }
 
-  // ─── SUBTASKS ───
   createSubtask(dto: CreateSubtaskDto): Observable<any> {
     this.isLoading.set(true);
     this.error.set(null);
-    return this.http.post(`${this.baseUrl}/subtasks`, dto, { withCredentials: true }).pipe(
+    return this.http.post(`${this.baseUrl}/infinity-life/subtasks`, dto, { withCredentials: true }).pipe(
       catchError(err => this.handleError(err, 'Ошибка создания подзадачи')),
       finalize(() => this.isLoading.set(false))
     );
@@ -120,7 +117,7 @@ export class InfinityLife {
   toggleSubtaskCompletion(subtaskId: string): Observable<any> {
     this.isLoading.set(true);
     this.error.set(null);
-    return this.http.patch(`${this.baseUrl}/subtasks/${subtaskId}/toggle`, {}, { withCredentials: true }).pipe(
+    return this.http.patch(`${this.baseUrl}/infinity-life/subtasks/${subtaskId}/toggle`, {}, { withCredentials: true }).pipe(
       catchError(err => this.handleError(err, 'Ошибка изменения статуса подзадачи')),
       finalize(() => this.isLoading.set(false))
     );
@@ -129,7 +126,7 @@ export class InfinityLife {
   deleteSubtask(subtaskId: string): Observable<any> {
     this.isLoading.set(true);
     this.error.set(null);
-    return this.http.delete(`${this.baseUrl}/subtasks/${subtaskId}`, { withCredentials: true }).pipe(
+    return this.http.delete(`${this.baseUrl}/infinity-life/subtasks/${subtaskId}`, { withCredentials: true }).pipe(
       catchError(err => this.handleError(err, 'Ошибка удаления подзадачи')),
       finalize(() => this.isLoading.set(false))
     );

@@ -21,14 +21,12 @@ export class PlanService {
   isLoading = computed(() => this._isLoading());
   error     = computed(() => this._error());
 
-  // ─── Загрузить информацию о тарифе ───
-
   loadPlanInfo(): Observable<PlanInfo> {
     this._isLoading.set(true);
     this._error.set(null);
 
     return this.http
-      .get<PlanInfo>(`${this.apiUrl}/info`, { withCredentials: true })
+      .get<PlanInfo>(`${this.apiUrl}/plan/info`, { withCredentials: true })
       .pipe(
         tap(info => {
           this._planInfo.set(info);
@@ -42,22 +40,19 @@ export class PlanService {
       );
   }
 
-  // ─── Активировать промокод ───
-
   activatePromo(code: string): Observable<{ message: string }> {
     this._isLoading.set(true);
     this._error.set(null);
 
     return this.http
       .post<{ message: string }>(
-        `${this.apiUrl}/activate-promo`,
+        `${this.apiUrl}/plan/activate-promo`,
         { code },
         { withCredentials: true },
       )
       .pipe(
         tap(() => {
           this._isLoading.set(false);
-          // Перезагружаем информацию о тарифе после активации
           this.loadPlanInfo().subscribe();
         }),
         catchError(err => {
@@ -68,9 +63,6 @@ export class PlanService {
       );
   }
 
-  // ─── Хелперы ───
-
-  // Форматировать байты в человекочитаемый вид
   formatBytes(bytes: number): string {
     if (bytes === 0) return '0 Б';
     const sizes = ['Б', 'КБ', 'МБ', 'ГБ', 'ТБ'];
@@ -78,14 +70,12 @@ export class PlanService {
     return `${(bytes / Math.pow(1024, i)).toFixed(1)} ${sizes[i]}`;
   }
 
-  // Получить цвет шкалы хранилища
   getStorageColor(percent: number): string {
     if (percent >= 90) return '#e05555';
     if (percent >= 70) return '#d4b84a';
     return 'var(--text2)';
   }
 
-  // Сбросить данные (при logout)
   clear(): void {
     this._planInfo.set(null);
     this._error.set(null);

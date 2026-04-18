@@ -20,7 +20,7 @@ export class ShareService {
       return;
     }
     const encodedFileName = encodeURIComponent(fileName.trim());
-    const shareUrl = `${this.apiUrl}/${profile.username}/${encodedFileName}`;
+    const shareUrl = `${this.apiUrl}/file-system/share/${profile.username}/${encodedFileName}`;
     navigator.clipboard.writeText(shareUrl).then(() => {
     }).catch(() => {
     });
@@ -28,7 +28,7 @@ export class ShareService {
 
   copyDownloadLink(username: string, fileName: string) {
     const encodedFileName = encodeURIComponent(fileName.trim());
-    const downloadUrl = `${this.apiUrl}/download/${username}/${encodedFileName}`;
+    const downloadUrl = `${this.apiUrl}/file-system/share/download/${username}/${encodedFileName}`;
     navigator.clipboard.writeText(downloadUrl).then(() => {
     }).catch(() => {
       this.showError('Не удалось скопировать ссылку');

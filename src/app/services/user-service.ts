@@ -26,7 +26,7 @@ export class UserService {
   getProfile(): Observable<UserProfile> {
     this._isLoading.set(true);
     this._error.set(null);
-    return this.http.get<UserProfile>(`${this.apiUrl}/profile`, { withCredentials: true }).pipe(
+    return this.http.get<UserProfile>(`${this.apiUrl}/user/profile`, { withCredentials: true }).pipe(
       tap(profile => {
         this._profile.set(profile);
         this._isLoading.set(false);
@@ -51,7 +51,7 @@ export class UserService {
   updateProfile(updates: UpdateProfile): Observable<UserProfile> {
     this._isLoading.set(true);
     this._error.set(null);
-    return this.http.patch<UserProfile>(`${this.apiUrl}/updateProfile`, updates, { withCredentials: true }).pipe(
+    return this.http.patch<UserProfile>(`${this.apiUrl}/user/updateProfile`, updates, { withCredentials: true }).pipe(
       tap(updated => {
         this._profile.set(updated);
         this._isLoading.set(false);
@@ -64,11 +64,10 @@ export class UserService {
     );
   }
 
-  // ─── Смена пароля ───
   changePassword(currentPassword: string, newPassword: string): Observable<{ message: string }> {
     return this.http
       .patch<{ message: string }>(
-        `${this.apiUrl}/changePassword`,
+        `${this.apiUrl}/user/changePassword`,
         { currentPassword, newPassword },
         { withCredentials: true },
       )
@@ -82,7 +81,7 @@ export class UserService {
     this._error.set(null);
     const formData = new FormData();
     formData.append('file', file);
-    return this.http.post<UserProfile>(`${this.apiUrl}/createAvatar`, formData, { withCredentials: true }).pipe(
+    return this.http.post<UserProfile>(`${this.apiUrl}/user/createAvatar`, formData, { withCredentials: true }).pipe(
       tap(updatedProfile => {
         this._profile.set(updatedProfile);
         this._isLoading.set(false);

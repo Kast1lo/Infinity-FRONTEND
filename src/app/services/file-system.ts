@@ -29,8 +29,6 @@ export class FileSystem {
   error        = computed(() => this._error());
   hasContent   = computed(() => this._files().length > 0 || this._folders().length > 0);
 
-  // ─── Фильтрация файлов ───
-
   readonly filteredFiles = computed(() => {
     const files  = this._files();
     const query  = this.searchQuery().toLowerCase().trim();
@@ -99,8 +97,6 @@ export class FileSystem {
     effect(() => { const err = this._error(); });
   }
 
-  // ─── Навигация ───
-
   navigateToRoot() {
     this._pathStack.set([]);
     this.loadFiles(null);
@@ -131,14 +127,11 @@ export class FileSystem {
     this.activeFilter.set('all');
   }
 
-  // ─── Загрузка данных ───
-
   loadTree() {
     this._error.set(null);
-    this.http.get<FolderItem[]>(`${this.apiUrl}/tree`, { withCredentials: true }).subscribe({
+    this.http.get<FolderItem[]>(`${this.apiUrl}/file-system/tree`, { withCredentials: true }).subscribe({
       next: (folders) => {
         this._folders.set(this.flattenFolders(folders));
-        // не сбрасываем _files — иначе список файлов мигает при обновлении дерева
       },
       error: () => {},
     });
@@ -160,7 +153,7 @@ export class FileSystem {
   loadFiles(folderId: string | null) {
     this._loading.set(true);
     this._error.set(null);
-    const url = folderId ? `${this.apiUrl}/files/${folderId}` : `${this.apiUrl}/files`;
+    const url = folderId ? `${this.apiUrl}/file-system/files/${folderId}` : `${this.apiUrl}/file-system/files`;
     this.http.get<FileItem[]>(url, { withCredentials: true }).pipe(
       catchError(err => this.handleError(err, 'Ошибка загрузки файлов'))
     ).subscribe({
@@ -173,15 +166,13 @@ export class FileSystem {
   }
 
   async fetchFileAsArrayBuffer(fileId: string): Promise<ArrayBuffer> {
-    const response = await fetch(`${this.apiUrl}/proxy/${fileId}`, {
+    const response = await fetch(`${this.apiUrl}/file-system/proxy/${fileId}`, {
       method: 'GET',
       credentials: 'include',
     });
     if (!response.ok) throw new Error(`Ошибка загрузки: ${response.status}`);
     return response.arrayBuffer();
   }
-
-  // ─── Загрузка файлов ───
 
   uploadFiles(files: FileList | File[], folderId?: string | null) {
     this._loading.set(true);
@@ -191,7 +182,7 @@ export class FileSystem {
       const formData = new FormData();
       formData.append('file', file);
       if (folderId) formData.append('folderId', folderId);
-      return this.http.post(`${this.apiUrl}/uploadFile`, formData, {
+      return this.http.post(`${this.apiUrl}/file-system/uploadFile`, formData, {
         withCredentials: true,
       }).pipe(catchError(err => this.handleError(err, 'Ошибка загрузки файлов')));
     });
@@ -209,27 +200,13 @@ export class FileSystem {
     });
   }
 
-  // ─── Загрузка папки с структурой ───
-
-  /**
-   * Принимает массив File с webkitRelativePath, создаёт дерево папок
-   * через API и загружает файлы в нужные папки.
-   *
-   * Пример webkitRelativePath: "MyFolder/images/photo.jpg"
-   * → создаст папку MyFolder (внутри rootFolderId)
-   * → создаст папку images (внутри MyFolder)
-   * → загрузит photo.jpg в images
-   */
   async uploadFolderStructure(files: File[], rootFolderId: string | null): Promise<void> {
-    // Кэш: путь → id папки, чтобы не создавать одну папку дважды
     const folderCache = new Map<string, string>();
 
-    // Создать или получить id папки по пути вида "Root/Sub/Deep"
     const getOrCreateFolder = async (pathParts: string[]): Promise<string> => {
       const pathKey = pathParts.join('/');
       if (folderCache.has(pathKey)) return folderCache.get(pathKey)!;
 
-      // Получаем id родительской папки
       let parentId: string | null = rootFolderId;
       if (pathParts.length > 1) {
         parentId = await getOrCreateFolder(pathParts.slice(0, -1));
@@ -237,7 +214,6 @@ export class FileSystem {
 
       const name = pathParts[pathParts.length - 1];
 
-      // Проверяем, не существует ли уже такая папка
       const existing = this._folders().find(
         f => f.name === name && f.parentId === parentId
       );
@@ -246,28 +222,22 @@ export class FileSystem {
         return existing.id;
       }
 
-      // Создаём папку через API
       const created = await firstValueFrom(
         this.http.post<FolderItem>(
-          `${this.apiUrl}/createFolder`,
+          `${this.apiUrl}/file-system/createFolder`,
           { name, parentId },
           { withCredentials: true }
         )
       );
 
-      // Добавляем в локальный кэш папок чтобы следующие проверки работали
       this._folders.update(folders => [...folders, created]);
       folderCache.set(pathKey, created.id);
       return created.id;
     };
 
-    // Обрабатываем каждый файл
     for (const file of files) {
-      // webkitRelativePath: "FolderName/sub/file.txt"
       const parts = file.webkitRelativePath.split('/');
-      // parts[0] — корневая папка выбранная пользователем
-      // parts[last] — имя файла
-      const folderParts = parts.slice(0, -1); // всё кроме имени файла
+      const folderParts = parts.slice(0, -1);
 
       let targetFolderId: string | null = rootFolderId;
 
@@ -275,26 +245,22 @@ export class FileSystem {
         targetFolderId = await getOrCreateFolder(folderParts);
       }
 
-      // Загружаем файл в нужную папку
       const formData = new FormData();
       formData.append('file', file);
       if (targetFolderId) formData.append('folderId', targetFolderId);
 
       await firstValueFrom(
-        this.http.post(`${this.apiUrl}/uploadFile`, formData, { withCredentials: true })
+        this.http.post(`${this.apiUrl}/file-system/uploadFile`, formData, { withCredentials: true })
       );
     }
 
-    // Обновляем дерево папок и файлы одновременно без мигания
     await this.refreshAfterUpload(this.currentFolderId());
   }
-
-  // ─── CRUD ───
 
   deleteItem(id: string, type: 'file' | 'folder') {
     this._loading.set(true);
     this._error.set(null);
-    this.http.delete(`${this.apiUrl}/delete/${id}?type=${type}`, { withCredentials: true }).pipe(
+    this.http.delete(`${this.apiUrl}/file-system/delete/${id}?type=${type}`, { withCredentials: true }).pipe(
       catchError(err => this.handleError(err, `Не удалось удалить ${type}`))
     ).subscribe({
       next: () => {
@@ -309,7 +275,7 @@ export class FileSystem {
   createFolder(name: string, parentId: string | null = null) {
     this._loading.set(true);
     this._error.set(null);
-    this.http.post(`${this.apiUrl}/createFolder`, { name, parentId }, { withCredentials: true }).pipe(
+    this.http.post(`${this.apiUrl}/file-system/createFolder`, { name, parentId }, { withCredentials: true }).pipe(
       catchError(err => this.handleError(err, 'Ошибка создания папки'))
     ).subscribe({
       next: () => {
@@ -336,7 +302,7 @@ export class FileSystem {
 
   moveFile(fileId: string, targetFolderId: string | null) {
     return this.http.patch(
-      `${this.apiUrl}/move/${fileId}`,
+      `${this.apiUrl}/file-system/move/${fileId}`,
       { folderId: targetFolderId },
       { withCredentials: true }
     ).pipe(
@@ -351,7 +317,7 @@ export class FileSystem {
     this._loading.set(true);
     this._error.set(null);
     return this.http.patch(
-      `${this.apiUrl}/rename/${id}?type=${type}`,
+      `${this.apiUrl}/file-system/rename/${id}?type=${type}`,
       { name },
       { withCredentials: true }
     ).pipe(
@@ -365,7 +331,7 @@ export class FileSystem {
   }
 
   downloadFile(file: FileItem) {
-    fetch(`${this.apiUrl}/download/${file.id}`, { method: 'GET', credentials: 'include' })
+    fetch(`${this.apiUrl}/file-system/download/${file.id}`, { method: 'GET', credentials: 'include' })
       .then(r => { if (!r.ok) throw new Error(); return r.blob(); })
       .then(blob => {
         const url  = URL.createObjectURL(blob);
@@ -384,7 +350,7 @@ export class FileSystem {
   downloadFolder(folderId: string, name: string) {
     this._loading.set(true);
     this._error.set(null);
-    this.http.get(`${this.apiUrl}/download-folder/${folderId}`, {
+    this.http.get(`${this.apiUrl}/file-system/download-folder/${folderId}`, {
       responseType: 'blob',
       withCredentials: true,
     }).pipe(
@@ -403,17 +369,14 @@ export class FileSystem {
     });
   }
 
-  // ─── Ошибки ───
-
-  // Параллельно обновляет папки и файлы — без двойного мигания
   private async refreshAfterUpload(folderId: string | null): Promise<void> {
     const [folders, files] = await Promise.all([
       firstValueFrom(
-        this.http.get<FolderItem[]>(`${this.apiUrl}/tree`, { withCredentials: true })
+        this.http.get<FolderItem[]>(`${this.apiUrl}/file-system/tree`, { withCredentials: true })
       ),
       firstValueFrom(
         this.http.get<FileItem[]>(
-          folderId ? `${this.apiUrl}/files/${folderId}` : `${this.apiUrl}/files`,
+          folderId ? `${this.apiUrl}/file-system/files/${folderId}` : `${this.apiUrl}/file-system/files`,
           { withCredentials: true }
         )
       ),
