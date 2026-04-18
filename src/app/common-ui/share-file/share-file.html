@@ -1,6 +1,8 @@
 <!-- Навбар -->
 <nav class="sf-nav">
-  <a class="sf-nav-logo" routerLink="/main">INFINITY</a>
+  <a class="sf-nav-logo" routerLink="/main">
+    <img class="sf-nav-logo-img" [src]="isDark() ? 'infinityLogo.svg' : 'infinity.svg'" alt="Infinity"/>
+  </a>
   <div class="sf-nav-actions">
     <p-button label="Войти" [text]="true" severity="secondary" size="small" routerLink="/login"/>
     <p-button label="Зарегистрироваться" [outlined]="true" severity="secondary" size="small" routerLink="/registration"/>
@@ -25,20 +27,23 @@
     </div>
   }
 
-  @else if (fileData()) {
+  @else if (fileData(); as file) {
     <div class="share-layout">
 
+      <!-- ── Превью ── -->
       <div class="share-preview">
-        @if (isImage(fileData()!.mimeType)) {
-          <img [src]="fileData()!.downloadUrl" class="sp-image" [alt]="fileData()!.name"/>
-        } @else if (isVideo(fileData()!.mimeType)) {
+
+        @if (isImage(file.mimeType)) {
+          <img [src]="file.downloadUrl" class="sp-image" [alt]="file.name"/>
+
+        } @else if (isVideo(file.mimeType)) {
           <div class="sp-video-wrap"
                (mousemove)="onPlayerMouseMove()"
                (mouseleave)="onPlayerMouseLeave()">
             <video
               #videoPlayer
               class="sp-video"
-              [src]="fileData()!.downloadUrl"
+              [src]="file.downloadUrl"
               preload="metadata"
               playsinline
               (timeupdate)="onTimeUpdate()"
@@ -59,51 +64,92 @@
               </div>
               <div class="sp-bar">
                 <div class="sp-bar-left">
-                  <p-button [icon]="isPlaying ? 'pi pi-pause' : 'pi pi-play'" [text]="true" severity="secondary" (onClick)="togglePlay()"/>
-                  <p-button [icon]="isMuted ? 'pi pi-volume-off' : 'pi pi-volume-up'" [text]="true" severity="secondary" (onClick)="toggleMute()"/>
+                  <button class="vp-btn" (click)="togglePlay()"><i [class]="isPlaying ? 'pi pi-pause' : 'pi pi-play'"></i></button>
+                  <button class="vp-btn" (click)="toggleMute()"><i [class]="isMuted ? 'pi pi-volume-off' : 'pi pi-volume-up'"></i></button>
                   <div class="sp-volume-wrap">
                     <input class="sp-volume" type="range" min="0" max="1" step="0.05" [value]="volume" (input)="onVolumeChange($event)"/>
                   </div>
                   <span class="sp-time">{{ currentTimeStr }} / {{ durationStr }}</span>
                 </div>
                 <div class="sp-bar-right">
-                  <p-button icon="pi pi-window-maximize" [text]="true" severity="secondary" (onClick)="toggleFullscreen()"/>
+                  <button class="vp-btn" (click)="toggleFullscreen()"><i class="pi pi-window-maximize"></i></button>
                 </div>
               </div>
             </div>
           </div>
+
+        } @else if (isAudio(file.mimeType, file.name)) {
+          <!-- Аудио превью — кликабельное -->
+          <div class="sp-audio-preview" (click)="openAudio()">
+            <div class="sp-audio-icon">
+              <i class="pi pi-volume-up"></i>
+            </div>
+            <div class="sp-audio-bars">
+              <span></span><span></span><span></span><span></span><span></span>
+            </div>
+            <span class="sp-audio-hint">Нажмите для прослушивания</span>
+          </div>
+
+        } @else if (isPdf(file.mimeType)) {
+          <div class="sp-file-icon sp-file-icon--pdf">
+            <i class="pi pi-file-pdf"></i>
+            <span>PDF документ</span>
+          </div>
+
+        } @else if (isZip(file.mimeType)) {
+          <div class="sp-file-icon sp-file-icon--zip">
+            <i class="pi pi-box"></i>
+            <span>ZIP архив</span>
+          </div>
+
+        } @else if (isDocument(file.mimeType)) {
+          <div class="sp-file-icon sp-file-icon--doc">
+            <i [class]="'pi ' + getFileIcon(file.mimeType)"></i>
+            <span>{{ getFileType(file.mimeType) }}</span>
+          </div>
+
         } @else {
           <div class="sp-file-icon">
-            <i [class]="'pi ' + getFileIcon(fileData()!.mimeType)"></i>
-            <span>{{ getFileExt(fileData()!.name) }}</span>
+            <i [class]="'pi ' + getFileIcon(file.mimeType)"></i>
+            <span>{{ getFileExt(file.name) }}</span>
           </div>
         }
+
       </div>
 
+      <!-- ── Инфо ── -->
       <div class="share-info">
 
         <div class="si-card si-header">
-          <div class="si-badge">{{ getFileExt(fileData()!.name) }}</div>
-          <h1 class="si-name">{{ fileData()!.name }}</h1>
+          <div class="si-badge">{{ getFileExt(file.name) }}</div>
+          <h1 class="si-name">{{ file.name }}</h1>
         </div>
 
         <div class="si-stats">
           <div class="si-stat">
             <div class="si-stat-label">Размер</div>
-            <div class="si-stat-num">{{ formatSizeShort(fileData()!.size) }}</div>
-            <div class="si-stat-sub">{{ formatSizeFull(fileData()!.size) }}</div>
+            <div class="si-stat-num">{{ formatSizeShort(file.size) }}</div>
+            <div class="si-stat-sub">{{ formatSizeFull(file.size) }}</div>
           </div>
           <div class="si-stat">
             <div class="si-stat-label">Тип файла</div>
-            <div class="si-stat-num si-stat-num-sm">{{ getFileType(fileData()!.mimeType) }}</div>
-            <div class="si-stat-sub">{{ fileData()!.mimeType }}</div>
+            <div class="si-stat-num si-stat-num-sm">{{ getFileType(file.mimeType) }}</div>
+            <div class="si-stat-sub">{{ file.mimeType }}</div>
           </div>
           <div class="si-stat">
             <div class="si-stat-label">Загружен</div>
-            <div class="si-stat-num si-stat-num-sm">{{ fileData()!.createdAt | date:'dd MMM' }}</div>
-            <div class="si-stat-sub">{{ fileData()!.createdAt | date:'yyyy, HH:mm' }}</div>
+            <div class="si-stat-num si-stat-num-sm">{{ file.createdAt | date:'dd MMM' }}</div>
+            <div class="si-stat-sub">{{ file.createdAt | date:'yyyy, HH:mm' }}</div>
           </div>
         </div>
+
+        <!-- Кнопка прослушать для аудио -->
+        @if (isAudio(file.mimeType, file.name)) {
+          <button class="si-play-btn" (click)="openAudio()">
+            <i class="pi pi-play"></i>
+            Прослушать
+          </button>
+        }
 
         <button class="si-download-btn" (click)="downloadFile()">
           <i class="pi pi-download"></i>
@@ -115,3 +161,57 @@
   }
 
 </div>
+
+<!-- ─── АУДИО ПЛЕЕР ─── -->
+<p-dialog
+  [(visible)]="audioDialogVisible"
+  [modal]="true"
+  [closable]="false"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '420px' }"
+  styleClass="audio-dialog"
+  (onHide)="closeAudio()">
+  <ng-template pTemplate="header"><span></span></ng-template>
+  <div class="ap-root">
+    @if (audioUrl()) {
+      <audio #audioPlayer [src]="audioUrl()!"
+        (loadedmetadata)="onAudioMetaLoaded()"
+        (ended)="onAudioEnded()">
+      </audio>
+    }
+    <div class="ap-cover">
+      <div class="ap-cover-icon" [class.ap-cover-icon--playing]="audioIsPlaying()">
+        <i class="pi pi-volume-up"></i>
+      </div>
+      <div class="ap-bars" [class.ap-bars--active]="audioIsPlaying()">
+        <span></span><span></span><span></span><span></span><span></span>
+      </div>
+    </div>
+    <div class="ap-title">{{ audioTitle() }}</div>
+    <div class="ap-progress-wrap" (click)="seekAudio($event)">
+      <div class="ap-progress-bg"></div>
+      <div class="ap-progress-fill" [style.width.%]="audioProgress()"></div>
+      <div class="ap-progress-thumb" [style.left.%]="audioProgress()"></div>
+    </div>
+    <div class="ap-time">
+      <span>{{ audioCurrentTime() }}</span>
+      <span>{{ audioDuration() }}</span>
+    </div>
+    <div class="ap-controls">
+      <button class="ap-btn ap-btn--play" (click)="toggleAudioPlay()">
+        <i [class]="audioIsPlaying() ? 'pi pi-pause' : 'pi pi-play'"></i>
+      </button>
+      <button class="ap-btn" (click)="toggleAudioMute()">
+        <i [class]="audioIsMuted() ? 'pi pi-volume-off' : 'pi pi-volume-up'"></i>
+      </button>
+      <div class="ap-volume-wrap">
+        <input class="ap-volume" type="range" min="0" max="1" step="0.05"
+          [value]="audioVolume()" (input)="onAudioVolumeChange($event)"/>
+      </div>
+      <button class="ap-btn" (click)="closeAudio()">
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+  </div>
+</p-dialog>

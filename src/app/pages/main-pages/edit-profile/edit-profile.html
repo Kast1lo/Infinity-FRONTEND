@@ -3,6 +3,32 @@
 
   <p-toast position="bottom-right" key="profile-toast"></p-toast>
 
+  <!-- ── КРОППЕР МОДАЛКА ── -->
+  @if (showCropper()) {
+    <div class="ep-cropper-backdrop" (click)="closeCropper()">
+      <div class="ep-cropper-modal" (click)="$event.stopPropagation()">
+        <div class="ep-cropper-header">
+          <span class="ep-cropper-title">Выберите область</span>
+          <button class="ep-cropper-close" (click)="closeCropper()">
+            <i class="pi pi-times"></i>
+          </button>
+        </div>
+        <div class="ep-cropper-body">
+          <img #cropperImage [src]="cropImageSrc()" class="ep-cropper-img" />
+        </div>
+        <div class="ep-cropper-footer">
+          <button class="ep-cropper-btn ep-cropper-btn--cancel" (click)="closeCropper()">
+            Отмена
+          </button>
+          <button class="ep-cropper-btn ep-cropper-btn--confirm" (click)="confirmCrop()">
+            <i class="pi pi-check"></i>
+            Применить
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
   @if (userService.profile(); as user) {
     <div class="ep-page">
 
@@ -11,37 +37,57 @@
 
         <!-- Аватар -->
         <div class="ep-card ep-avatar-card">
-          <p-avatar
-            [image]="user.avatarUrl ?? undefined"
-            size="xlarge"
-            shape="circle"
-            class="ep-avatar"
-          />
+
+          <div class="ep-avatar-wrap" (click)="avatarFileInput.click()">
+            @if (avatarPreview()) {
+              <img [src]="avatarPreview()" class="ep-avatar-img" />
+            } @else if (user.avatarUrl) {
+              <img [src]="user.avatarUrl" class="ep-avatar-img" />
+            } @else {
+              <div class="ep-avatar-initials">{{ initials() }}</div>
+            }
+            <div class="ep-avatar-overlay">
+              <i class="pi pi-camera"></i>
+            </div>
+            <input
+              #avatarFileInput
+              type="file"
+              accept="image/*"
+              style="display:none"
+              (change)="onAvatarFileChange($event)"
+            />
+          </div>
+
           <div class="ep-avatar-info">
             <div class="ep-username">{{ user.username }}</div>
             <div class="ep-useremail">{{ user.email }}</div>
           </div>
+
           <div class="ep-divider"></div>
+
           <div class="ep-upload-row">
-            <p-fileUpload #fu
-              mode="basic"
-              chooseLabel="Выбрать фото"
-              chooseIcon="pi pi-image"
-              name="demo[]"
-              maxFileSize="1000000"
-              accept="image/*"
-              (onSelect)="onFileSelected($event)"
-              (onClear)="selectedFile.set(null)"
-            />
-            <p-button
-              label="Загрузить"
-              icon="pi pi-cloud-upload"
-              severity="secondary"
-              [loading]="isUploading()"
-              [disabled]="!selectedFile() || isUploading()"
-              (onClick)="onAvatarUpload()"
-            />
+            <button
+              class="ep-upload-btn"
+              [class.ep-upload-btn--active]="!!selectedFile()"
+              [disabled]="isUploading()"
+              (click)="selectedFile() ? onAvatarUpload() : avatarFileInput.click()"
+            >
+              <i
+                class="pi"
+                [class.pi-cloud-upload]="!isUploading()"
+                [class.pi-spinner]="isUploading()"
+                [class.pi-spin]="isUploading()"
+              ></i>
+              {{ isUploading() ? 'Загрузка...' : selectedFile() ? 'Сохранить фото' : 'Изменить фото' }}
+            </button>
+
+            @if (selectedFile()) {
+              <button class="ep-cancel-btn" (click)="cancelAvatarSelect()">
+                <i class="pi pi-times"></i>
+              </button>
+            }
           </div>
+
         </div>
 
         <!-- Фон -->
@@ -50,15 +96,22 @@
           <div class="ep-bg-upload" (click)="bgFileInput.click()">
             <i class="pi pi-cloud-upload"></i>
             <span>Загрузить изображение</span>
-            <input #bgFileInput type="file" accept="image/*" style="display:none" (change)="onCustomBg($event)"/>
+            <input #bgFileInput type="file" accept="image/*" style="display:none" (change)="onCustomBg($event)" />
           </div>
           @if (bgService.history().length > 0) {
             <div class="ep-card-label ep-bg-history-label">История</div>
             <div class="ep-bg-grid">
               @for (url of bgService.history(); track url) {
-                <div class="ep-bg-thumb" [class.ep-bg-active]="bgService.backgroundUrl() === url" (click)="bgService.setBackground(url)">
-                  <img [src]="url" loading="lazy"/>
-                  <button class="ep-bg-remove" (click)="bgService.removeFromHistory(url); $event.stopPropagation()">
+                <div
+                  class="ep-bg-thumb"
+                  [class.ep-bg-active]="bgService.backgroundUrl() === url"
+                  (click)="bgService.setBackground(url)"
+                >
+                  <img [src]="url" loading="lazy" />
+                  <button
+                    class="ep-bg-remove"
+                    (click)="bgService.removeFromHistory(url); $event.stopPropagation()"
+                  >
                     <i class="pi pi-times"></i>
                   </button>
                   @if (bgService.backgroundUrl() === url) {
@@ -88,7 +141,7 @@
             <label class="ep-field-label">Текущий логин</label>
             <div class="ep-input-wrap ep-input-wrap--readonly">
               <i class="pi pi-user ep-input-icon"></i>
-              <input pInputText [value]="user.username ?? ''" class="ep-input" readonly/>
+              <input pInputText [value]="user.username" class="ep-input" readonly />
             </div>
           </div>
 
@@ -96,7 +149,12 @@
             <label class="ep-field-label">Новый логин</label>
             <div class="ep-input-wrap">
               <i class="pi pi-user ep-input-icon"></i>
-              <input pInputText [(ngModel)]="newUsername" placeholder="Введите новый логин" class="ep-input"/>
+              <input
+                pInputText
+                [(ngModel)]="newUsername"
+                placeholder="Введите новый логин"
+                class="ep-input"
+              />
             </div>
           </div>
 

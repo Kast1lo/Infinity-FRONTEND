@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Michroma&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Syne:wght@400..800&family=Unbounded:wght@200..900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap');
 @import "primeicons/primeicons.css";
+@import 'cropperjs/dist/cropper.min.css';
 
 // ─── CSS переменные темы ───
 
@@ -37,7 +38,6 @@
   --popular-text: #ffffff;
 }
 
-// Для Angular компонентов с :host-context
 .light-theme,
 .light-theme * {
   --bg:      #f8f8f8;
@@ -93,7 +93,7 @@ body.dark-theme {
 html { scroll-behavior: smooth; }
 ::-webkit-scrollbar { width: 0; }
 
-// ─── p-tieredmenu (рендерится в body) ───
+// ─── p-tieredmenu ───
 
 body.dark-theme .p-tieredmenu,
 body:not(.light-theme) .p-tieredmenu {
@@ -137,7 +137,7 @@ body.light-theme .p-tieredmenu .p-tieredmenu-item-icon {
   color: #aaaaaa !important;
 }
 
-// ─── p-datepicker-panel (рендерится в body) ───
+// ─── p-datepicker-panel ───
 
 body.dark-theme .p-datepicker-panel,
 body.dark-theme .p-datepicker-panel.p-component,
@@ -210,7 +210,7 @@ body.light-theme .p-datepicker-panel {
   box-shadow: 0 8px 24px rgba(0,0,0,.1) !important;
 }
 
-// ─── p-select-overlay (рендерится в body) ───
+// ─── p-select-overlay ───
 
 body.dark-theme .p-select-overlay,
 body:not(.light-theme) .p-select-overlay {
@@ -257,4 +257,251 @@ body.light-theme .p-select-overlay .p-select-option:hover {
 body.light-theme .p-select-overlay .p-select-option.p-select-option-selected {
   background: #ebebeb !important;
   color: #111111 !important;
+}
+
+// ─── p-menu PrimeNG tokens (тёмная тема) ───
+
+body.dark-theme,
+body:not(.light-theme) {
+  --p-menu-background:              #111111;
+  --p-menu-border-color:            #222222;
+  --p-menu-border-radius:           10px;
+  --p-menu-shadow:                  0 8px 24px rgba(0,0,0,.5);
+  --p-menu-list-padding:            4px;
+  --p-menu-item-padding:            8px 10px;
+  --p-menu-item-border-radius:      6px;
+  --p-menu-item-color:              #888888;
+  --p-menu-item-icon-color:         #444444;
+  --p-menu-item-focus-background:   #1a1a1a;
+  --p-menu-item-focus-color:        #f0f0f0;
+  --p-menu-item-icon-focus-color:   #888888;
+  --p-menu-separator-border-color:  #222222;
+  --p-menu-color:                   #888888;
+}
+
+// ─── p-menu PrimeNG tokens (светлая тема) ───
+
+body.light-theme {
+  --p-menu-background:              #ffffff;
+  --p-menu-border-color:            #e0e0e0;
+  --p-menu-border-radius:           10px;
+  --p-menu-shadow:                  0 8px 24px rgba(0,0,0,.1);
+  --p-menu-list-padding:            4px;
+  --p-menu-item-padding:            8px 12px;
+  --p-menu-item-border-radius:      6px;
+  --p-menu-item-color:              #555555;
+  --p-menu-item-icon-color:         #aaaaaa;
+  --p-menu-item-focus-background:   #f2f2f2;
+  --p-menu-item-focus-color:        #111111;
+  --p-menu-item-icon-focus-color:   #555555;
+  --p-menu-separator-border-color:  #e0e0e0;
+}
+
+// ─── p-menu (рендерится в body) ───
+
+body.dark-theme .p-menu,
+body:not(.light-theme) .p-menu {
+  background: #111111 !important;
+  border: 1px solid #222222 !important;
+  border-radius: 10px !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,.5) !important;
+  padding: 4px !important;
+  min-width: 160px !important;
+}
+
+body.dark-theme .p-menu .p-menuitem-link,
+body:not(.light-theme) .p-menu .p-menuitem-link {
+  color: #888888 !important;
+  border-radius: 6px !important;
+  padding: 8px 12px !important;
+  font-size: 13px !important;
+  white-space: nowrap !important;
+  transition: background .15s, color .15s !important;
+}
+
+body.dark-theme .p-menu .p-menuitem-link:hover,
+body:not(.light-theme) .p-menu .p-menuitem-link:hover {
+  background: #1a1a1a !important;
+  color: #f0f0f0 !important;
+}
+
+body.dark-theme .p-menu .p-menuitem-icon,
+body:not(.light-theme) .p-menu .p-menuitem-icon {
+  color: #444444 !important;
+  margin-right: 8px !important;
+  font-size: 13px !important;
+}
+
+body.dark-theme .p-menu .p-menuitem-separator,
+body:not(.light-theme) .p-menu .p-menuitem-separator {
+  border-top: 1px solid #222222 !important;
+  margin: 4px 0 !important;
+}
+
+body.light-theme .p-menu {
+  background: #ffffff !important;
+  border: 1px solid #e0e0e0 !important;
+  border-radius: 10px !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,.1) !important;
+  padding: 4px !important;
+  min-width: 160px !important;
+}
+
+body.light-theme .p-menu .p-menuitem-link {
+  color: #555555 !important;
+  border-radius: 6px !important;
+  padding: 8px 12px !important;
+  font-size: 13px !important;
+}
+
+body.light-theme .p-menu .p-menuitem-link:hover {
+  background: #f2f2f2 !important;
+  color: #111111 !important;
+}
+
+body.light-theme .p-menu .p-menuitem-icon {
+  color: #aaaaaa !important;
+  margin-right: 8px !important;
+  font-size: 13px !important;
+}
+
+body.light-theme .p-menu .p-menuitem-separator {
+  border-top: 1px solid #e0e0e0 !important;
+  margin: 4px 0 !important;
+}
+
+
+body.dark-theme .p-toast .p-toast-message,
+body:not(.light-theme) .p-toast .p-toast-message {
+  background: #111111 !important;
+  border: 1px solid #222222 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,.6) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+body.dark-theme .p-toast .p-toast-message-content,
+body:not(.light-theme) .p-toast .p-toast-message-content {
+  padding: 14px 16px !important;
+}
+
+body.dark-theme .p-toast .p-toast-summary,
+body:not(.light-theme) .p-toast .p-toast-summary {
+  color: #f0f0f0 !important;
+  font-family: 'DM Sans', sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+}
+
+body.dark-theme .p-toast .p-toast-detail,
+body:not(.light-theme) .p-toast .p-toast-detail {
+  color: #888888 !important;
+  font-family: 'DM Sans', sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 300 !important;
+  margin-top: 2px !important;
+}
+
+body.dark-theme .p-toast .p-toast-message-icon,
+body:not(.light-theme) .p-toast .p-toast-message-icon {
+  font-size: 16px !important;
+}
+
+body.dark-theme .p-toast .p-toast-close-button,
+body:not(.light-theme) .p-toast .p-toast-close-button {
+  color: #444444 !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 6px !important;
+  transition: color .2s, background .2s !important;
+
+  &:hover {
+    color: #888888 !important;
+    background: rgba(255,255,255,.06) !important;
+  }
+}
+
+// severity — success
+body.dark-theme .p-toast .p-toast-message.p-toast-message-success,
+body:not(.light-theme) .p-toast .p-toast-message.p-toast-message-success {
+  border-left: 3px solid #4caf7d !important;
+
+  .p-toast-message-icon { color: #4caf7d !important; }
+}
+
+// severity — error
+body.dark-theme .p-toast .p-toast-message.p-toast-message-error,
+body:not(.light-theme) .p-toast .p-toast-message.p-toast-message-error {
+  border-left: 3px solid #e05555 !important;
+
+  .p-toast-message-icon { color: #e05555 !important; }
+}
+
+// severity — warn
+body.dark-theme .p-toast .p-toast-message.p-toast-message-warn,
+body:not(.light-theme) .p-toast .p-toast-message.p-toast-message-warn {
+  border-left: 3px solid #d4b84a !important;
+
+  .p-toast-message-icon { color: #d4b84a !important; }
+}
+
+// severity — info
+body.dark-theme .p-toast .p-toast-message.p-toast-message-info,
+body:not(.light-theme) .p-toast .p-toast-message.p-toast-message-info {
+  border-left: 3px solid #4a9eff !important;
+
+  .p-toast-message-icon { color: #4a9eff !important; }
+}
+
+// ─── p-toast (светлая тема) ───
+
+body.light-theme .p-toast .p-toast-message {
+  background: #ffffff !important;
+  border: 1px solid #e0e0e0 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,.1) !important;
+}
+
+body.light-theme .p-toast .p-toast-summary {
+  color: #111111 !important;
+  font-family: 'DM Sans', sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+}
+
+body.light-theme .p-toast .p-toast-detail {
+  color: #555555 !important;
+  font-family: 'DM Sans', sans-serif !important;
+  font-size: 12px !important;
+}
+
+body.light-theme .p-toast .p-toast-close-button {
+  color: #aaaaaa !important;
+  background: transparent !important;
+  border: none !important;
+
+  &:hover {
+    color: #555555 !important;
+    background: #f2f2f2 !important;
+  }
+}
+
+body.light-theme .p-toast .p-toast-message.p-toast-message-success {
+  border-left: 3px solid #4caf7d !important;
+  .p-toast-message-icon { color: #4caf7d !important; }
+}
+
+body.light-theme .p-toast .p-toast-message.p-toast-message-error {
+  border-left: 3px solid #e05555 !important;
+  .p-toast-message-icon { color: #e05555 !important; }
+}
+
+body.light-theme .p-toast .p-toast-message.p-toast-message-warn {
+  border-left: 3px solid #d4b84a !important;
+  .p-toast-message-icon { color: #d4b84a !important; }
+}
+
+body.light-theme .p-toast .p-toast-message.p-toast-message-info {
+  border-left: 3px solid #4a9eff !important;
+  .p-toast-message-icon { color: #4a9eff !important; }
 }

@@ -1,38 +1,57 @@
+<p-toast position="bottom-right"></p-toast>
+
 <div class="profile-page">
 
   @if (userService.profile(); as profile) {
     <div class="profile-content">
+
+      <!-- ── Шапка ── -->
       <div class="profile-header">
         <div class="avatar-wrap">
-          <p-avatar
-            [image]="avatarUrl()"
-            size="xlarge"
-            shape="circle"
-          />
+          <p-avatar [image]="avatarUrl()" size="xlarge" shape="circle"/>
         </div>
         <div class="profile-meta">
           <h1 class="profile-name">{{ profile.username }}</h1>
           <p class="profile-email">{{ profile.email }}</p>
+
+          <!-- Бейдж тарифа -->
+          @if (planInfo(); as plan) {
+            <div class="plan-badge-wrap">
+              <span class="plan-badge" [ngClass]="'badge--' + plan.planType">
+                <i class="pi pi-bolt"></i>
+                {{ planBadgeMap[plan.planType]?.label ?? plan.planType }}
+              </span>
+
+              <!-- Таймер для Spark -->
+              @if (plan.planType === 'spark' && !plan.isFrozen && plan.daysLeft !== null) {
+                <span class="plan-timer" [class.plan-timer--warn]="plan.daysLeft <= 2">
+                  <i class="pi pi-clock"></i>
+                  @if (plan.daysLeft > 0) {
+                    {{ plan.daysLeft }} {{ plan.daysLeft === 1 ? 'день' : plan.daysLeft < 5 ? 'дня' : 'дней' }}
+                  } @else {
+                    Истекает сегодня
+                  }
+                </span>
+              }
+
+              <!-- Заморожен -->
+              @if (plan.isFrozen) {
+                <span class="plan-timer plan-timer--frozen">
+                  <i class="pi pi-lock"></i>
+                  Данные заморожены · удаление через {{ plan.freezeDaysLeft }} дн.
+                </span>
+              }
+            </div>
+          }
         </div>
         <div class="profile-header-actions">
-          <p-button
-            label="Редактировать"
-            icon="pi pi-pencil"
-            [outlined]="true"
-            severity="secondary"
-            routerLink="/edit"
-          />
-          <p-button
-            icon="pi pi-sign-out"
-            [text]="true"
-            severity="secondary"
-            (onClick)="authService.logout()"
-            routerLink="/login"
-          />
+          <p-button label="Редактировать" icon="pi pi-pencil" [outlined]="true" severity="secondary" routerLink="/edit"/>
+          <p-button icon="pi pi-sign-out" [text]="true" severity="secondary" (onClick)="authService.logout()" routerLink="/login"/>
         </div>
       </div>
-      <div class="stats-grid">
 
+      <!-- ── Статистика ── -->
+      <div class="stats-grid">
         <div class="stat-card">
           <div class="stat-label">Всего задач</div>
           <div class="stat-num">{{ totalTasks() }}</div>
@@ -60,6 +79,103 @@
         </div>
       </div>
 
+      <!-- ── Хранилище + тариф ── -->
+      @if (planInfo(); as plan) {
+        <div class="plan-section">
+
+          <!-- Шкала хранилища -->
+          <div class="plan-card storage-card">
+            <div class="section-label">Хранилище</div>
+            <div class="storage-numbers">
+              <span class="storage-used" [style.color]="storageColor">{{ storageUsedLabel }}</span>
+              <span class="storage-sep">/</span>
+              <span class="storage-limit">{{ storageLimitLabel }}</span>
+            </div>
+            <div class="storage-bar-wrap">
+              <div class="storage-bar-track">
+                <div
+                  class="storage-bar-fill"
+                  [style.width.%]="storagePercent"
+                  [style.background]="storageColor"
+                ></div>
+              </div>
+              <span class="storage-percent">{{ storagePercent }}%</span>
+            </div>
+            <div class="storage-hint">
+              {{ storageLimitLabel }} доступно на тарифе {{ plan.planLabel }}
+            </div>
+          </div>
+
+          <!-- Тариф + промокод -->
+          <div class="plan-card plan-info-card" [class.plan-card--eternal]="plan.planType === 'eternal'">
+            <div class="section-label">Тариф</div>
+            <div class="plan-info-row">
+              <div class="plan-info-name">{{ plan.planLabel }}</div>
+              @if (plan.planType === 'spark' && !plan.isFrozen) {
+                <div class="plan-info-expires">
+                  Триал истекает: {{ plan.planExpiresAt | date:'dd.MM.yyyy' }}
+                </div>
+              }
+              @if (plan.isFrozen) {
+                <div class="plan-info-frozen">
+                  <i class="pi pi-exclamation-triangle"></i>
+                  Данные заморожены. Оформите подписку.
+                </div>
+              }
+            </div>
+
+            <!-- Фичи для Eternal -->
+            @if (plan.planType === 'eternal') {
+              <ul class="plan-features-list">
+                <li><i class="pi pi-check"></i> 1 ТБ хранилища навсегда</li>
+                <li><i class="pi pi-check"></i> Безлимитные задачи и доски</li>
+                <li><i class="pi pi-check"></i> Все будущие обновления</li>
+                <li><i class="pi pi-infinity"></i> Никаких платежей — никогда</li>
+              </ul>
+            }
+
+            <!-- Промокод (только не для eternal) -->
+            @if (plan.planType !== 'eternal') {
+              <div class="promo-section">
+                @if (!showPromoInput()) {
+                  <button class="promo-toggle-btn" (click)="showPromoInput.set(true)">
+                    <i class="pi pi-tag"></i>
+                    Ввести промокод
+                  </button>
+                } @else {
+                  <div class="promo-input-row">
+                    <input
+                      class="promo-input"
+                      type="text"
+                      placeholder="INF-XXXX-XXXX"
+                      [(ngModel)]="promoCode"
+                      (keyup.enter)="activatePromo()"
+                      maxlength="14"
+                    />
+                    <button
+                      class="promo-submit-btn"
+                      [disabled]="!promoCode().trim() || promoLoading()"
+                      (click)="activatePromo()"
+                    >
+                      @if (promoLoading()) {
+                        <i class="pi pi-spinner pi-spin"></i>
+                      } @else {
+                        Применить
+                      }
+                    </button>
+                    <button class="promo-cancel-btn" (click)="showPromoInput.set(false); promoCode.set('')">
+                      <i class="pi pi-times"></i>
+                    </button>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+
+        </div>
+      }
+
+      <!-- ── Прогресс + Быстрые ссылки ── -->
       <div class="progress-section">
         <div class="progress-card knob-card">
           <div class="section-label">Выполнение задач</div>

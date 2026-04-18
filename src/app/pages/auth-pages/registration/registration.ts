@@ -42,21 +42,18 @@ export class Registration {
   private readonly cdr         = inject(ChangeDetectorRef);
   readonly themeService        = inject(ThemeService);
 
-  imagePath = 'infinityLogo.svg';
   isDark    = computed(() => this.themeService.theme() === 'dark');
+  imagePath = computed(() => this.isDark() ? 'infinityLogo.svg' : 'infinity.svg');
 
-  // ─── Экраны: 'register' | 'verify' ───
-  screen        = signal<'register' | 'verify'>('register');
-  pendingEmail  = signal('');
+  screen       = signal<'register' | 'verify'>('register');
+  pendingEmail = signal('');
 
-  // ─── Код из 6 цифр — каждая цифра отдельно ───
-  codeDigits    = signal<string[]>(['', '', '', '', '', '']);
-  codeError     = signal<string | null>(null);
-  isVerifying   = signal(false);
-  isResending   = signal(false);
-  resendCooldown = signal(0); // секунды до повторной отправки
+  codeDigits     = signal<string[]>(['', '', '', '', '', '']);
+  codeError      = signal<string | null>(null);
+  isVerifying    = signal(false);
+  isResending    = signal(false);
+  resendCooldown = signal(0);
 
-  // ─── Форма регистрации ───
   registerModel = signal<RegisterData>({
     username:     '',
     email:        '',
@@ -91,7 +88,6 @@ export class Registration {
   emailError():    string | null { return this.emailField.errors()?.[0]?.message    ?? null; }
   passwordError(): string | null { return this.passwordField.errors()?.[0]?.message ?? null; }
 
-  // ─── Отправка формы регистрации ───
   onSubmit(event: Event) {
     event.preventDefault();
     this.usernameField.markAsTouched();
@@ -119,35 +115,25 @@ export class Registration {
     });
   }
 
-  // ─── Ввод цифры кода ───
   onDigitInput(event: Event, index: number) {
     const input = event.target as HTMLInputElement;
     const val   = input.value.replace(/\D/g, '').slice(-1);
-
     const digits = [...this.codeDigits()];
     digits[index] = val;
     this.codeDigits.set(digits);
     this.codeError.set(null);
     this.cdr.markForCheck();
-
-    // Переходим к следующему полю
     if (val && index < 5) {
-      const next = document.getElementById(`code-${index + 1}`) as HTMLInputElement;
-      next?.focus();
+      (document.getElementById(`code-${index + 1}`) as HTMLInputElement)?.focus();
     }
-
-    // Автоотправка когда все 6 цифр введены
-    if (digits.every(d => d !== '')) {
-      this.submitCode();
-    }
+    if (digits.every(d => d !== '')) this.submitCode();
   }
 
   onDigitKeydown(event: KeyboardEvent, index: number) {
     if (event.key === 'Backspace') {
       const digits = [...this.codeDigits()];
       if (!digits[index] && index > 0) {
-        const prev = document.getElementById(`code-${index - 1}`) as HTMLInputElement;
-        prev?.focus();
+        (document.getElementById(`code-${index - 1}`) as HTMLInputElement)?.focus();
         digits[index - 1] = '';
         this.codeDigits.set(digits);
         this.cdr.markForCheck();
@@ -162,51 +148,33 @@ export class Registration {
     const filled = [...Array(6)].map((_, i) => digits[i] ?? '');
     this.codeDigits.set(filled);
     this.cdr.markForCheck();
-
-    // Фокус на последнее заполненное поле
     const lastIndex = Math.min(digits.length - 1, 5);
-    const el = document.getElementById(`code-${lastIndex}`) as HTMLInputElement;
-    el?.focus();
-
-    if (filled.every(d => d !== '')) {
-      this.submitCode();
-    }
+    (document.getElementById(`code-${lastIndex}`) as HTMLInputElement)?.focus();
+    if (filled.every(d => d !== '')) this.submitCode();
   }
 
-  // ─── Отправка кода ───
   submitCode() {
     const code = this.codeDigits().join('');
     if (code.length !== 6) return;
-
     this.isVerifying.set(true);
     this.codeError.set(null);
     this.cdr.markForCheck();
-
     this.authService.verifyEmail(this.pendingEmail(), code).subscribe({
-      next: () => {
-        this.isVerifying.set(false);
-        this.cdr.markForCheck();
-        // router.navigate вызывается внутри authService
-      },
+      next: () => { this.isVerifying.set(false); this.cdr.markForCheck(); },
       error: (err) => {
         this.isVerifying.set(false);
         this.codeDigits.set(['', '', '', '', '', '']);
         this.codeError.set(err.error?.message || 'Неверный код. Попробуйте ещё раз.');
         this.cdr.markForCheck();
-        // Фокус на первое поле
-        setTimeout(() => {
-          (document.getElementById('code-0') as HTMLInputElement)?.focus();
-        }, 50);
+        setTimeout(() => (document.getElementById('code-0') as HTMLInputElement)?.focus(), 50);
       },
     });
   }
 
-  // ─── Повторная отправка кода ───
   resendCode() {
     if (this.resendCooldown() > 0) return;
     this.isResending.set(true);
     this.cdr.markForCheck();
-
     this.authService.resendCode(this.pendingEmail()).subscribe({
       next: () => {
         this.isResending.set(false);
@@ -214,9 +182,7 @@ export class Registration {
         this.codeError.set(null);
         this.startResendCooldown();
         this.cdr.markForCheck();
-        setTimeout(() => {
-          (document.getElementById('code-0') as HTMLInputElement)?.focus();
-        }, 50);
+        setTimeout(() => (document.getElementById('code-0') as HTMLInputElement)?.focus(), 50);
       },
       error: (err) => {
         this.isResending.set(false);
@@ -226,17 +192,12 @@ export class Registration {
     });
   }
 
-  // ─── Таймер cooldown ───
   private startResendCooldown() {
     this.resendCooldown.set(60);
     const interval = setInterval(() => {
       const current = this.resendCooldown();
-      if (current <= 1) {
-        clearInterval(interval);
-        this.resendCooldown.set(0);
-      } else {
-        this.resendCooldown.set(current - 1);
-      }
+      if (current <= 1) { clearInterval(interval); this.resendCooldown.set(0); }
+      else this.resendCooldown.set(current - 1);
       this.cdr.markForCheck();
     }, 1000);
   }

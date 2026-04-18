@@ -13,32 +13,36 @@ import { ThemeService } from '../../services/theme';
   styleUrl: './main-page.scss',
 })
 export class MainPage implements OnInit, OnDestroy {
-  imagePath = 'infinityLogo.svg';
   navScrolled = false;
   private observer!: IntersectionObserver;
 
   readonly themeService = inject(ThemeService);
   isDark = computed(() => this.themeService.theme() === 'dark');
 
+  // Логотип меняется в зависимости от темы
+  imagePath = computed(() =>
+    this.isDark() ? 'infinityLogo.svg' : 'infinity.svg'
+  );
+
   features = [
-    { icon: 'pi pi-th-large',    title: 'Kanban-доска',        desc: 'Гибкое управление задачами с кастомными колонками, чекбоксами и drag-and-drop сортировкой.' },
-    { icon: 'pi pi-folder-open', title: 'Файловое хранилище',  desc: 'Загружайте, организуйте и делитесь файлами как в Google Drive прямо внутри платформы.' },
+    { icon: 'pi pi-th-large',    title: 'Kanban-доска',         desc: 'Гибкое управление задачами с кастомными колонками, чекбоксами и drag-and-drop сортировкой.' },
+    { icon: 'pi pi-folder-open', title: 'Файловое хранилище',   desc: 'Загружайте, организуйте и делитесь файлами как в Google Drive прямо внутри платформы.' },
     { icon: 'pi pi-user',        title: 'Профиль пользователя', desc: 'Персонализация аватара, логина и email. Полный контроль над своим аккаунтом.' },
     { icon: 'pi pi-sun',         title: 'Светлая и тёмная тема', desc: 'Минималистичный интерфейс в двух вариантах — выбирайте то, что удобнее для ваших глаз.' },
-    { icon: 'pi pi-share-alt',   title: 'Пересылка файлов',    desc: 'Отправляйте файлы коллегам напрямую из хранилища — быстро и без лишних шагов.' },
-    { icon: 'pi pi-lock',        title: 'Безопасность',        desc: 'Email-подтверждение, скрытый ввод пароля и надёжная защита данных пользователей.' },
+    { icon: 'pi pi-share-alt',   title: 'Пересылка файлов',     desc: 'Отправляйте файлы коллегам напрямую из хранилища — быстро и без лишних шагов.' },
+    { icon: 'pi pi-lock',        title: 'Безопасность',         desc: 'Email-подтверждение, скрытый ввод пароля и надёжная защита данных пользователей.' },
   ];
 
   stats = [
-    { num: '2',  label: 'Модуля в одном' },
-    { num: '∞',  label: 'Задач и файлов' },
-    { num: '0',  label: 'Лишних вкладок' },
-    { num: '1',  label: 'Рабочее пространство' },
+    { num: '2', label: 'Модуля в одном' },
+    { num: '∞', label: 'Задач и файлов' },
+    { num: '0', label: 'Лишних вкладок' },
+    { num: '1', label: 'Рабочее пространство' },
   ];
 
   kanbanCols = [
-    { title: 'infinity',    tasks: [{ label: 'Backend',  done: true  }] },
-    { title: 'В процессе', tasks: [{ label: 'Отчёт',    done: false }, { label: 'Frontend', done: false }] },
+    { title: 'infinity',    tasks: [{ label: 'Backend', done: true }] },
+    { title: 'В процессе', tasks: [{ label: 'Отчёт', done: false }, { label: 'Frontend', done: false }] },
   ];
 
   folders = ['MyArts', 'Projects'];

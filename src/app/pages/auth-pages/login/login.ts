@@ -42,8 +42,8 @@ export class Login {
   private readonly cdr         = inject(ChangeDetectorRef);
   readonly themeService        = inject(ThemeService);
 
-  imagePath = 'infinityLogo.svg';
   isDark    = computed(() => this.themeService.theme() === 'dark');
+  imagePath = computed(() => this.isDark() ? 'infinityLogo.svg' : 'infinity.svg');
 
   loginModel = signal<LoginRequest>({
     username:     '',
