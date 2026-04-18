@@ -4,9 +4,9 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { catchError, switchMap, throwError } from 'rxjs';
 import { HttpContext } from '@angular/common/http';
-import { RETRY_TOKEN } from './context-tokens';
+import { environment } from '../../environments/environment';
 
-const API_URL = 'http://localhost:4400';
+const API_URL = environment.apiUrl;
 
 export const AuthInterceptor: HttpInterceptorFn = (req, next) => {
   const http = inject(HttpClient);
