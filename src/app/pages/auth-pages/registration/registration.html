@@ -13,12 +13,11 @@
 
 <div class="form-container">
 
-  <!-- ─── Экран регистрации ─── -->
   @if (screen() === 'register') {
     <form (submit)="onSubmit($event)" novalidate>
       <div class="form-card">
 
-        <img class="logotype" [src]="imagePath" alt="infinity">
+        <img class="logotype" [src]="imagePath()" alt="infinity">
 
         <div class="inputs-form">
 
@@ -79,7 +78,6 @@
     </form>
   }
 
-  <!-- ─── Экран верификации ─── -->
   @if (screen() === 'verify') {
     <div class="form-card verify-card">
 
@@ -94,7 +92,6 @@
         </p>
       </div>
 
-      <!-- Поля для кода -->
       <div class="code-inputs">
         @for (digit of codeDigits(); track $index) {
           <input
@@ -118,7 +115,6 @@
         <div class="error-msg">{{ codeError() }}</div>
       }
 
-      <!-- Кнопка подтверждения -->
       <div class="btn-submit">
         <p-button
           label="Подтвердить"
@@ -128,7 +124,6 @@
         />
       </div>
 
-      <!-- Повторная отправка -->
       <div class="resend-wrap">
         @if (resendCooldown() > 0) {
           <span class="resend-timer">Отправить повторно через {{ resendCooldown() }} с</span>

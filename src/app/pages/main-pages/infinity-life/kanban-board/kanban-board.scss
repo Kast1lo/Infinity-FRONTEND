@@ -124,7 +124,7 @@
   color: var(--text3) !important;
   background: transparent !important;
   border: none !important;
-  border-radius: var(--radius-sm) 0 0 var(--radius-sm) !important;
+  border-radius: var(--radius-sm) !important;
 
   &:hover {
     color: var(--text2) !important;
@@ -265,7 +265,7 @@
 
   i { font-size: 10px !important; color: inherit !important; }
 
-  &--soon  { color: #d4b84a !important; i { color: #d4b84a !important; } }
+  &--soon    { color: #d4b84a !important; i { color: #d4b84a !important; } }
   &--overdue { color: #e05555 !important; i { color: #e05555 !important; } }
 }
 
@@ -567,10 +567,7 @@
         color: var(--text) !important;
       }
 
-      .p-icon {
-        width: 14px !important;
-        height: 14px !important;
-      }
+      .p-icon { width: 14px !important; height: 14px !important; }
     }
   }
 
@@ -644,7 +641,6 @@
   line-height: 1;
 
   &:hover { transform: scale(1.15); }
-
   &--active { box-shadow: 0 0 0 2px #fff !important; transform: scale(1.1); }
 
   &--empty {
@@ -654,14 +650,11 @@
 
     i {
       position: absolute;
-      top: 50%;
-      left: 50%;
+      top: 50%; left: 50%;
       transform: translate(-50%, -50%);
       font-size: 9px !important;
       color: var(--text3) !important;
-      line-height: 1;
-      margin: 0;
-      padding: 0;
+      line-height: 1; margin: 0; padding: 0;
     }
   }
 
@@ -671,10 +664,7 @@
 // ─── Task detail ───
 
 ::ng-deep .task-detail-dialog .p-dialog-header { padding: 16px 20px !important; }
-
-::ng-deep .task-detail-dialog .p-dialog-content {
-  padding: 0 !important;
-}
+::ng-deep .task-detail-dialog .p-dialog-content { padding: 0 !important; }
 
 .detail-dialog-header {
   display: flex;
@@ -704,11 +694,7 @@
   line-height: 1.4;
 }
 
-.task-detail {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
+.task-detail { display: flex; flex-direction: column; gap: 0; }
 
 .detail-meta {
   display: flex;
@@ -987,14 +973,14 @@
 ::ng-deep .confirm-dialog.p-dialog {
   border-radius: 14px !important;
   overflow: hidden !important;
-  border: 1px solid rgba(255,255,255,.08) !important;
+  border: 1px solid var(--border) !important;
   box-shadow: 0 32px 80px rgba(0,0,0,.7) !important;
 
   .p-dialog-header { display: none !important; }
 
   .p-dialog-content {
     padding: 0 !important;
-    background: #111 !important;
+    background: var(--bg2) !important;
     border-radius: 14px !important;
   }
 }
@@ -1027,7 +1013,7 @@
   font-family: 'Syne', sans-serif;
   font-size: 16px;
   font-weight: 700;
-  color: #f0f0f0;
+  color: var(--text);
   margin: 0;
   letter-spacing: -.3px;
 }
@@ -1035,7 +1021,7 @@
 .confirm-message {
   font-family: 'DM Sans', sans-serif;
   font-size: 13px;
-  color: #888;
+  color: var(--text2);
   margin: 0;
   line-height: 1.5;
 }
@@ -1046,7 +1032,7 @@
   width: 100%;
   justify-content: flex-end;
   padding-top: 8px;
-  border-top: 1px solid #222;
+  border-top: 1px solid var(--border);
   margin-top: 4px;
 }
 
@@ -1056,11 +1042,11 @@
   font-size: 13px !important;
 
   &.p-button-text {
-    color: #888 !important;
+    color: var(--text2) !important;
     background: transparent !important;
     border: none !important;
 
-    &:hover { color: #f0f0f0 !important; background: rgba(255,255,255,.05) !important; }
+    &:hover { color: var(--text) !important; background: rgba(128,128,128,.08) !important; }
   }
 }
 

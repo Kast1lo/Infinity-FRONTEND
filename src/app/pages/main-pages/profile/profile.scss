@@ -1,6 +1,10 @@
-.profile{
-    display: flex;
+.profile {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  justify-content: start;
 }
-.profileCard{
-    margin: 5.5px;
+
+.profileCard {
+    margin: 20px;
 }
