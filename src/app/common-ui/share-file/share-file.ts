@@ -16,6 +16,7 @@ import { ButtonModule } from 'primeng/button';
 import { ProgressSpinner } from 'primeng/progressspinner';
 import { DialogModule } from 'primeng/dialog';
 import { ThemeService } from '../../services/theme';
+import { environment } from '../../../environments/environment.prod';
 
 @Component({
   selector:        'app-share-file',
@@ -32,6 +33,7 @@ export class ShareFile implements OnInit {
   private readonly http  = inject(HttpClient);
   private readonly cdr   = inject(ChangeDetectorRef);
   private readonly themeService = inject(ThemeService);
+  private readonly apiUrl = environment.apiUrl;
 
   isDark = computed(() => this.themeService.theme() === 'dark');
 
@@ -72,7 +74,7 @@ export class ShareFile implements OnInit {
       return;
     }
 
-    this.http.get<any>(`/file-system/share/${username}/${filename}`)
+    this.http.get<any>(`${this.apiUrl}/file-system/share/${username}/${filename}`)
       .subscribe({
         next: (response) => {
           this.fileData.set(response.success && response.data ? response.data : response);
@@ -159,15 +161,16 @@ export class ShareFile implements OnInit {
   }
 
   downloadFile() {
-    const data = this.fileData();
-    if (!data?.name) return;
-    const url  = `/file-system/share/download/${data.username || 'user'}/${encodeURIComponent(data.name)}`;
-    const link = document.createElement('a');
-    link.href = url; link.download = data.name;
-    link.style.display = 'none';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+      const data = this.fileData();
+      if (!data?.name) return;
+      const username = this.route.snapshot.paramMap.get('username') || 'user';
+      const url = `${this.apiUrl}/file-system/share/download/${username}/${encodeURIComponent(data.name)}`;
+      const link = document.createElement('a');
+      link.href = url; link.download = data.name;
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
   }
 
   // ─── Видео плеер ───
@@ -253,7 +256,7 @@ export class ShareFile implements OnInit {
   openAudio() {
     const data = this.fileData();
     if (!data) return;
-    this.audioUrl.set(data.downloadUrl ?? `/file-system/share/stream/${data.username}/${encodeURIComponent(data.name)}`);
+    this.audioUrl.set(data.downloadUrl ?? `${this.apiUrl}/file-system/share/download/${this.route.snapshot.paramMap.get('username')}/${encodeURIComponent(data.name)}`);
     this.audioTitle.set(data.name);
     this.audioIsPlaying.set(false);
     this.audioProgress.set(0);

@@ -131,4 +131,17 @@
   </div>
 </p-dialog>
 
+<p-dialog
+  header="Загрузка папки"
+  [modal]="true"
+  [(visible)]="folderConfirmVisible"
+  [style]="{ width: '25rem' }"
+>
+  <p>Выберите папку для загрузки. Все файлы и подпапки будут загружены с сохранением структуры.</p>
+  <div class="create-folder">
+    <p-button label="Отмена" severity="secondary" (onClick)="onFolderConfirmReject()"/>
+    <p-button label="Выбрать папку" (onClick)="onFolderConfirmAccept()"/>
+  </div>
+</p-dialog>
+
 <p-toast position="bottom-right" key="br"></p-toast>
