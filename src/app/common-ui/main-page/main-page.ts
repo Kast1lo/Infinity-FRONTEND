@@ -25,7 +25,7 @@ export class MainPage implements OnInit, OnDestroy {
   );
 
   features = [
-    { icon: 'pi pi-th-large',    title: 'Kanban-доска',         desc: 'Гибкое управление задачами с кастомными колонками, чекбоксами и drag-and-drop сортировкой.' },
+    { icon: 'pi pi-th-large',    title: 'Infinity-life',         desc: 'Гибкое управление задачами с кастомными колонками, чекбоксами и drag-and-drop сортировкой.' },
     { icon: 'pi pi-folder-open', title: 'Файловое хранилище',   desc: 'Загружайте, организуйте и делитесь файлами как в Google Drive прямо внутри платформы.' },
     { icon: 'pi pi-user',        title: 'Профиль пользователя', desc: 'Персонализация аватара, логина и email. Полный контроль над своим аккаунтом.' },
     { icon: 'pi pi-sun',         title: 'Светлая и тёмная тема', desc: 'Минималистичный интерфейс в двух вариантах — выбирайте то, что удобнее для ваших глаз.' },
@@ -41,30 +41,58 @@ export class MainPage implements OnInit, OnDestroy {
   ];
 
   kanbanCols = [
-    { title: 'infinity',    tasks: [{ label: 'Backend', done: true }] },
+    { title: 'Готово',     tasks: [{ label: 'Backend', done: true }] },
     { title: 'В процессе', tasks: [{ label: 'Отчёт', done: false }, { label: 'Frontend', done: false }] },
   ];
 
   folders = ['MyArts', 'Projects'];
 
-  thumbColors = [
-    ['#1a1a2e', '#16213e'],
-    ['#0d0d1a', '#1a0a2e'],
-    ['#1a0a0a', '#2e0a0a'],
-    ['#0a1a0a', '#0a2e0a'],
-    ['#1a1000', '#2e1a00'],
-    ['#001a1a', '#002e2e'],
+  trustItems = [
+    { icon: 'pi pi-bolt',         label: 'Мгновенная синхронизация' },
+    { icon: 'pi pi-shield',       label: 'Шифрование AES-256' },
+    { icon: 'pi pi-server',       label: 'Серверы в РФ' },
+    { icon: 'pi pi-clock',        label: 'Резервные копии 24/7' },
+    { icon: 'pi pi-globe',        label: 'Доступ из любой точки' },
+    { icon: 'pi pi-mobile',       label: 'Работает на всех устройствах' },
   ];
 
+  faqs = [
+    {
+      q: 'Можно ли использовать Infinity бесплатно?',
+      a: 'Да. У нас есть тариф Spark — 7 дней полного доступа без привязки карты. После окончания пробного периода данные хранятся ещё 14 дней.',
+    },
+    {
+      q: 'Где хранятся мои файлы и насколько они защищены?',
+      a: 'Файлы хранятся на серверах в РФ с шифрованием AES-256. Доступ только через ваш аккаунт, передача данных идёт по HTTPS.',
+    },
+    {
+      q: 'Что произойдёт, если я отменю подписку?',
+      a: 'Все ваши задачи и файлы остаются доступны для скачивания в течение 30 дней. После этого аккаунт переходит в режим «только чтение».',
+    },
+    {
+      q: 'Можно ли работать в команде?',
+      a: 'Совместная работа над досками и общие папки находятся в активной разработке — выйдут в ближайших обновлениях. Тариф Eternal даёт ранний доступ ко всем новым функциям.',
+    },
+    {
+      q: 'Подходит ли Infinity для мобильных устройств?',
+      a: 'Да, веб-интерфейс полностью адаптирован под планшеты и смартфоны. Нативные приложения для iOS и Android в планах.',
+    },
+    {
+      q: 'Чем Infinity отличается от Notion или Trello?',
+      a: 'Мы объединили Kanban-доски и полноценное файловое хранилище в одном минималистичном интерфейсе. Никаких лишних функций — только то, что нужно для продуктивной работы.',
+    },
+  ];
+
+  openFaq: number | null = 0;
+  toggleFaq(i: number) { this.openFaq = this.openFaq === i ? null : i; }
+
   @HostListener('window:scroll')
-  onScroll() { this.navScrolled = window.scrollY > 40; }
+  onScroll() { this.navScrolled = window.scrollY > 140; }
 
   scrollTo(id: string) {
     const el = document.getElementById(id);
-    if (el) {
-      const top = el.getBoundingClientRect().top + window.scrollY - 80 + 60;
-      window.scrollTo({ top, behavior: 'smooth' });
-    }
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   ngOnInit() {

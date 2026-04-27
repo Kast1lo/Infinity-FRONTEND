@@ -43,6 +43,7 @@ export const routes: Routes = [
         canActivate:[authGuard]
     },
     {
+        
         path: 'infinity-life',
         component: InfinityLife,
         canActivate:[authGuard]

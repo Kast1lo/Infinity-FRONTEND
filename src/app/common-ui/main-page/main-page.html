@@ -1,14 +1,18 @@
 <nav class="navbar" [class.scrolled]="navScrolled">
-  <img class="logo" [src]="imagePath()" alt="">
+  <div class="nav-brand">
+    <img class="logo" [src]="imagePath()" alt="Infinity">
+  </div>
   <ul class="nav-links">
-    <li><a (click)="scrollTo('features')">Функции</a></li>
-    <li><a (click)="scrollTo('kanban')">Kanban</a></li>
-    <li><a (click)="scrollTo('files')">Файлы</a></li>
-    <li><a (click)="scrollTo('pricing')">Тарифы</a></li>
+    <li><a (click)="scrollTo('features')"><i class="pi pi-sparkles"></i><span>Функции</span></a></li>
+    <li><a (click)="scrollTo('kanban')"><i class="pi pi-th-large"></i><span>Infinity-life</span></a></li>
+    <li><a (click)="scrollTo('files')"><i class="pi pi-folder"></i><span>Файлы</span></a></li>
+    <li><a (click)="scrollTo('pricing')"><i class="pi pi-tag"></i><span>Тарифы</span></a></li>
+    <li><a (click)="scrollTo('faq')"><i class="pi pi-question-circle"></i><span>FAQ</span></a></li>
   </ul>
   <div class="nav-cta">
     <button class="theme-toggle" (click)="themeService.toggle()"
-      [pTooltip]="isDark() ? 'Светлая тема' : 'Тёмная тема'" tooltipPosition="bottom">
+      [pTooltip]="isDark() ? 'Светлая тема' : 'Тёмная тема'" tooltipPosition="bottom"
+      aria-label="Переключить тему">
       <i [class]="isDark() ? 'pi pi-sun' : 'pi pi-moon'"></i>
     </button>
     <p-button label="Войти" [text]="true" severity="secondary" size="small" routerLink="/login"/>
@@ -18,18 +22,24 @@
 
 <!-- ── HERO ── -->
 <section class="hero">
+  <!-- Ambient gradient orbs -->
+  <div class="hero-orbs" aria-hidden="true">
+    <span class="orb orb--1"></span>
+    <span class="orb orb--2"></span>
+  </div>
+
   <div class="hero-tags">
-    <div class="hero-badge">
+    <div class="hero-badge hero-badge--gradient">
       <span class="badge-dot"></span>
       All-in-one рабочее пространство нового поколения
     </div>
     <div class="hero-badge hero-badge-sm"><i class="pi pi-check-circle"></i> Бесплатный пробный период 7 дней</div>
     <div class="hero-badge hero-badge-sm"><i class="pi pi-lock"></i> Безопасное хранение данных</div>
   </div>
-  <h1 class="hero-title">Один<br><em>инструмент.</em><br>Для всего.</h1>
+  <h1 class="hero-title">Один<br><em class="gradient-text">инструмент.</em><br>Для всего.</h1>
   <p class="hero-subtitle">Kanban-доска, файловое хранилище и совместная работа в одном минималистичном пространстве.</p>
   <div class="hero-meta">
-    <span class="hero-meta-item"><i class="pi pi-th-large"></i> Kanban</span>
+    <span class="hero-meta-item"><i class="pi pi-th-large"></i> Infinity-life</span>
     <span class="hero-meta-dot">·</span>
     <span class="hero-meta-item"><i class="pi pi-folder-open"></i> Файловое хранилище</span>
     <span class="hero-meta-dot">·</span>
@@ -38,155 +48,161 @@
     <span class="hero-meta-item"><i class="pi pi-share-alt"></i> Пересылка файлов</span>
   </div>
   <div class="cta-actions">
-    <a class="btn-hero-primary" routerLink="/registration"><i class="pi pi-user-plus"></i> Зарегистрироваться</a>
+    <a class="btn-hero-primary btn-hero-primary--gradient" routerLink="/registration"><i class="pi pi-user-plus"></i> Зарегистрироваться</a>
     <a class="btn-hero-ghost" routerLink="/login"><i class="pi pi-sign-in"></i> Войти</a>
   </div>
 
-  <!-- Hero preview — точная копия реального UI -->
+  <!-- Hero preview — bento -->
   <div class="hero-preview">
-    <div class="preview-bar">
-      <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
-      <span class="preview-bar-title">Infinity — Файловая система</span>
-    </div>
-    <div class="preview-window">
-      <!-- Сайдбар -->
-      <div class="preview-sidebar">
-        <div class="psb-avatar">U</div>
-        <div class="psb-nav">
-          <div class="psb-item psb-item--active"><i class="pi pi-objects-column"></i></div>
-          <div class="psb-item"><i class="pi pi-folder"></i></div>
-          <div class="psb-divider"></div>
-          <div class="psb-item psb-item--soon"><i class="pi pi-file-edit"></i></div>
-          <div class="psb-item psb-item--soon"><i class="pi pi-calendar"></i></div>
+    <span class="hp-glow" aria-hidden="true"></span>
+    <div class="hp-bento">
+
+      <!-- Tile: Kanban -->
+      <div class="hp-tile hp-tile--kanban">
+        <div class="hp-tile-head">
+          <span class="hp-tile-label"><i class="pi pi-th-large"></i> Infinity-life</span>
+          <span class="hp-pill">3 / 6</span>
         </div>
-        <div class="psb-bottom">
-          <div class="psb-item"><i class="pi pi-sun"></i></div>
-          <div class="psb-divider"></div>
-          <div class="psb-item"><i class="pi pi-cog"></i></div>
-          <div class="psb-divider"></div>
-          <div class="psb-item psb-item--logout"><i class="pi pi-sign-out"></i></div>
-        </div>
-      </div>
-      <!-- Контент — Kanban -->
-      <div class="preview-content">
-        <!-- Toolbar -->
-        <div class="prev-toolbar">
-          <div class="prev-tb-left">
-            <button class="prev-tb-btn prev-tb-btn--border"><i class="pi pi-cloud-upload"></i><span>Загрузить файл</span></button>
-            <button class="prev-tb-btn"><i class="pi pi-folder-open"></i><span>Создать папку</span></button>
-            <div class="prev-tb-sep"></div>
-            <div class="prev-tb-search"><i class="pi pi-search"></i><span>Поиск файлов...</span></div>
-            <div class="prev-tb-sep"></div>
-            <div class="prev-tb-filters">
-              <span class="prev-tb-filter prev-tb-filter--active">Все</span>
-              <span class="prev-tb-filter">Фото</span>
-              <span class="prev-tb-filter">Видео</span>
-              <span class="prev-tb-filter">Аудио</span>
+        <div class="hp-kanban">
+          <div class="hp-col">
+            <div class="hp-col-head">
+              <span class="hp-col-title">Готово</span>
+              <span class="hp-col-count">2</span>
+            </div>
+            <div class="hp-task hp-task--done">
+              <span class="hp-check hp-check--done"><i class="pi pi-check"></i></span>
+              <span class="hp-task-name">Backend</span>
+            </div>
+            <div class="hp-task hp-task--done">
+              <span class="hp-check hp-check--done"><i class="pi pi-check"></i></span>
+              <span class="hp-task-name">Дизайн макет</span>
             </div>
           </div>
-          <div class="prev-tb-right">
-            <button class="prev-tb-icon-btn"><i class="pi pi-download"></i></button>
-            <button class="prev-tb-icon-btn"><i class="pi pi-trash"></i></button>
-            <button class="prev-tb-btn prev-tb-btn--border"><i class="pi pi-share-alt"></i><span>Переслать</span></button>
-          </div>
-        </div>
-        <!-- Файловая система -->
-        <div class="prev-fs">
-          <!-- Папки -->
-          <div class="prev-folders">
-            <div class="prev-folder-card">
-              <div class="prev-folder-info"><i class="pi pi-folder"></i><span>MyArts</span></div>
-              <i class="pi pi-ellipsis-v prev-folder-menu"></i>
+          <div class="hp-col">
+            <div class="hp-col-head">
+              <span class="hp-col-title">В процессе</span>
+              <span class="hp-col-count">2</span>
             </div>
-            <div class="prev-folder-card">
-              <div class="prev-folder-info"><i class="pi pi-folder"></i><span>Projects</span></div>
-              <i class="pi pi-ellipsis-v prev-folder-menu"></i>
+            <div class="hp-task">
+              <span class="hp-check"></span>
+              <span class="hp-task-name">Отчёт</span>
+              <span class="hp-task-due"><i class="pi pi-calendar"></i> 20.01</span>
             </div>
-            <div class="prev-folder-card">
-              <div class="prev-folder-info"><i class="pi pi-folder"></i><span>Design</span></div>
-              <i class="pi pi-ellipsis-v prev-folder-menu"></i>
-            </div>
-          </div>
-          <div class="prev-fs-divider"></div>
-          <!-- Файлы -->
-          <div class="prev-file-grid">
-            @for (c of thumbColors; let i = $index; track i) {
-              <div class="prev-file-card">
-                <div class="prev-file-header">
-                  <span class="prev-file-name">img_{{ i + 1 }}.jpg</span>
-                  <i class="pi pi-ellipsis-v"></i>
-                </div>
-                <div class="prev-file-thumb" [style.background]="'linear-gradient(135deg,' + c[0] + ',' + c[1] + ')'">
-                  <div class="prev-file-overlay"><i class="pi pi-eye"></i></div>
-                </div>
-              </div>
-            }
-            <!-- PDF -->
-            <div class="prev-file-card">
-              <div class="prev-file-header"><span class="prev-file-name">report.pdf</span><i class="pi pi-ellipsis-v"></i></div>
-              <div class="prev-file-thumb prev-file-doc prev-file-pdf"><i class="pi pi-file-pdf"></i></div>
-            </div>
-            <!-- ZIP -->
-            <div class="prev-file-card">
-              <div class="prev-file-header"><span class="prev-file-name">archive.zip</span><i class="pi pi-ellipsis-v"></i></div>
-              <div class="prev-file-thumb prev-file-doc prev-file-zip"><i class="pi pi-box"></i></div>
-            </div>
-            <!-- Audio -->
-            <div class="prev-file-card">
-              <div class="prev-file-header"><span class="prev-file-name">track.mp3</span><i class="pi pi-ellipsis-v"></i></div>
-              <div class="prev-file-thumb prev-file-audio">
-                <div class="prev-audio-bars">
-                  <span></span><span></span><span></span><span></span><span></span>
-                </div>
-              </div>
+            <div class="hp-task">
+              <span class="hp-check"></span>
+              <span class="hp-task-name">Frontend</span>
+              <span class="hp-task-color"></span>
             </div>
           </div>
         </div>
       </div>
+
+      <!-- Tile: Storage donut -->
+      <div class="hp-tile hp-tile--storage">
+        <div class="hp-tile-head">
+          <span class="hp-tile-label"><i class="pi pi-database"></i> Хранилище</span>
+        </div>
+        <div class="hp-donut">
+          <svg class="hp-donut-svg" viewBox="0 0 120 120" aria-hidden="true">
+            <defs>
+              <linearGradient id="hpDonutGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="var(--grad-stop-1)"/>
+                <stop offset="50%" stop-color="var(--grad-stop-2)"/>
+                <stop offset="100%" stop-color="var(--grad-stop-3)"/>
+              </linearGradient>
+            </defs>
+            <circle class="hp-donut-track" cx="60" cy="60" r="48" fill="none" stroke-width="10"/>
+            <circle class="hp-donut-fill"  cx="60" cy="60" r="48" fill="none" stroke-width="10"
+              stroke-linecap="round" stroke-dasharray="187 302"
+              transform="rotate(-90 60 60)" stroke="url(#hpDonutGrad)"/>
+          </svg>
+          <div class="hp-donut-center">
+            <span class="hp-donut-num">62<em>%</em></span>
+            <span class="hp-donut-sub">155 / 250 ГБ</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tile: Plan -->
+      <div class="hp-tile hp-tile--plan">
+        <span class="hp-plan-badge"><span class="hp-plan-dot"></span> Активен</span>
+        <span class="hp-plan-name">Infinity <em class="gradient-text">Pulse</em></span>
+        <span class="hp-plan-meta">250 ГБ · Безлимит задач</span>
+        <span class="hp-plan-price">399 ₽<em>/ мес</em></span>
+      </div>
+
+      <!-- Tile: Recent files -->
+      <div class="hp-tile hp-tile--files">
+        <div class="hp-tile-head">
+          <span class="hp-tile-label"><i class="pi pi-folder-open"></i> Недавние файлы</span>
+          <span class="hp-pill"><i class="pi pi-arrow-right"></i></span>
+        </div>
+        <div class="hp-files-row">
+          <div class="hp-file hp-file--video">
+            <span class="hp-play"><i class="pi pi-play-circle"></i></span>
+            <span class="hp-file-tag">MOV</span>
+          </div>
+          <div class="hp-file hp-file--audio">
+            <div class="hp-bars"><span></span><span></span><span></span><span></span><span></span></div>
+            <span class="hp-file-tag">MP3</span>
+          </div>
+          <div class="hp-file hp-file--doc">
+            <i class="pi pi-file"></i>
+            <span class="hp-file-tag">TXT</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tile: Brand -->
+      <div class="hp-tile hp-tile--brand">
+        <i class="pi pi-infinity hp-brand-icon"></i>
+        <span class="hp-brand-text"><span class="gradient-text">Infinity</span></span>
+        <span class="hp-brand-sub">Vault</span>
+      </div>
+
     </div>
+  </div>
+
+  <!-- Trust strip -->
+  <div class="trust-strip">
+    <ul class="trust-list">
+      @for (t of trustItems; track t.label) {
+        <li class="trust-item"><i [class]="t.icon"></i><span>{{ t.label }}</span></li>
+      }
+    </ul>
   </div>
 </section>
 
-<!-- ── STATS ── -->
-<section class="stats reveal">
-  <div class="container">
-    <div class="stats-grid">
-      <div class="stat-item">
-        <div class="stat-icon"><i class="pi pi-objects-column"></i></div>
-        <div class="stat-num">2</div>
-        <div class="stat-label">Модуля в одном</div>
-        <div class="stat-desc">Kanban + файловое хранилище</div>
-      </div>
-      <div class="stat-item stat-item--accent">
-        <div class="stat-icon"><i class="pi pi-star"></i></div>
-        <div class="stat-num">∞</div>
-        <div class="stat-label">Задач и файлов</div>
-        <div class="stat-desc">Без ограничений на платных тарифах</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-icon"><i class="pi pi-times-circle"></i></div>
-        <div class="stat-num">0</div>
-        <div class="stat-label">Лишних вкладок</div>
-        <div class="stat-desc">Всё в одном рабочем пространстве</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-icon"><i class="pi pi-bolt"></i></div>
-        <div class="stat-num">1</div>
-        <div class="stat-label">Рабочее пространство</div>
-        <div class="stat-desc">Для всех ваших задач и файлов</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ── FEATURES ── -->
+<!-- ── FEATURES + STATS (объединённая секция) ── -->
 <section class="features" id="features">
   <div class="container">
     <div class="section-header reveal">
       <div class="section-label">Возможности</div>
-      <h2 class="section-title">Всё что нужно для работы</h2>
+      <h2 class="section-title">Всё что нужно <span class="gradient-text">для работы</span></h2>
       <p class="section-sub">Никаких переключений между приложениями. Всё в одном месте — быстро, чисто, продуктивно.</p>
     </div>
+
+    <!-- Цифры в компактной полосе сверху -->
+    <div class="stats-strip reveal">
+      <div class="stat-cell">
+        <div class="stat-num">2</div>
+        <div class="stat-label">Модуля в одном</div>
+      </div>
+      <div class="stat-cell stat-cell--accent">
+        <div class="stat-num">∞</div>
+        <div class="stat-label">Задач и файлов</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num">0</div>
+        <div class="stat-label">Лишних вкладок</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num">1</div>
+        <div class="stat-label">Рабочее пространство</div>
+      </div>
+    </div>
+
+    <!-- Сетка фичей -->
     <div class="features-grid">
       @for (f of features; let i = $index; track f.title) {
         <div class="feat-card reveal"
@@ -209,8 +225,8 @@
   <div class="container">
     <div class="split-inner reveal">
       <div class="split-text">
-        <div class="section-label">Kanban</div>
-        <h2 class="section-title">Задачи под контролем</h2>
+        <div class="section-label">Infinity-life</div>
+        <h2 class="section-title">Задачи <span class="gradient-text">под контролем</span></h2>
         <p class="section-sub">Создавайте собственные колонки, добавляйте задачи и отмечайте выполненные. Гибкость без лишней сложности.</p>
         <ul class="split-list">
           <li><i class="pi pi-check"></i> Drag & Drop между колонками</li>
@@ -238,7 +254,7 @@
           <!-- Колонка 1 -->
           <div class="svk-col">
             <div class="svk-col-header">
-              <span class="svk-col-title">INFINITY</span>
+              <span class="svk-col-title">Готово</span>
               <span class="svk-col-count">1</span>
               <button class="svk-col-menu"><i class="pi pi-ellipsis-v"></i></button>
             </div>
@@ -269,14 +285,14 @@
                 <div class="svk-check"></div>
                 <div class="svk-task-body">
                   <span class="svk-task-title">Frontend</span>
-                  <div class="svk-task-color-bar" style="background:#4a9eff"></div>
+                  <div class="svk-task-color-bar"></div>
                 </div>
               </div>
               <div class="svk-task">
                 <div class="svk-check"></div>
                 <div class="svk-task-body">
                   <span class="svk-task-title">Дизайн макет</span>
-                  <div class="svk-task-color-bar" style="background:#a855f7"></div>
+                  <div class="svk-task-color-bar svk-task-color-bar--alt"></div>
                 </div>
               </div>
             </div>
@@ -285,7 +301,7 @@
           <!-- Колонка 3 — new col -->
           <div class="svk-col svk-col--new">
             <i class="pi pi-plus"></i>
-            <span>Колонка</span>
+            <span>Создать колонку</span>
           </div>
         </div>
       </div>
@@ -299,7 +315,7 @@
     <div class="split-inner split-reverse reveal">
       <div class="split-text">
         <div class="section-label">Хранилище</div>
-        <h2 class="section-title">Все файлы рядом</h2>
+        <h2 class="section-title">Все файлы <span class="gradient-text">рядом</span></h2>
         <p class="section-sub">Папки, изображения, документы — загружайте и организуйте как в Google Drive, не выходя из рабочего пространства.</p>
         <ul class="split-list">
           <li><i class="pi pi-check"></i> Папки и подпапки</li>
@@ -316,14 +332,30 @@
       <div class="split-visual sv-files-real">
         <!-- Toolbar -->
         <div class="svf-toolbar">
-          <div class="svf-tb-left">
-            <button class="svf-btn svf-btn--outlined"><i class="pi pi-cloud-upload"></i><span>Загрузить</span></button>
-            <button class="svf-btn"><i class="pi pi-folder-plus"></i><span>Папку</span></button>
+          <div class="svf-tb-row svf-tb-row--top">
+            <div class="svf-tb-left">
+              <button class="svf-btn svf-btn--outlined"><i class="pi pi-cloud-upload"></i><span>Загрузить файл</span></button>
+              <button class="svf-btn"><i class="pi pi-folder-open"></i><span>Загрузить папку</span></button>
+              <button class="svf-btn"><i class="pi pi-folder-plus"></i><span>Создать папку</span></button>
+            </div>
+            <div class="svf-tb-right">
+              <button class="svf-icon-btn"><i class="pi pi-download"></i></button>
+              <button class="svf-icon-btn"><i class="pi pi-trash"></i></button>
+              <button class="svf-btn svf-btn--outlined"><i class="pi pi-share-alt"></i><span>переслать</span></button>
+            </div>
           </div>
-          <div class="svf-tb-right">
-            <button class="svf-icon-btn"><i class="pi pi-download"></i></button>
-            <button class="svf-icon-btn"><i class="pi pi-trash"></i></button>
-            <button class="svf-btn svf-btn--outlined"><i class="pi pi-share-alt"></i><span>Переслать</span></button>
+          <div class="svf-tb-row svf-tb-row--bottom">
+            <div class="svf-search"><i class="pi pi-search"></i><span>Поиск файлов...</span></div>
+            <div class="svf-tb-sep"></div>
+            <div class="svf-filters">
+              <span class="svf-filter svf-filter--active"><i class="pi pi-list"></i><span>Все</span></span>
+              <span class="svf-filter"><i class="pi pi-image"></i><span>Фото</span></span>
+              <span class="svf-filter"><i class="pi pi-video"></i><span>Видео</span></span>
+              <span class="svf-filter"><i class="pi pi-volume-up"></i><span>Аудио</span></span>
+              <span class="svf-filter"><i class="pi pi-file"></i><span>Документы</span></span>
+              <span class="svf-filter"><i class="pi pi-box"></i><span>Архивы</span></span>
+              <span class="svf-filter"><i class="pi pi-ellipsis-h"></i><span>Прочее</span></span>
+            </div>
           </div>
         </div>
         <!-- Тело -->
@@ -331,15 +363,7 @@
           <!-- Папки -->
           <div class="svf-folders">
             <div class="svf-folder">
-              <div class="svf-folder-info"><i class="pi pi-folder"></i><span>MyArts</span></div>
-              <i class="pi pi-ellipsis-v svf-folder-dots"></i>
-            </div>
-            <div class="svf-folder">
-              <div class="svf-folder-info"><i class="pi pi-folder"></i><span>Projects</span></div>
-              <i class="pi pi-ellipsis-v svf-folder-dots"></i>
-            </div>
-            <div class="svf-folder">
-              <div class="svf-folder-info"><i class="pi pi-folder"></i><span>Design</span></div>
+              <div class="svf-folder-info"><i class="pi pi-folder"></i><span>Лучшие раб...</span></div>
               <i class="pi pi-ellipsis-v svf-folder-dots"></i>
             </div>
           </div>
@@ -347,23 +371,42 @@
           <div class="svf-hr"></div>
           <!-- Файлы -->
           <div class="svf-files">
-            @for (c of thumbColors; let i = $index; track i) {
-              <div class="svf-file-card">
-                <div class="svf-file-top">
-                  <span class="svf-file-name">img_{{ i + 1 }}.jpg</span>
-                  <i class="pi pi-ellipsis-v svf-file-dots"></i>
-                </div>
-                <div class="svf-file-preview" [style.background]="'linear-gradient(135deg,' + c[0] + ',' + c[1] + ')'"></div>
+            <!-- Video -->
+            <div class="svf-file-card">
+              <div class="svf-file-top">
+                <span class="svf-file-name">Sitephone.mov</span>
+                <i class="pi pi-ellipsis-v svf-file-dots"></i>
               </div>
-            }
-            <div class="svf-file-card">
-              <div class="svf-file-top"><span class="svf-file-name">report.pdf</span><i class="pi pi-ellipsis-v svf-file-dots"></i></div>
-              <div class="svf-file-preview svf-file-doc svf-file-pdf"><i class="pi pi-file-pdf"></i></div>
+              <div class="svf-file-preview svf-file-video">
+                <div class="svf-file-play"><i class="pi pi-play-circle"></i></div>
+              </div>
             </div>
+            <!-- Text doc -->
             <div class="svf-file-card">
-              <div class="svf-file-top"><span class="svf-file-name">track.mp3</span><i class="pi pi-ellipsis-v svf-file-dots"></i></div>
+              <div class="svf-file-top">
+                <span class="svf-file-name">git.txt</span>
+                <i class="pi pi-ellipsis-v svf-file-dots"></i>
+              </div>
+              <div class="svf-file-preview svf-file-doc svf-file-txt"><i class="pi pi-file"></i></div>
+            </div>
+            <!-- Audio -->
+            <div class="svf-file-card">
+              <div class="svf-file-top">
+                <span class="svf-file-name">scarlxrd - Serxtxnin.m...</span>
+                <i class="pi pi-ellipsis-v svf-file-dots"></i>
+              </div>
               <div class="svf-file-preview svf-file-audio">
                 <div class="svf-audio-bars"><span></span><span></span><span></span><span></span><span></span></div>
+              </div>
+            </div>
+            <!-- Infinity logo image -->
+            <div class="svf-file-card">
+              <div class="svf-file-top">
+                <span class="svf-file-name">infinity-logo.jpg</span>
+                <i class="pi pi-ellipsis-v svf-file-dots"></i>
+              </div>
+              <div class="svf-file-preview svf-file-logo">
+                <span class="svf-logo-text"><i class="pi pi-infinity"></i>NFINITY</span>
               </div>
             </div>
           </div>
@@ -380,7 +423,7 @@
   <div class="container">
     <div class="section-header reveal pricing-header">
       <div class="section-label">Тарифы</div>
-      <h2 class="section-title">Выбери свой путь в Infinity</h2>
+      <h2 class="section-title">Выбери свой путь <span class="gradient-text">в Infinity</span></h2>
       <p class="section-sub">Простые планы. Никаких сюрпризов. Полная свобода.</p>
     </div>
     <div class="plans-grid">
@@ -389,7 +432,7 @@
       <div class="plan-card reveal reveal-delay-1">
         <div class="plan-name-row"><span class="plan-tier-badge plan-tier-badge--trial">7 дней бесплатно</span></div>
         <div class="plan-header">
-          <h3 class="plan-name">Infinity <em>Spark</em></h3>
+          <h3 class="plan-name">Infinity <em class="gradient-text">Spark</em></h3>
           <p class="plan-slogan">Почувствуй силу Infinity — без обязательств</p>
           <div class="plan-price">
             <span class="price-num">0</span><span class="price-currency">₽</span><span class="price-period">/ 7 дней</span>
@@ -398,7 +441,7 @@
         <ul class="plan-features">
           <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>Полный доступ ко всем функциям</span></li>
           <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>5 ГБ облачного хранилища</span></li>
-          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>До 30 задач в Kanban</span></li>
+          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>До 30 задач в Infinity-life</span></li>
           <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>Без привязки карты</span></li>
           <li class="feature-item feature-warn"><i class="pi pi-clock fi fi--warn"></i><span>После 7 дней — данные заморожены на 14 дней</span></li>
           <li class="feature-item feature-danger"><i class="pi pi-trash fi fi--danger"></i><span>Затем данные удаляются без подписки</span></li>
@@ -410,7 +453,7 @@
       <div class="plan-card plan-card--pulse reveal reveal-delay-2">
         <div class="plan-name-row"><span class="plan-tier-badge plan-tier-badge--pulse">Ежемесячно</span></div>
         <div class="plan-header">
-          <h3 class="plan-name">Infinity <em>Pulse</em></h3>
+          <h3 class="plan-name">Infinity <em class="gradient-text">Pulse</em></h3>
           <p class="plan-slogan">Всё необходимое — здесь и сейчас</p>
           <div class="plan-price">
             <span class="price-num">399</span><span class="price-currency">₽</span><span class="price-period">/ мес</span>
@@ -429,10 +472,10 @@
 
       <!-- Infinity Horizon -->
       <div class="plan-card plan-card--horizon reveal reveal-delay-3">
-        <div class="plan-popular-badge">⭐ Лучший выбор</div>
+        <div class="plan-popular-badge"><i class="pi pi-star-fill"></i> Лучший выбор</div>
         <div class="plan-name-row"><span class="plan-tier-badge plan-tier-badge--horizon">Экономия 35%</span></div>
         <div class="plan-header">
-          <h3 class="plan-name">Infinity <em>Horizon</em></h3>
+          <h3 class="plan-name">Infinity <em class="gradient-text">Horizon</em></h3>
           <p class="plan-slogan">Максимум возможностей — минимум затрат</p>
           <div class="plan-price">
             <span class="price-num">3599</span><span class="price-currency">₽</span><span class="price-period">/ год</span>
@@ -454,7 +497,7 @@
       <div class="plan-card plan-card--eternal reveal reveal-delay-1">
         <div class="plan-name-row"><span class="plan-tier-badge plan-tier-badge--eternal">Навсегда</span></div>
         <div class="plan-header">
-          <h3 class="plan-name">Infinity <em>Eternal</em></h3>
+          <h3 class="plan-name">Infinity <em class="gradient-text">Eternal</em></h3>
           <p class="plan-slogan">Заплати один раз. Пользуйся вечно.</p>
           <div class="plan-price">
             <span class="price-num">4999</span><span class="price-currency">₽</span><span class="price-period">единоразово</span>
@@ -477,16 +520,49 @@
 
 <div class="container"><div class="divider reveal"></div></div>
 
+<!-- ── FAQ ── -->
+<section class="faq" id="faq">
+  <div class="container">
+    <div class="section-header reveal faq-header">
+      <div class="section-label">FAQ</div>
+      <h2 class="section-title">Частые <span class="gradient-text">вопросы</span></h2>
+      <p class="section-sub">Если не нашли ответ — напишите в поддержку, отвечаем в течение часа.</p>
+    </div>
+    <div class="faq-list">
+      @for (item of faqs; let i = $index; track item.q) {
+        <div class="faq-item reveal" [class.faq-item--open]="openFaq === i">
+          <button class="faq-q" (click)="toggleFaq(i)" [attr.aria-expanded]="openFaq === i">
+            <span>{{ item.q }}</span>
+            <i class="pi pi-plus faq-icon"></i>
+          </button>
+          <div class="faq-a"><p>{{ item.a }}</p></div>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<div class="container"><div class="divider reveal"></div></div>
+
 <!-- ── CTA ── -->
 <section class="cta-section">
+  <div class="cta-orbs" aria-hidden="true">
+    <span class="orb orb--1"></span>
+    <span class="orb orb--2"></span>
+  </div>
   <div class="container">
     <div class="cta-inner reveal">
       <div class="section-label">Начните сегодня</div>
-      <h2 class="section-title">Рабочее пространство без границ</h2>
+      <h2 class="section-title">Рабочее пространство <span class="gradient-text">без границ</span></h2>
       <p class="section-sub">Бесплатно. Без кредитной карты. Всё в одном.</p>
       <div class="cta-actions">
-        <a class="btn-hero-primary" routerLink="/registration"><i class="pi pi-user-plus"></i> Зарегистрироваться</a>
+        <a class="btn-hero-primary btn-hero-primary--gradient" routerLink="/registration"><i class="pi pi-user-plus"></i> Зарегистрироваться</a>
         <a class="btn-hero-ghost" routerLink="/login"><i class="pi pi-sign-in"></i> Войти</a>
+      </div>
+      <div class="cta-meta">
+        <span><i class="pi pi-check-circle"></i> 7 дней бесплатно</span>
+        <span><i class="pi pi-check-circle"></i> Без карты</span>
+        <span><i class="pi pi-check-circle"></i> Отмена в любой момент</span>
       </div>
     </div>
   </div>
@@ -494,13 +570,59 @@
 
 <!-- ── FOOTER ── -->
 <footer class="footer">
-  <div class="container footer-inner">
-    <img class="logo" [src]="imagePath()" alt="">
-    <div class="footer-links">
-      <a href="#">Условия</a>
-      <a href="#">Конфиденциальность</a>
-      <a href="#">Поддержка</a>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <img class="logo" [src]="imagePath()" alt="Infinity">
+        <p class="footer-desc">All-in-one рабочее пространство — Kanban-доски и файловое хранилище в одном минималистичном интерфейсе.</p>
+        <div class="footer-socials">
+          <a href="https://t.me/Anton_Kast1lo" aria-label="Telegram" target="_blank" class="social-btn"><i class="pi pi-send"></i></a>
+          <a href="https://github.com/Kast1lo" aria-label="GitHub" target="_blank" class="social-btn"><i class="pi pi-github"></i></a>
+          <a href="infinity.corpa@gmail.com"  aria-label="Email" target="_blank" class="social-btn"><i class="pi pi-envelope"></i></a>
+        </div>
+      </div>
+
+      <div class="footer-col">
+        <h4 class="footer-col-title">Продукт</h4>
+        <ul>
+          <li><a (click)="scrollTo('features')">Возможности</a></li>
+          <li><a (click)="scrollTo('kanban')">Kanban</a></li>
+          <li><a (click)="scrollTo('files')">Хранилище</a></li>
+          <li><a (click)="scrollTo('pricing')">Тарифы</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4 class="footer-col-title">Ресурсы</h4>
+        <ul>
+          <li><a (click)="scrollTo('faq')">FAQ</a></li>
+          <li><a href="#">Документация</a></li>
+          <li><a href="#">Изменения</a></li>
+          <li><a href="#">Roadmap</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4 class="footer-col-title">Компания</h4>
+        <ul>
+          <li><a href="#">О проекте</a></li>
+          <li><a href="#">Поддержка</a></li>
+          <li><a href="#">Условия</a></li>
+          <li><a href="#">Конфиденциальность</a></li>
+        </ul>
+      </div>
     </div>
-    <span class="footer-copy">© 2025 Infinity</span>
+
+    <div class="footer-bottom">
+      <span class="footer-copy">© 2025 Infinity. Все права защищены.</span>
+      <div class="footer-bottom-links">
+        <a href="#">Cookies</a>
+        <span class="dot-sep">·</span>
+        <a href="#">Юридическая информация</a>
+        <span class="dot-sep">·</span>
+        <a href="mailto:hello@infinity-vault.com">hello&#64;infinity-vault.com</a>
+      </div>
+      <div class="footer-status"><span class="status-dot"></span> Все системы работают</div>
+    </div>
   </div>
 </footer>
