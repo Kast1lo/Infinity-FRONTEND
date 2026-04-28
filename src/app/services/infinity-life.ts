@@ -8,7 +8,7 @@ import { CreateSubtaskDto } from '../interfaces/infinity-life/create-subtask.mod
 import { CreateColumnDto } from '../interfaces/infinity-life/create-column.model';
 import { UpdateColumnDto } from '../interfaces/infinity-life/update-column.model';
 import { CreateTaskDto } from '../interfaces/infinity-life/create-task.model';
-import { environment } from '../../environments/environment.prod';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',

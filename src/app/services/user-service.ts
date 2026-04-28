@@ -3,7 +3,7 @@ import { UserProfile } from '../interfaces/profile-interfaces/user-profile.model
 import { HttpClient } from '@angular/common/http';
 import { catchError, Observable, tap, throwError } from 'rxjs';
 import { UpdateProfile } from '../interfaces/profile-interfaces/update-profile.model';
-import { environment } from '../../environments/environment.prod';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',

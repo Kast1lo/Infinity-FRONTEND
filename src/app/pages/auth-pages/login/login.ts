@@ -18,6 +18,7 @@ import { form, FormField, maxLength, minLength, required } from '@angular/forms/
 import { AuthService } from '../../../services/auth';
 import { TooltipModule } from 'primeng/tooltip';
 import { ThemeService } from '../../../services/theme';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-login',
@@ -44,6 +45,8 @@ export class Login {
 
   isDark    = computed(() => this.themeService.theme() === 'dark');
   imagePath = computed(() => this.isDark() ? 'infinityLogo.svg' : 'infinity.svg');
+
+  readonly googleAuthUrl = `${environment.apiUrl}/auth/google`;
 
   loginModel = signal<LoginRequest>({
     username:     '',

@@ -7,7 +7,7 @@ import { apiResponse } from '../interfaces/auth-interfaces/api-response.model';
 import { RegisterData } from '../interfaces/auth-interfaces/register-data.model';
 import { UserProfile } from '../interfaces/profile-interfaces/user-profile.model';
 import { UserService } from './user-service';
-import { environment } from '../../environments/environment.prod';
+import { environment } from '../../environments/environment';
 
 
 @Injectable({

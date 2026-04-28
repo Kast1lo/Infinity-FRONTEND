@@ -16,7 +16,7 @@ import { ButtonModule } from 'primeng/button';
 import { ProgressSpinner } from 'primeng/progressspinner';
 import { DialogModule } from 'primeng/dialog';
 import { ThemeService } from '../../services/theme';
-import { environment } from '../../../environments/environment.prod';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector:        'app-share-file',

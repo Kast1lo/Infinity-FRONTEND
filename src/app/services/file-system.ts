@@ -3,7 +3,7 @@ import { FileItem } from '../interfaces/file-system-interfeces/file-item.model';
 import { FolderItem } from '../interfaces/file-system-interfeces/folder-item.model';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { catchError, firstValueFrom, tap, throwError } from 'rxjs';
-import { environment } from '../../environments/environment.prod';
+import { environment } from '../../environments/environment';
 
 export type FileFilter = 'all' | 'image' | 'video' | 'audio' | 'document' | 'archive' | 'other';
 
