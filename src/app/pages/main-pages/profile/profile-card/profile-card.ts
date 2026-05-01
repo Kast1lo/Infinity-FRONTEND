@@ -60,7 +60,7 @@ export class ProfileCard implements OnInit {
   knobValue = 0;
   private readonly fs: any = this.fileSystem;
 
-  totalFiles   = computed(() => this.fs.files().length);
+  totalFiles   = this.fileSystem.totalFilesCount;
   totalFolders = computed(() => this.fs.folders().length);
 
   // ─── Промокод ───
@@ -86,8 +86,7 @@ export class ProfileCard implements OnInit {
 
   ngOnInit() {
     this.infinityLife.loadBoard().subscribe();
-    this.fs.loadTree();
-    this.fs.loadFiles(null);
+    this.fs.loadFilesStats();
     this.planService.loadPlanInfo().subscribe();
   }
 

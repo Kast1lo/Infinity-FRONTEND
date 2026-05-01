@@ -250,10 +250,16 @@
           <ng-template #content let-closeCallback="closeCallback">
             <div class="create-subtasks">
               <input pInputText [(ngModel)]="newSubtaskTitle" placeholder="Название подзадачи"
+                [disabled]="creatingSubtask()"
                 (keyup.enter)="addSubtask(task.id, closeCallback)" autofocus>
               <div class="create-buttons">
-                <p-button label="Добавить" size="small" (onClick)="addSubtask(task.id, closeCallback)"/>
-                <p-button icon="pi pi-times" text size="small" (onClick)="closeCallback()"/>
+                <p-button label="Добавить" size="small"
+                  [loading]="creatingSubtask()"
+                  [disabled]="creatingSubtask() || !newSubtaskTitle().trim()"
+                  (onClick)="addSubtask(task.id, closeCallback)"/>
+                <p-button icon="pi pi-times" text size="small"
+                  [disabled]="creatingSubtask()"
+                  (onClick)="closeCallback()"/>
               </div>
             </div>
           </ng-template>

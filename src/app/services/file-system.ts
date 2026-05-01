@@ -2,7 +2,7 @@ import { computed, effect, Injectable, signal } from '@angular/core';
 import { FileItem } from '../interfaces/file-system-interfeces/file-item.model';
 import { FolderItem } from '../interfaces/file-system-interfeces/folder-item.model';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { catchError, firstValueFrom, tap, throwError } from 'rxjs';
+import { catchError, firstValueFrom, forkJoin, tap, throwError } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 export type FileFilter = 'all' | 'image' | 'video' | 'audio' | 'document' | 'archive' | 'other';
@@ -19,6 +19,14 @@ export class FileSystem {
   private _loading = signal<boolean>(false);
   private _error   = signal<string | null>(null);
 
+  private _loadFilesToken = 0;
+
+  // Подсчёт файлов для статистики (профиль).
+  // _files() содержит файлы только текущей папки, поэтому общий счётчик
+  // считаем по дереву (всё, что во вложенных папках) + отдельно корневые.
+  private _filesInFoldersCount = signal(0);
+  private _rootFilesCount      = signal(0);
+
   readonly searchQuery  = signal<string>('');
   readonly activeFilter = signal<FileFilter>('all');
 
@@ -28,6 +36,10 @@ export class FileSystem {
   loading      = computed(() => this._loading());
   error        = computed(() => this._error());
   hasContent   = computed(() => this._files().length > 0 || this._folders().length > 0);
+
+  readonly totalFilesCount = computed(() =>
+    this._filesInFoldersCount() + this._rootFilesCount()
+  );
 
   readonly filteredFiles = computed(() => {
     const files  = this._files();
@@ -132,7 +144,18 @@ export class FileSystem {
     this.http.get<FolderItem[]>(`${this.apiUrl}/file-system/tree`, { withCredentials: true }).subscribe({
       next: (folders) => {
         this._folders.set(this.flattenFolders(folders));
+        this._filesInFoldersCount.set(this.countFilesInTree(folders));
       },
+      error: () => {},
+    });
+  }
+
+  // Загружает статистику для профиля: дерево (счётчик файлов в папках)
+  // + корневые файлы (счётчик), не затрагивая _files() текущей папки.
+  loadFilesStats() {
+    this.loadTree();
+    this.http.get<FileItem[]>(`${this.apiUrl}/file-system/files`, { withCredentials: true }).subscribe({
+      next: (files) => this._rootFilesCount.set((files || []).length),
       error: () => {},
     });
   }
@@ -150,7 +173,20 @@ export class FileSystem {
     return result;
   }
 
+  // Рекурсивно считает все файлы во всех (вложенных) папках дерева.
+  // Корневые файлы (parentId=null) сюда не попадают — бэк возвращает их
+  // отдельным эндпоинтом /file-system/files.
+  private countFilesInTree(folders: any[]): number {
+    let total = 0;
+    for (const folder of folders) {
+      if (folder.files?.length) total += folder.files.length;
+      if (folder.children?.length) total += this.countFilesInTree(folder.children);
+    }
+    return total;
+  }
+
   loadFiles(folderId: string | null) {
+    const token = ++this._loadFilesToken;
     this._loading.set(true);
     this._error.set(null);
     const url = folderId ? `${this.apiUrl}/file-system/files/${folderId}` : `${this.apiUrl}/file-system/files`;
@@ -158,10 +194,15 @@ export class FileSystem {
       catchError(err => this.handleError(err, 'Ошибка загрузки файлов'))
     ).subscribe({
       next: (files) => {
+        if (token !== this._loadFilesToken) return;
         this._files.set(files || []);
+        if (folderId === null) this._rootFilesCount.set((files || []).length);
         this._loading.set(false);
       },
-      error: () => { this._loading.set(false); },
+      error: () => {
+        if (token !== this._loadFilesToken) return;
+        this._loading.set(false);
+      },
     });
   }
 
@@ -170,7 +211,11 @@ export class FileSystem {
       method: 'GET',
       credentials: 'include',
     });
-    if (!response.ok) throw new Error(`Ошибка загрузки: ${response.status}`);
+    if (!response.ok) {
+      let detail = '';
+      try { detail = (await response.text()).slice(0, 200); } catch {}
+      throw new Error(`Сервер вернул ${response.status} ${response.statusText}${detail ? ': ' + detail : ''}`);
+    }
     return response.arrayBuffer();
   }
 
@@ -187,16 +232,13 @@ export class FileSystem {
       }).pipe(catchError(err => this.handleError(err, 'Ошибка загрузки файлов')));
     });
 
-    import('rxjs').then(({ forkJoin }) => {
-      forkJoin(uploads).subscribe({
-        next: () => {
-          setTimeout(() => {
-            this.loadFiles(folderId ?? null);
-            this._loading.set(false);
-          }, 800);
-        },
-        error: () => { this._loading.set(false); },
-      });
+    forkJoin(uploads).subscribe({
+      next: () => {
+        this.refreshAfterUpload(folderId ?? null).finally(() => {
+          this._loading.set(false);
+        });
+      },
+      error: () => { this._loading.set(false); },
     });
   }
 
@@ -370,6 +412,7 @@ export class FileSystem {
   }
 
   private async refreshAfterUpload(folderId: string | null): Promise<void> {
+    const token = ++this._loadFilesToken;
     const [folders, files] = await Promise.all([
       firstValueFrom(
         this.http.get<FolderItem[]>(`${this.apiUrl}/file-system/tree`, { withCredentials: true })
@@ -382,8 +425,14 @@ export class FileSystem {
       ),
     ]);
 
+    // Дерево всегда обновляем — оно общее. А вот файлы перезаписываем
+    // только если за время запроса юзер не успел уйти в другую папку.
     this._folders.set(this.flattenFolders(folders));
-    this._files.set(files || []);
+    this._filesInFoldersCount.set(this.countFilesInTree(folders));
+    if (folderId === null) this._rootFilesCount.set((files || []).length);
+    if (token === this._loadFilesToken) {
+      this._files.set(files || []);
+    }
   }
 
   private handleError(error: HttpErrorResponse, defaultMsg: string) {

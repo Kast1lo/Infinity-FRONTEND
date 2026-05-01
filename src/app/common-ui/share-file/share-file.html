@@ -1,166 +1,207 @@
-<!-- Навбар -->
+<!-- ── Navbar ── -->
 <nav class="sf-nav">
-  <a class="sf-nav-logo" routerLink="/main">
-    <img class="sf-nav-logo-img" [src]="isDark() ? 'infinityLogo.svg' : 'infinity.svg'" alt="Infinity"/>
+  <a class="sf-nav-brand" routerLink="/main">
+    <img class="sf-logo" [src]="isDark() ? 'infinityLogo.svg' : 'infinity.svg'" alt="Infinity"/>
   </a>
-  <div class="sf-nav-actions">
+  <div class="sf-nav-cta">
     <p-button label="Войти" [text]="true" severity="secondary" size="small" routerLink="/login"/>
-    <p-button label="Зарегистрироваться" [outlined]="true" severity="secondary" size="small" routerLink="/registration"/>
+    <p-button label="Регистрация" [outlined]="true" severity="secondary" size="small" routerLink="/registration"/>
   </div>
 </nav>
 
-<div class="share-page">
+<!-- ── Ambient orbs ── -->
+<div class="sf-orbs" aria-hidden="true">
+  <span class="orb orb--1"></span>
+  <span class="orb orb--2"></span>
+</div>
+
+<main class="sf-page">
 
   @if (loading()) {
-    <div class="share-state">
+    <div class="sf-state">
       <p-progressSpinner strokeWidth="3"/>
-      <span>Загрузка файла...</span>
+      <span>Загрузка файла…</span>
     </div>
   }
 
   @else if (error()) {
-    <div class="share-state share-error">
-      <i class="pi pi-exclamation-circle"></i>
-      <h2>Файл не найден</h2>
-      <p>{{ error() }}</p>
-      <p-button label="На главную" routerLink="/main" [outlined]="true" severity="secondary"/>
+    <div class="sf-state sf-state--error">
+      <div class="sf-error-icon"><i class="pi pi-exclamation-circle"></i></div>
+      <h2 class="sf-error-title">Файл <em class="gradient-text">не найден</em></h2>
+      <p class="sf-error-msg">{{ error() }}</p>
+      <a class="btn-hero-ghost" routerLink="/main">
+        <i class="pi pi-arrow-left"></i> На главную
+      </a>
     </div>
   }
 
   @else if (fileData(); as file) {
-    <div class="share-layout">
 
-      <!-- ── Превью ── -->
-      <div class="share-preview">
+    <div class="sf-grid">
 
-        @if (isImage(file.mimeType)) {
-          <img [src]="file.downloadUrl" class="sp-image" [alt]="file.name"/>
+      <!-- ─── LEFT: Превью ─── -->
+      <section class="sf-preview-wrap">
+        <span class="sf-preview-glow" aria-hidden="true"></span>
+        <div class="sf-preview" [class.sf-preview--media]="isImage(file.mimeType) || isVideo(file.mimeType)">
 
-        } @else if (isVideo(file.mimeType)) {
-          <div class="sp-video-wrap"
-               (mousemove)="onPlayerMouseMove()"
-               (mouseleave)="onPlayerMouseLeave()">
-            <video
-              #videoPlayer
-              class="sp-video"
-              [src]="file.downloadUrl"
-              preload="metadata"
-              playsinline
-              (timeupdate)="onTimeUpdate()"
-              (loadedmetadata)="onMetaLoaded()"
-              (ended)="onEnded()"
-              (click)="togglePlay()"
-            ></video>
-            <div class="sp-center-btn" [class.sp-hidden]="isPlaying && controlsHidden" (click)="togglePlay()">
-              <div class="sp-center-icon">
-                <i [class]="isPlaying ? 'pi pi-pause' : 'pi pi-play'" [style.margin-left]="isPlaying ? '0' : '3px'"></i>
+          @if (isImage(file.mimeType)) {
+            <img [src]="file.downloadUrl" class="sf-image" [alt]="file.name"/>
+
+          } @else if (isVideo(file.mimeType)) {
+            <div class="sf-video-wrap"
+                 (mousemove)="onPlayerMouseMove()"
+                 (mouseleave)="onPlayerMouseLeave()">
+              <video
+                #videoPlayer
+                class="sf-video"
+                [src]="file.downloadUrl"
+                preload="metadata"
+                playsinline
+                (timeupdate)="onTimeUpdate()"
+                (loadedmetadata)="onMetaLoaded()"
+                (ended)="onEnded()"
+                (click)="togglePlay()"
+              ></video>
+              <div class="sp-center-btn" [class.sp-hidden]="isPlaying && controlsHidden" (click)="togglePlay()">
+                <div class="sp-center-icon">
+                  <i [class]="isPlaying ? 'pi pi-pause' : 'pi pi-play'" [style.margin-left]="isPlaying ? '0' : '3px'"></i>
+                </div>
               </div>
-            </div>
-            <div class="sp-controls" [class.sp-hidden]="isPlaying && controlsHidden">
-              <div class="sp-progress" (click)="seek($event)">
-                <div class="sp-progress-bg"></div>
-                <div class="sp-progress-fill" [style.width.%]="progress"></div>
-                <div class="sp-progress-thumb" [style.left.%]="progress"></div>
-              </div>
-              <div class="sp-bar">
-                <div class="sp-bar-left">
-                  <button class="vp-btn" (click)="togglePlay()"><i [class]="isPlaying ? 'pi pi-pause' : 'pi pi-play'"></i></button>
-                  <button class="vp-btn" (click)="toggleMute()"><i [class]="isMuted ? 'pi pi-volume-off' : 'pi pi-volume-up'"></i></button>
-                  <div class="sp-volume-wrap">
-                    <input class="sp-volume" type="range" min="0" max="1" step="0.05" [value]="volume" (input)="onVolumeChange($event)"/>
+              <div class="sp-controls" [class.sp-hidden]="isPlaying && controlsHidden">
+                <div class="sp-progress" (click)="seek($event)">
+                  <div class="sp-progress-bg"></div>
+                  <div class="sp-progress-fill" [style.width.%]="progress"></div>
+                  <div class="sp-progress-thumb" [style.left.%]="progress"></div>
+                </div>
+                <div class="sp-bar">
+                  <div class="sp-bar-left">
+                    <button class="vp-btn" (click)="togglePlay()"><i [class]="isPlaying ? 'pi pi-pause' : 'pi pi-play'"></i></button>
+                    <button class="vp-btn" (click)="toggleMute()"><i [class]="isMuted ? 'pi pi-volume-off' : 'pi pi-volume-up'"></i></button>
+                    <div class="sp-volume-wrap">
+                      <input class="sp-volume" type="range" min="0" max="1" step="0.05" [value]="volume" (input)="onVolumeChange($event)"/>
+                    </div>
+                    <span class="sp-time">{{ currentTimeStr }} / {{ durationStr }}</span>
                   </div>
-                  <span class="sp-time">{{ currentTimeStr }} / {{ durationStr }}</span>
-                </div>
-                <div class="sp-bar-right">
-                  <button class="vp-btn" (click)="toggleFullscreen()"><i class="pi pi-window-maximize"></i></button>
+                  <div class="sp-bar-right">
+                    <button class="vp-btn" (click)="toggleFullscreen()"><i class="pi pi-window-maximize"></i></button>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-        } @else if (isAudio(file.mimeType, file.name)) {
-          <!-- Аудио превью — кликабельное -->
-          <div class="sp-audio-preview" (click)="openAudio()">
-            <div class="sp-audio-icon">
-              <i class="pi pi-volume-up"></i>
+          } @else if (isAudio(file.mimeType, file.name)) {
+            <div class="sf-audio-prev" (click)="openAudio()">
+              <div class="sf-audio-icon"><i class="pi pi-volume-up"></i></div>
+              <div class="sf-audio-bars">
+                <span></span><span></span><span></span><span></span><span></span>
+                <span></span><span></span><span></span><span></span><span></span>
+                <span></span><span></span><span></span><span></span><span></span>
+              </div>
+              <span class="sf-audio-hint">Нажмите для прослушивания</span>
             </div>
-            <div class="sp-audio-bars">
-              <span></span><span></span><span></span><span></span><span></span>
+
+          } @else if (isPdf(file.mimeType)) {
+            <div class="sf-empty">
+              <div class="sf-empty-icon sf-empty-icon--pdf"><i class="pi pi-file-pdf"></i></div>
+              <h3 class="sf-empty-title">PDF документ</h3>
+              <p class="sf-empty-sub">Скачайте файл, чтобы открыть его в просмотрщике</p>
             </div>
-            <span class="sp-audio-hint">Нажмите для прослушивания</span>
+
+          } @else if (isZip(file.mimeType)) {
+            <div class="sf-empty">
+              <div class="sf-empty-icon sf-empty-icon--zip"><i class="pi pi-box"></i></div>
+              <h3 class="sf-empty-title">Архив</h3>
+              <p class="sf-empty-sub">Скачайте и распакуйте архивом-ридером</p>
+            </div>
+
+          } @else if (isDocument(file.mimeType)) {
+            <div class="sf-empty">
+              <div class="sf-empty-icon sf-empty-icon--doc"><i [class]="'pi ' + getFileIcon(file.mimeType)"></i></div>
+              <h3 class="sf-empty-title">{{ getFileType(file.mimeType) }}</h3>
+              <p class="sf-empty-sub">Превью недоступно — скачайте файл</p>
+            </div>
+
+          } @else {
+            <div class="sf-empty">
+              <div class="sf-empty-icon"><i [class]="'pi ' + getFileIcon(file.mimeType)"></i></div>
+              <h3 class="sf-empty-title">{{ getFileExt(file.name) }}</h3>
+              <p class="sf-empty-sub">Превью для этого типа файлов недоступно</p>
+            </div>
+          }
+
+        </div>
+      </section>
+
+      <!-- ─── RIGHT: Info panel ─── -->
+      <aside class="sf-info">
+
+        <div class="sf-info-head">
+          <div class="sf-badge">
+            <span class="sf-badge-dot"></span>
+            Поделились с вами
           </div>
 
-        } @else if (isPdf(file.mimeType)) {
-          <div class="sp-file-icon sp-file-icon--pdf">
-            <i class="pi pi-file-pdf"></i>
-            <span>PDF документ</span>
-          </div>
-
-        } @else if (isZip(file.mimeType)) {
-          <div class="sp-file-icon sp-file-icon--zip">
-            <i class="pi pi-box"></i>
-            <span>ZIP архив</span>
-          </div>
-
-        } @else if (isDocument(file.mimeType)) {
-          <div class="sp-file-icon sp-file-icon--doc">
+          <div class="sf-type-icon" [attr.data-kind]="getFileKind(file.mimeType, file.name)">
             <i [class]="'pi ' + getFileIcon(file.mimeType)"></i>
-            <span>{{ getFileType(file.mimeType) }}</span>
           </div>
 
-        } @else {
-          <div class="sp-file-icon">
-            <i [class]="'pi ' + getFileIcon(file.mimeType)"></i>
-            <span>{{ getFileExt(file.name) }}</span>
+          <h1 class="sf-name" [title]="file.name">
+            <em class="gradient-text">{{ file.name }}</em>
+          </h1>
+
+          <div class="sf-chips">
+            <span class="sf-chip">{{ getFileType(file.mimeType) }}</span>
+            <span class="sf-chip sf-chip--ext">{{ getFileExt(file.name) }}</span>
           </div>
-        }
-
-      </div>
-
-      <!-- ── Инфо ── -->
-      <div class="share-info">
-
-        <div class="si-card si-header">
-          <div class="si-badge">{{ getFileExt(file.name) }}</div>
-          <h1 class="si-name">{{ file.name }}</h1>
         </div>
 
-        <div class="si-stats">
-          <div class="si-stat">
-            <div class="si-stat-label">Размер</div>
-            <div class="si-stat-num">{{ formatSizeShort(file.size) }}</div>
-            <div class="si-stat-sub">{{ formatSizeFull(file.size) }}</div>
-          </div>
-          <div class="si-stat">
-            <div class="si-stat-label">Тип файла</div>
-            <div class="si-stat-num si-stat-num-sm">{{ getFileType(file.mimeType) }}</div>
-            <div class="si-stat-sub">{{ file.mimeType }}</div>
-          </div>
-          <div class="si-stat">
-            <div class="si-stat-label">Загружен</div>
-            <div class="si-stat-num si-stat-num-sm">{{ file.createdAt | date:'dd MMM' }}</div>
-            <div class="si-stat-sub">{{ file.createdAt | date:'yyyy, HH:mm' }}</div>
-          </div>
-        </div>
+        <ul class="sf-stats">
+          <li class="sf-stat">
+            <span class="sf-stat-label"><i class="pi pi-database"></i> Размер</span>
+            <span class="sf-stat-value">
+              <strong class="gradient-text">{{ formatSizeShort(file.size) }}</strong> {{ getSizeUnit(file.size) }}
+            </span>
+          </li>
+          <li class="sf-stat">
+            <span class="sf-stat-label"><i class="pi pi-calendar"></i> Загружен</span>
+            <span class="sf-stat-value">{{ file.createdAt | date:'dd MMM yyyy' }}</span>
+          </li>
+          <li class="sf-stat">
+            <span class="sf-stat-label"><i class="pi pi-clock"></i> Время</span>
+            <span class="sf-stat-value">{{ file.createdAt | date:'HH:mm' }}</span>
+          </li>
+        </ul>
 
-        <!-- Кнопка прослушать для аудио -->
-        @if (isAudio(file.mimeType, file.name)) {
-          <button class="si-play-btn" (click)="openAudio()">
-            <i class="pi pi-play"></i>
-            Прослушать
+        <div class="sf-actions">
+          <button class="btn-hero-primary" (click)="downloadFile()">
+            <i class="pi pi-download"></i>
+            Скачать <span class="sf-btn-sub">{{ formatSizeFull(file.size) }}</span>
           </button>
-        }
+          <div class="sf-actions-row">
+            @if (isAudio(file.mimeType, file.name)) {
+              <button class="btn-hero-ghost" (click)="openAudio()">
+                <i class="pi pi-play"></i> Прослушать
+              </button>
+            }
+            <button class="btn-hero-ghost" (click)="copyLink()">
+              <i [class]="linkCopied() ? 'pi pi-check' : 'pi pi-link'"></i>
+              {{ linkCopied() ? 'Скопировано' : 'Ссылка' }}
+            </button>
+          </div>
+        </div>
 
-        <button class="si-download-btn" (click)="downloadFile()">
-          <i class="pi pi-download"></i>
-          Скачать файл
-        </button>
+        <ul class="sf-trust-list">
+          <li class="sf-trust-item"><i class="pi pi-shield"></i> Безопасно</li>
+          <li class="sf-trust-item"><i class="pi pi-eye-slash"></i> Без регистрации</li>
+          <li class="sf-trust-item"><i class="pi pi-bolt"></i> 1 клик</li>
+        </ul>
+      </aside>
 
-      </div>
     </div>
+
   }
 
-</div>
+</main>
 
 <!-- ─── АУДИО ПЛЕЕР ─── -->
 <p-dialog
@@ -169,7 +210,7 @@
   [closable]="false"
   [draggable]="false"
   [resizable]="false"
-  [style]="{ width: '420px' }"
+  [style]="{ width: '440px' }"
   styleClass="audio-dialog"
   (onHide)="closeAudio()">
   <ng-template pTemplate="header"><span></span></ng-template>

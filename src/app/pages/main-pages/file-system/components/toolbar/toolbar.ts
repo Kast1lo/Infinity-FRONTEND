@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit, signal, ViewChild, ElementRef } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal, ViewChild, ElementRef } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
@@ -15,6 +15,7 @@ import { FileItem } from '../../../../../interfaces/file-system-interfeces/file-
 import { MessageModule } from 'primeng/message';
 import { ShareService } from '../../../../../services/share';
 import { TooltipModule } from 'primeng/tooltip';
+import { UploadQueueService } from '../../../../../services/upload-queue';
 
 @Component({
   selector: 'app-toolbar',
@@ -34,12 +35,20 @@ export class Toolbar implements OnInit {
   protected readonly messageService = inject(MessageService);
   protected readonly fileSystem     = inject(FileSystem);
   protected readonly shareService   = inject(ShareService);
+  protected readonly uploadQueue    = inject(UploadQueueService);
 
   visible         = signal(false);
   folderName      = signal<string>('');
   folderUploading        = signal(false);
   folderConfirmVisible   = signal(false);
   private pendingFolderInput: HTMLInputElement | null = null;
+
+  readonly isFolderNameValid = computed(() => this.folderName().trim().length > 0);
+
+  readonly currentFolderName = computed(() => {
+    const items = this.fileSystem.breadcrumbItems();
+    return items.length > 0 ? items[items.length - 1].label : 'Корневая папка';
+  });
 
   files        = this.fileSystem.files;
   folder       = this.fileSystem.folders;
@@ -93,9 +102,20 @@ export class Toolbar implements OnInit {
 
   onFilesSelected(event: any) {
     const files: File[] = event.files;
-    if (files?.length > 0) {
-      this.fileSystem.uploadFiles(files, this.fileSystem.currentFolderId());
-    }
+    if (!files || files.length === 0) return;
+    this.uploadQueue.open(files);
+  }
+
+  confirmUpload() {
+    const result = this.uploadQueue.confirm(this.fileSystem.currentFolderId());
+    if (!result) return;
+    this.messageService.add({
+      severity: 'secondary',
+      summary: 'Загрузка',
+      detail: `Загружаем ${result.count} ${this.uploadQueue.pluralFile(result.count)}...`,
+      life: 2500,
+      key: 'br',
+    });
   }
 
   // ─── Загрузка папки ───

@@ -3,6 +3,7 @@ import {
   ChangeDetectorRef,
   Component,
   computed,
+  HostListener,
   inject,
   OnInit,
   signal,
@@ -31,6 +32,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { FormsModule } from '@angular/forms';
 import { NgTemplateOutlet } from '@angular/common';
 import { ShareService } from '../../../../../services/share';
+import { UploadQueueService } from '../../../../../services/upload-queue';
 import { ZipEntry } from '../../../../../interfaces/file-system-interfeces/zip-entry.model';
 
 @Component({
@@ -53,6 +55,7 @@ export class ListFiles implements OnInit {
   protected readonly messageService = inject(MessageService);
   protected readonly fileSystem = inject(FileSystem);
   protected readonly shareService = inject(ShareService);
+  protected readonly uploadQueue = inject(UploadQueueService);
   private readonly sanitizer = inject(DomSanitizer);
   private readonly cdr = inject(ChangeDetectorRef);
 
@@ -62,7 +65,6 @@ export class ListFiles implements OnInit {
   loading = this.fileSystem.loading;
   error = this.fileSystem.error;
 
-  // ─── Переименование ───
   renameDialogVisible = signal(false);
   renameValue = signal('');
   private renameTarget: { id: string; type: 'file' | 'folder' } | null = null;
@@ -127,6 +129,14 @@ export class ListFiles implements OnInit {
   private rafId: any;
   isDragging = signal(false);
   private dragCounter = 0;
+
+  // ─── Внутренний D&D (перемещение файла в папку) ───
+  // Тип используется как «маркер» нашего собственного drag:
+  // если он есть в dataTransfer.types — drag внутренний (не показываем
+  // оверлей загрузки), если есть только 'Files' — внешний из ОС.
+  private static readonly INTERNAL_FILE_MIME = 'application/x-infinity-file';
+  draggingFileId      = signal<string | null>(null);
+  draggedOverFolderId = signal<string | null>(null);
 
   // ─── Confirm загрузки папки ───
   uploadConfirmVisible = signal(false);
@@ -206,7 +216,19 @@ export class ListFiles implements OnInit {
     this.fileSystem.loadFiles(null);
   }
 
-  // ─── Типы файлов ───
+  private static readonly KEEP_SELECTION_SELECTOR =
+    '.file-card, .folder-card, .p-card, .p-toolbar, ' +
+    '.p-tieredmenu, .p-menu, .p-overlay, .p-overlay-mask, ' +
+    '.p-dialog, .p-dialog-mask, .p-toast';
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClickClearSelection(event: MouseEvent) {
+    if (!this.selectedItem()) return;
+    const target = event.target as HTMLElement | null;
+    if (!target || !target.isConnected) return;
+    if (target.closest(ListFiles.KEEP_SELECTION_SELECTOR)) return;
+    this.fileSystem.clearSelection();
+  }
 
   isImage(file: FileItem): boolean { return file.mimeType.startsWith('image/'); }
   isVideo(file: FileItem): boolean { return file.mimeType.startsWith('video/'); }
@@ -249,8 +271,6 @@ export class ListFiles implements OnInit {
     if (mimeType.includes('powerpoint') || mimeType.includes('presentation')) return 'ppt';
     return null;
   }
-
-  // ─── Аудио плеер ───
 
   openAudio(file: FileItem) {
     this.audioUrl.set(file.downloadUrl);
@@ -304,7 +324,6 @@ export class ListFiles implements OnInit {
     audio.volume = val;
     this.audioVolume.set(val);
     this.audioIsMuted.set(val === 0);
-    // Обновляем CSS переменную для цветного ползунка
     input.style.setProperty('--volume-pct', `${val * 100}%`);
     this.cdr.markForCheck();
   }
@@ -352,8 +371,6 @@ export class ListFiles implements OnInit {
     if (this.audioRafId) { cancelAnimationFrame(this.audioRafId); this.audioRafId = null; }
   }
 
-  // ─── Переименование ───
-
   openRenameDialog(item: FileItem | FolderItem, type: 'file' | 'folder') {
     this.renameValue.set(decodeURIComponent(item.name));
     this.renameTarget = { id: item.id, type };
@@ -378,8 +395,6 @@ export class ListFiles implements OnInit {
     this.renameValue.set('');
     this.renameTarget = null;
   }
-
-  // ─── Перемещение ───
 
   openMoveDialog(file: FileItem) {
     this.moveTargetFile.set(file);
@@ -407,8 +422,6 @@ export class ListFiles implements OnInit {
   getRootFolders(): FolderItem[] { return this.fileSystem.folders().filter(f => !f.parentId); }
   getChildFolders(parentId: string): FolderItem[] { return this.fileSystem.folders().filter(f => f.parentId === parentId); }
 
-  // ─── Превью изображений ───
-
   openImagePreview(file: FileItem) {
     this.imagePreviewUrl = file.downloadUrl;
     this.imagePreviewTitle = decodeURIComponent(file.name);
@@ -420,8 +433,6 @@ export class ListFiles implements OnInit {
     this.imagePreviewUrl = null;
     this.imagePreviewTitle = '';
   }
-
-  // ─── PDF ───
 
   async openPdf(file: FileItem) {
     this.pdfTitle = decodeURIComponent(file.name);
@@ -451,8 +462,6 @@ export class ListFiles implements OnInit {
   }
 
   closePdf() { this.pdfDialogVisible = false; this.pdfPages.set([]); this.pdfTitle = ''; this.pdfLoading = false; }
-
-  // ─── ZIP ───
 
   async openZip(file: FileItem) {
     this.zipTitle = decodeURIComponent(file.name);
@@ -512,43 +521,131 @@ export class ListFiles implements OnInit {
     return `${(bytes / (1024 * 1024)).toFixed(1)} МБ`;
   }
 
-  // ─── Документы ───
-
   async openDocument(file: FileItem) {
     this.docTitle = decodeURIComponent(file.name);
-    this.docType = this.getDocType(file.mimeType);
+    this.docType = this.getDocType(file.mimeType) ?? this.getDocTypeByName(file.name);
     this.docHtml.set('');
     this.docLoading = true;
     this.docDialogVisible = true;
     this.cdr.detectChanges();
     try {
+      const name = file.name.toLowerCase();
+      if (this.docType === 'word' && name.endsWith('.doc')) {
+        throw new Error('Старый формат .doc не поддерживается в предпросмотре. Скачайте файл и откройте в Word.');
+      }
+      if (this.docType === 'excel' && name.endsWith('.xls')) {
+        throw new Error('Старый формат .xls не поддерживается в предпросмотре. Скачайте файл и откройте в Excel.');
+      }
+
       const arrayBuffer = await this.fileSystem.fetchFileAsArrayBuffer(file.id);
+
+      const bytes = new Uint8Array(arrayBuffer);
+      const sig = Array.from(bytes.slice(0, 4)).map(b => b.toString(16).padStart(2, '0')).join(' ');
+      console.log(`[doc] получено ${bytes.length} байт, ожидалось ${file.size}, сигнатура: ${sig}`);
+      const realFormat = this.detectFormat(bytes);
+
       if (this.docType === 'word') {
+        if (realFormat === 'rtf') {
+          this.docHtml.set(this.renderRtf(bytes));
+          return;
+        }
+        if (realFormat === 'ole') {
+          throw new Error('Файл сохранён в старом формате .doc (OLE). Скачайте и откройте в Word.');
+        }
+        if (realFormat !== 'zip') {
+          throw new Error(`Файл не похож на .docx. Сигнатура: ${sig}, размер: ${bytes.length}.`);
+        }
         const mammoth = (window as any).mammoth;
-        if (!mammoth) throw new Error('mammoth not loaded');
+        if (!mammoth) throw new Error('Библиотека mammoth не загружена (CDN недоступен?)');
         const result = await mammoth.convertToHtml({ arrayBuffer });
-        this.docHtml.set(result.value);
+        this.docHtml.set(result.value || '<p style="opacity:.6">Документ пуст</p>');
       } else if (this.docType === 'excel') {
+        if (realFormat === 'ole') {
+          throw new Error('Файл сохранён в старом формате .xls (OLE). Скачайте и откройте в Excel.');
+        }
         const XLSX = (window as any).XLSX;
-        if (!XLSX) throw new Error('XLSX not loaded');
+        if (!XLSX) throw new Error('Библиотека XLSX не загружена (CDN недоступен?)');
         const wb = XLSX.read(arrayBuffer, { type: 'array' });
         let html = '';
         wb.SheetNames.forEach((name: string) => { const ws = wb.Sheets[name]; html += `<div class="sheet-tab">${name}</div>` + XLSX.utils.sheet_to_html(ws, { editable: false }); });
         this.docHtml.set(html);
       } else if (this.docType === 'ppt') {
         this.docHtml.set('<div class="doc-ppt-msg"><i class="pi pi-info-circle"></i><p>Предпросмотр PowerPoint ограничен.<br>Скачайте файл для полного просмотра.</p></div>');
+      } else {
+        throw new Error(`Неизвестный тип документа (mimeType=${file.mimeType})`);
       }
-    } catch (e) {
-      this.docHtml.set('<div class="doc-error"><i class="pi pi-exclamation-circle"></i><p>Не удалось загрузить документ</p></div>');
+    } catch (e: any) {
+      console.error('Document load error:', e);
+      const msg = this.escapeHtml(e?.message || 'Неизвестная ошибка');
+      this.docHtml.set(
+        `<div class="doc-error"><i class="pi pi-exclamation-circle"></i><p>Не удалось загрузить документ</p><small style="opacity:.7;margin-top:8px;display:block;">${msg}</small></div>`
+      );
     }
     this.docLoading = false;
     this.cdr.detectChanges();
   }
 
+  private getDocTypeByName(name: string): 'word' | 'excel' | 'ppt' | 'pdf' | null {
+    const n = name.toLowerCase();
+    if (n.endsWith('.pdf')) return 'pdf';
+    if (n.endsWith('.docx') || n.endsWith('.doc') || n.endsWith('.rtf')) return 'word';
+    if (n.endsWith('.xlsx') || n.endsWith('.xls')) return 'excel';
+    if (n.endsWith('.pptx') || n.endsWith('.ppt')) return 'ppt';
+    return null;
+  }
+
+  private detectFormat(b: Uint8Array): 'zip' | 'ole' | 'rtf' | 'pdf' | 'unknown' {
+    if (b[0] === 0x50 && b[1] === 0x4b && b[2] === 0x03 && b[3] === 0x04) return 'zip';
+    if (b[0] === 0xd0 && b[1] === 0xcf && b[2] === 0x11 && b[3] === 0xe0) return 'ole';
+    if (b[0] === 0x7b && b[1] === 0x5c && b[2] === 0x72 && b[3] === 0x74) return 'rtf';
+    if (b[0] === 0x25 && b[1] === 0x50 && b[2] === 0x44 && b[3] === 0x46) return 'pdf';
+    return 'unknown';
+  }
+
+  // Минимальный рендер RTF: достаём plain-текст, теряя форматирование.
+  // Для полноценного просмотра пользователь может скачать файл.
+  private renderRtf(bytes: Uint8Array): string {
+    const text = new TextDecoder('latin1').decode(bytes);
+    let s = text;
+    // \uNNNN? — юникод-символы (RTF использует signed int16)
+    s = s.replace(/\\u(-?\d+)\??/g, (_m, n) => {
+      let code = parseInt(n, 10);
+      if (code < 0) code += 65536;
+      return String.fromCharCode(code);
+    });
+    // \'XX — байт в hex (cp1251 для кириллицы — типичный случай)
+    const cp1251 = (h: string) => {
+      const code = parseInt(h, 16);
+      if (code < 0x80) return String.fromCharCode(code);
+      const map: Record<number, number> = {
+        0xa8: 0x0401, 0xb8: 0x0451, 0xaa: 0x0404, 0xba: 0x0454,
+        0xaf: 0x0407, 0xbf: 0x0457, 0xa1: 0x040e, 0xa2: 0x045e,
+      };
+      if (map[code]) return String.fromCharCode(map[code]);
+      if (code >= 0xc0) return String.fromCharCode(0x0410 + (code - 0xc0));
+      return '';
+    };
+    s = s.replace(/\\'([0-9a-fA-F]{2})/g, (_m, h) => cp1251(h));
+    // Управляющие группы { \fonttbl ... } и т.п. — выкидываем то, что в них
+    s = s.replace(/\{\\\*?[^{}]*\}/g, '');
+    // Команды \par, \line → перенос строки
+    s = s.replace(/\\par[d ]?/g, '\n').replace(/\\line ?/g, '\n');
+    // Остальные команды \word — убираем
+    s = s.replace(/\\[a-zA-Z]+-?\d* ?/g, '');
+    // Скобки групп
+    s = s.replace(/[{}]/g, '');
+    // Лишние пробелы
+    s = s.replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+    const escaped = this.escapeHtml(s);
+    return `<div class="doc-rtf-notice" style="opacity:.6;font-size:.85em;margin-bottom:12px;"><i class="pi pi-info-circle"></i> RTF-файл — отображается без форматирования. Для полного просмотра скачайте.</div><pre style="white-space:pre-wrap;font-family:inherit;margin:0;">${escaped}</pre>`;
+  }
+
+  private escapeHtml(s: string): string {
+    return s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
+  }
+
   closeDocument() { this.docDialogVisible = false; this.docHtml.set(''); this.docTitle = ''; this.docType = null; this.docLoading = false; }
   getSafeHtml(html: string): SafeHtml { return this.sanitizer.bypassSecurityTrustHtml(html); }
-
-  // ─── Видео ───
 
   openVideo(file: FileItem) { this.videoUrl = file.downloadUrl; this.videoTitle = decodeURIComponent(file.name); this.videoDialogVisible = true; }
 
@@ -635,14 +732,34 @@ export class ListFiles implements OnInit {
 
   goBack() { this.fileSystem.goBack(); }
 
-  // ─── Drag & Drop ───
+  private isExternalFileDrag(event: DragEvent): boolean {
+    return Array.from(event.dataTransfer?.types ?? []).includes('Files');
+  }
 
-  onDragEnter(event: DragEvent) { event.preventDefault(); this.dragCounter++; this.isDragging.set(true); }
-  onDragOver(event: DragEvent) { event.preventDefault(); }
+  private isInternalFileDrag(event: DragEvent): boolean {
+    return Array.from(event.dataTransfer?.types ?? []).includes(ListFiles.INTERNAL_FILE_MIME);
+  }
 
-  onDragLeave(event: DragEvent) { this.dragCounter--; if (this.dragCounter === 0) this.isDragging.set(false); }
+  onDragEnter(event: DragEvent) {
+    if (!this.isExternalFileDrag(event)) return;
+    event.preventDefault();
+    this.dragCounter++;
+    this.isDragging.set(true);
+  }
+
+  onDragOver(event: DragEvent) {
+    if (!this.isExternalFileDrag(event)) return;
+    event.preventDefault();
+  }
+
+  onDragLeave(event: DragEvent) {
+    if (!this.isExternalFileDrag(event)) return;
+    this.dragCounter--;
+    if (this.dragCounter === 0) this.isDragging.set(false);
+  }
 
   onDrop(event: DragEvent) {
+    if (!this.isExternalFileDrag(event)) return;
     event.preventDefault();
     this.dragCounter = 0; this.isDragging.set(false);
     const items = event.dataTransfer?.items;
@@ -665,8 +782,7 @@ export class ListFiles implements OnInit {
       this.uploadConfirmVisible.set(true);
     } else {
       const files = event.dataTransfer!.files;
-      this.fileSystem.uploadFiles(files, folderId);
-      this.messageService.add({ severity: 'secondary', summary: 'Загрузка', detail: `${files.length} файл(ов) отправлено`, life: 2000, key: 'br' });
+      this.uploadQueue.open(files);
     }
   }
 
@@ -699,7 +815,88 @@ export class ListFiles implements OnInit {
     });
   }
 
-  onFileDropped(files: FileList) { this.fileSystem.uploadFiles(files); }
+  onFileDropped(files: FileList) { this.uploadQueue.open(files); }
+
+  // ─── D&D: начало перетаскивания файла-карточки ───
+  onFileDragStart(event: DragEvent, file: FileItem) {
+    if (!event.dataTransfer) return;
+    event.dataTransfer.setData(ListFiles.INTERNAL_FILE_MIME, file.id);
+    event.dataTransfer.effectAllowed = 'move';
+
+    const ghost = this.buildDragGhost(file);
+    document.body.appendChild(ghost);
+    event.dataTransfer.setDragImage(ghost, 18, 18);
+    setTimeout(() => ghost.remove(), 0);
+
+    this.draggingFileId.set(file.id);
+  }
+
+  private buildDragGhost(file: FileItem): HTMLElement {
+    const ghost = document.createElement('div');
+    ghost.className = 'file-drag-ghost';
+
+    const icon = document.createElement('i');
+    icon.className = 'pi ' + this.getFileIcon(file.mimeType);
+
+    const name = document.createElement('span');
+    name.textContent = decodeURIComponent(file.name);
+
+    ghost.append(icon, name);
+    return ghost;
+  }
+
+  onFileDragEnd() {
+    this.draggingFileId.set(null);
+    this.draggedOverFolderId.set(null);
+  }
+
+  // ─── D&D: папка как точка приёма ───
+  onFolderDragOver(event: DragEvent, folder: FolderItem) {
+    if (!this.isInternalFileDrag(event)) return;
+    event.preventDefault();
+    event.stopPropagation();
+    if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
+    if (this.draggedOverFolderId() !== folder.id) {
+      this.draggedOverFolderId.set(folder.id);
+    }
+  }
+
+  onFolderDragLeave(event: DragEvent, folder: FolderItem) {
+    if (!this.isInternalFileDrag(event)) return;
+    // dragleave стреляет и при переходе на дочерний элемент — игнорируем,
+    // если курсор всё ещё внутри карточки папки.
+    const related = event.relatedTarget as Node | null;
+    const target  = event.currentTarget as HTMLElement;
+    if (related && target.contains(related)) return;
+    if (this.draggedOverFolderId() === folder.id) {
+      this.draggedOverFolderId.set(null);
+    }
+  }
+
+  onFolderDrop(event: DragEvent, folder: FolderItem) {
+    if (!this.isInternalFileDrag(event)) return;
+    event.preventDefault();
+    event.stopPropagation();
+    this.draggedOverFolderId.set(null);
+    this.draggingFileId.set(null);
+
+    const fileId = event.dataTransfer!.getData(ListFiles.INTERNAL_FILE_MIME);
+    if (!fileId) return;
+
+    const file = this.fileSystem.files().find(f => f.id === fileId);
+    if (file && file.folderId === folder.id) return;
+
+    this.fileSystem.moveFile(fileId, folder.id).subscribe({
+      next: () => this.messageService.add({
+        severity: 'secondary', summary: 'Готово',
+        detail: `Файл перемещён в «${folder.name}»`, life: 2000, key: 'br',
+      }),
+      error: () => this.messageService.add({
+        severity: 'secondary', summary: 'Ошибка',
+        detail: 'Не удалось переместить файл', life: 2000, key: 'br',
+      }),
+    });
+  }
 
   selectFile(file: FileItem) { this.fileSystem.selectItem(file); }
 
@@ -713,6 +910,24 @@ export class ListFiles implements OnInit {
   }
 
   openFolder(folder: FolderItem) { clearTimeout(this.clickTimer); this.fileSystem.openFolder(folder.id); }
+
+  openFileMenu(file: FileItem, menu: any, event: Event) {
+    event.stopPropagation();
+    if (this.selectedItem()?.id !== file.id) {
+      this.fileSystem.selectItem(file);
+    }
+    this.cdr.detectChanges();
+    menu.toggle(event);
+  }
+
+  openFolderMenu(folder: FolderItem, menu: any, event: Event) {
+    event.stopPropagation();
+    if (this.selectedItem()?.id !== folder.id) {
+      this.fileSystem.selectItem(folder);
+    }
+    this.cdr.detectChanges();
+    menu.toggle(event);
+  }
 
   shareFile() {
     const item = this.selectedItem();

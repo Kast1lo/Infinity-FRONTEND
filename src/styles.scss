@@ -505,3 +505,154 @@ body.light-theme .p-toast .p-toast-message.p-toast-message-info {
   border-left: 3px solid #4a9eff !important;
   .p-toast-message-icon { color: #4a9eff !important; }
 }
+
+// ─── HTML5 drag preview карточки файла ───
+// Гост приклеивается к <body> и теряет scoped-стили компонента —
+// собираем минимальный визуал прямо здесь. Тема наследуется через
+// body.dark-theme / body.light-theme.
+
+.file-drag-ghost {
+  position: fixed;
+  top: -1000px;
+  left: -1000px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 240px;
+  padding: 8px 14px 8px 10px;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  box-shadow: 0 14px 32px rgba(0,0,0,.45), 0 2px 6px rgba(0,0,0,.25);
+  font-family: 'DM Sans', sans-serif;
+  pointer-events: none;
+  user-select: none;
+  transform: rotate(-1.5deg);
+
+  i {
+    font-size: 16px;
+    color: var(--text2);
+    flex-shrink: 0;
+  }
+
+  span {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+  }
+}
+
+// ─── Kanban drag & drop (CDK) ───
+// Клонированная карточка перенесена в <body> и теряет scoped (:host ::ng-deep)
+// стили — переменные темы наследует, а вот раскладку и фон карточки нет.
+// Здесь дублируем минимум структуры, чтобы превью выглядело как карточка.
+
+.cdk-drag-preview {
+  border-radius: 8px;
+  box-shadow: 0 14px 32px rgba(0,0,0,.45);
+  opacity: 1;
+  transform: rotate(1.2deg);
+  pointer-events: none;
+
+  &.tasks-card {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    list-style: none;
+  }
+
+  .p-card,
+  .p-card-body {
+    background: var(--bg3) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    color: var(--text) !important;
+  }
+
+  .p-card-body,
+  .p-card-content {
+    padding: 10px 12px !important;
+  }
+
+  .file-card-inner {
+    display: flex;
+    align-items: stretch;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .task-color-bar {
+    width: 3px;
+    border-radius: 2px;
+    flex-shrink: 0;
+    min-height: 20px;
+  }
+
+  .info-task {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .task-main {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .task-title {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0;
+
+    &.task-completed {
+      text-decoration: line-through;
+      color: var(--text3);
+    }
+  }
+
+  .task-due {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: var(--text3);
+
+    i { font-size: 10px !important; color: inherit !important; }
+
+    &.task-due--soon    { color: #d4b84a !important; i { color: #d4b84a !important; } }
+    &.task-due--overdue { color: #e05555 !important; i { color: #e05555 !important; } }
+  }
+
+  // Кнопка корзины и чекбокс на превью лишние
+  .info-task .p-button,
+  p-checkbox { display: none !important; }
+}
+
+// Полупрозрачный пустой "след" на месте перетаскиваемой карточки
+.cdk-drag-placeholder {
+  opacity: .25;
+}
+
+.cdk-drag-animating {
+  transition: transform 220ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.cdk-drop-list-dragging .tasks-card:not(.cdk-drag-placeholder) {
+  transition: transform 220ms cubic-bezier(0, 0, 0.2, 1);
+}

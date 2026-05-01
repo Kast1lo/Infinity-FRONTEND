@@ -10,21 +10,23 @@ export class ShareService {
     private userService: UserService
   ) {}
 
+  private encodeForRoute(fileName: string): string {
+    return encodeURIComponent(fileName.trim()).replace(/\./g, '%2E');
+  }
+
   copyShareLink(fileName: string) {
     const profile = this.userService.profile();
     if (!profile || !profile.username) {
       return;
     }
-    const encodedFileName = encodeURIComponent(fileName.trim());
-    const shareUrl = `https://infinity-vault.com/share/${profile.username}/${encodedFileName}`;
+    const shareUrl = `${window.location.origin}/share/${profile.username}/${this.encodeForRoute(fileName)}`;
     navigator.clipboard.writeText(shareUrl).then(() => {
     }).catch(() => {
     });
   }
 
   copyDownloadLink(username: string, fileName: string) {
-    const encodedFileName = encodeURIComponent(fileName.trim());
-    const downloadUrl = `https://infinity-vault.com/share/download/${username}/${encodedFileName}`;
+    const downloadUrl = `${window.location.origin}/share/download/${username}/${this.encodeForRoute(fileName)}`;
     navigator.clipboard.writeText(downloadUrl).then(() => {
     }).catch(() => {
       this.showError('Не удалось скопировать ссылку');

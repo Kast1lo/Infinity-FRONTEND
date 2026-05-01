@@ -13,6 +13,17 @@
   --radius-lg: 16px;
 }
 
+:host-context(.light-theme) {
+  --bg:       #f8f8f8;
+  --bg2:      #ffffff;
+  --bg3:      #f2f2f2;
+  --border:   #e0e0e0;
+  --border2:  #d0d0d0;
+  --text:     #111111;
+  --text2:    #555555;
+  --text3:    #aaaaaa;
+}
+
 // ─── Основной контейнер ───
 
 .card-list-files {
@@ -84,6 +95,14 @@
 
   &:hover { background: var(--bg4); border-color: var(--border2); }
   &.selected { border-color: var(--border2); background: var(--bg4); }
+
+  &.drop-target {
+    border-color: rgba(74,158,255,.55);
+    background: rgba(74,158,255,.10);
+    box-shadow: 0 0 0 2px rgba(74,158,255,.2);
+
+    i { color: rgba(74,158,255,.9) !important; }
+  }
 }
 
 .info-folder {
@@ -136,7 +155,15 @@ hr {
   &:hover { background-color: var(--bg4) !important; border-color: var(--border2) !important; }
 }
 
-.file-card { display: flex; flex-direction: column; gap: 10px; position: relative; }
+.file-card {
+  display: flex; flex-direction: column; gap: 10px; position: relative;
+  transition: opacity .15s;
+
+  &.dragging { opacity: .4; }
+}
+
+::ng-deep .file-grid .p-card[draggable="true"] { cursor: grab; }
+::ng-deep .file-grid .p-card[draggable="true"]:active { cursor: grabbing; }
 
 ::ng-deep .file-grid .p-card.selected-card {
   border-color: var(--border2) !important;

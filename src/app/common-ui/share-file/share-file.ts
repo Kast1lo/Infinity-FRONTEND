@@ -37,9 +37,10 @@ export class ShareFile implements OnInit {
 
   isDark = computed(() => this.themeService.theme() === 'dark');
 
-  fileData = signal<any>(null);
-  loading  = signal(true);
-  error    = signal<string | null>(null);
+  fileData   = signal<any>(null);
+  loading    = signal(true);
+  error      = signal<string | null>(null);
+  linkCopied = signal(false);
 
   // ─── Видео плеер ───
   isPlaying      = false;
@@ -153,6 +154,33 @@ export class ShareFile implements OnInit {
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} КБ`;
     if (bytes < 1024 ** 3)   return `${(bytes / 1024 ** 2).toFixed(1)} МБ`;
     return `${(bytes / 1024 ** 3).toFixed(1)} ГБ`;
+  }
+
+  getSizeUnit(size: string | number): string {
+    const bytes = typeof size === 'string' ? parseInt(size, 10) : size;
+    if (isNaN(bytes))        return 'Б';
+    if (bytes < 1024)        return 'Б';
+    if (bytes < 1024 * 1024) return 'КБ';
+    if (bytes < 1024 ** 3)   return 'МБ';
+    return 'ГБ';
+  }
+
+  getFileKind(mimeType: string, name?: string): string {
+    if (this.isImage(mimeType))         return 'image';
+    if (this.isVideo(mimeType))         return 'video';
+    if (this.isAudio(mimeType, name))   return 'audio';
+    if (this.isPdf(mimeType))           return 'pdf';
+    if (this.isZip(mimeType))           return 'zip';
+    if (this.isDocument(mimeType))      return 'doc';
+    return 'file';
+  }
+
+  copyLink() {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+      this.linkCopied.set(true);
+      this.cdr.markForCheck();
+      setTimeout(() => { this.linkCopied.set(false); this.cdr.markForCheck(); }, 1800);
+    }).catch(() => {});
   }
 
   private formatTime(sec: number): string {

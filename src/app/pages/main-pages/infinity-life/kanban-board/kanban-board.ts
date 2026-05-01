@@ -6,6 +6,7 @@ import {
   OnInit,
   signal,
 } from '@angular/core';
+import { finalize } from 'rxjs';
 import { InfinityLife } from '../../../../services/infinity-life';
 import { MessageService, ConfirmationService, MenuItem } from 'primeng/api';
 import { CdkDragDrop, moveItemInArray, transferArrayItem, DragDropModule } from '@angular/cdk/drag-drop';
@@ -76,6 +77,7 @@ export class KanbanBoard implements OnInit {
   selectedTask = signal<Task | null>(null);
   currentColumnId = signal<string | null>(null);
   newSubtaskTitle = signal('');
+  creatingSubtask = signal(false);
 
   // ─── Date signals (Date | null для p-datepicker) ───
   newTaskDueDate = signal<Date | null>(null);
@@ -333,20 +335,31 @@ export class KanbanBoard implements OnInit {
   // ─── Subtasks ───
 
   addSubtask(taskId: string, closeCallback: any) {
+    if (this.creatingSubtask()) return;
     const title = this.newSubtaskTitle().trim();
     if (!title) return;
-    this.tasksService.createSubtask({ title, taskId }).subscribe({
-      next: (newSubtask) => {
-        const current = this.selectedTask();
-        if (current?.id === taskId) {
-          const newSubtasks = [...(current.subtasks || []), newSubtask];
-          this.selectedTask.set({ ...current, subtasks: newSubtasks, progress: this.calculateProgress(newSubtasks) });
-        }
-        this.newSubtaskTitle.set('');
-        closeCallback();
-      },
-      error: () => this.toast('Не удалось добавить подзадачу'),
-    });
+    this.creatingSubtask.set(true);
+    this.tasksService.createSubtask({ title, taskId })
+      .pipe(finalize(() => this.creatingSubtask.set(false)))
+      .subscribe({
+        next: (newSubtask) => {
+          // Обновляем и selectedTask (виден в диалоге), и доску — иначе при
+          // повторном открытии задачи мы возьмём из columns стейл и подзадача
+          // не отобразится.
+          const current = this.selectedTask();
+          if (current?.id === taskId) {
+            const newSubtasks = [...(current.subtasks || []), newSubtask];
+            this.selectedTask.set({ ...current, subtasks: newSubtasks, progress: this.calculateProgress(newSubtasks) });
+          }
+          this.updateTaskInBoard(taskId, t => ({
+            ...t,
+            subtasks: [...(t.subtasks || []), newSubtask],
+          }));
+          this.newSubtaskTitle.set('');
+          closeCallback();
+        },
+        error: () => this.toast('Не удалось добавить подзадачу'),
+      });
   }
 
   deleteSubtask(subtaskId: string, taskId: string) {
@@ -359,10 +372,23 @@ export class KanbanBoard implements OnInit {
             const newSubtasks = (current.subtasks || []).filter(s => s.id !== subtaskId);
             this.selectedTask.set({ ...current, subtasks: newSubtasks, progress: this.calculateProgress(newSubtasks) });
           }
+          this.updateTaskInBoard(taskId, t => ({
+            ...t,
+            subtasks: (t.subtasks || []).filter(s => s.id !== subtaskId),
+          }));
         },
         error: () => this.toast('Не удалось удалить подзадачу'),
       });
     });
+  }
+
+  // Точечно обновляет задачу внутри columns. Гарантирует консистентность
+  // между selectedTask и доской после изменений подзадач.
+  private updateTaskInBoard(taskId: string, updater: (t: Task) => Task) {
+    this.columns.update(cols => cols.map((col: any) => ({
+      ...col,
+      tasks: (col.tasks || []).map((t: Task) => t.id === taskId ? updater(t) : t),
+    })));
   }
 
   // ─── Completion ───
@@ -385,6 +411,10 @@ export class KanbanBoard implements OnInit {
       s.id === subtask.id ? { ...s, isCompleted: !s.isCompleted } : s,
     );
     this.selectedTask.set({ ...current, subtasks: updated, progress: this.calculateProgress(updated) });
+    this.updateTaskInBoard(current.id, t => ({
+      ...t,
+      subtasks: (t.subtasks || []).map(s => s.id === subtask.id ? { ...s, isCompleted: !s.isCompleted } : s),
+    }));
     this.tasksService.toggleSubtaskCompletion(subtask.id).subscribe({
       error: () => {
         this.revertOptimisticSubtaskToggle(subtask.id);
@@ -400,6 +430,10 @@ export class KanbanBoard implements OnInit {
       s.id === subtaskId ? { ...s, isCompleted: !s.isCompleted } : s,
     );
     this.selectedTask.set({ ...current, subtasks: reverted, progress: this.calculateProgress(reverted) });
+    this.updateTaskInBoard(current.id, t => ({
+      ...t,
+      subtasks: (t.subtasks || []).map(s => s.id === subtaskId ? { ...s, isCompleted: !s.isCompleted } : s),
+    }));
   }
 
   private calculateProgress(subtasks: Subtask[] | undefined): number {

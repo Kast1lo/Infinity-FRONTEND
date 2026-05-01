@@ -37,13 +37,13 @@
 
 // ─── Разделитель ───
 
-:host ::ng-deep .p-toolbar hr {
-  border: 0 !important;
-  border-left: 1px solid var(--border2) !important;
-  height: 22px !important;
-  width: 1px !important;
-  margin: 0 8px !important;
-  display: inline-block !important;
+.toolbar-divider {
+  border: 0;
+  border-left: 1px solid var(--border2);
+  height: 22px;
+  width: 1px;
+  margin: 0 12px;
+  display: inline-block;
 }
 
 // ─── Кнопки в toolbar ───
@@ -218,179 +218,80 @@
   align-items: center;
 }
 
-// ─── Диалог «Новая папка» ───
+// ─── Бэкдроп ───
 
-:host ::ng-deep .p-dialog {
+:host ::ng-deep .p-dialog-mask {
+  background: rgba(0,0,0,.65) !important;
+  backdrop-filter: blur(6px) !important;
+}
+
+// ─── Confirm-диалог (общий для «Новая папка» и «Загрузка папки») ───
+
+::ng-deep .confirm-dialog.p-dialog {
   background: var(--bg2) !important;
   border: 1px solid var(--border) !important;
   border-radius: var(--radius-lg) !important;
-  box-shadow: 0 24px 64px rgba(0,0,0,.6) !important;
-  overflow: hidden !important;
-
-  .p-dialog-header {
-    background: var(--bg2) !important;
-    border-bottom: 1px solid var(--border) !important;
-    border-radius: var(--radius-lg) var(--radius-lg) 0 0 !important;
-    padding: 20px 24px !important;
-
-    .p-dialog-title {
-      font-family: 'Syne', sans-serif !important;
-      font-size: 16px !important;
-      font-weight: 700 !important;
-      color: var(--text) !important;
-      letter-spacing: -.3px !important;
-    }
-
-    .p-dialog-header-icon {
-      color: var(--text3) !important;
-      &:hover {
-        color: var(--text2) !important;
-        background: rgba(128,128,128,.08) !important;
-      }
-    }
-  }
-
-  .p-dialog-content {
-    background: var(--bg2) !important;
-    padding: 24px 24px 8px !important;
-  }
-
-  .p-dialog-footer {
-    background: var(--bg2) !important;
-    border-top: 1px solid var(--border) !important;
-    border-radius: 0 0 var(--radius-lg) var(--radius-lg) !important;
-    padding: 16px 24px !important;
-    display: flex !important;
-    justify-content: flex-end !important;
-    gap: 8px !important;
-  }
-}
-
-:host ::ng-deep .p-dialog-mask {
-  background: rgba(0,0,0,.7) !important;
-  backdrop-filter: blur(4px) !important;
-}
-
-// ─── Кнопки в диалоге ───
-
-:host ::ng-deep .create-folder .p-button {
-  border-radius: var(--radius-sm) !important;
-  font-family: 'DM Sans', sans-serif !important;
-  font-size: 13px !important;
-  height: 36px !important;
-  padding: 0 16px !important;
-
-  &.p-button-secondary {
-    color: var(--text2) !important;
-    background: transparent !important;
-    border: 1px solid var(--border2) !important;
-
-    &:hover {
-      color: var(--text) !important;
-      background: rgba(128,128,128,.08) !important;
-      border-color: var(--text3) !important;
-    }
-  }
-
-  &:not(.p-button-secondary) {
-    color: var(--bg) !important;
-    background: var(--text) !important;
-    border: none !important;
-
-    &:hover { opacity: .88 !important; }
-  }
-}
-
-// ─── Форма в диалоге ───
-
-.name-folder {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-
-  label {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--text3);
-    font-family: 'DM Sans', sans-serif;
-    letter-spacing: .5px;
-    text-transform: uppercase;
-  }
-}
-
-:host ::ng-deep .name-folder .p-inputtext {
-  background: var(--bg3) !important;
-  border: 1px solid var(--border2) !important;
-  border-radius: var(--radius-sm) !important;
-  color: var(--text) !important;
-  font-family: 'DM Sans', sans-serif !important;
-  font-size: 14px !important;
-  padding: 9px 12px !important;
-  transition: border-color .2s !important;
-  width: 100% !important;
-
-  &:focus {
-    border-color: var(--text3) !important;
-    box-shadow: none !important;
-    outline: none !important;
-  }
-
-  &::placeholder { color: var(--text3) !important; }
-}
-
-.create-folder {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  padding-top: 20px;
-  gap: 8px;
-}
-
-// ─── Confirm диалог загрузки папки ───
-
-::ng-deep .confirm-dialog.p-dialog {
-  border-radius: 14px !important;
-  overflow: hidden !important;
-  border: 1px solid var(--border) !important;
   box-shadow: 0 32px 80px rgba(0,0,0,.7) !important;
+  overflow: hidden !important;
 
   .p-dialog-header { display: none !important; }
 
   .p-dialog-content {
     padding: 0 !important;
     background: var(--bg2) !important;
-    border-radius: 14px !important;
+    border-radius: var(--radius-lg) !important;
+    background-image: radial-gradient(circle at top right, rgba(255,255,255,.025), transparent 60%);
   }
 }
 
 .confirm-root {
   display: flex;
   flex-direction: column;
-  padding: 28px 28px 20px;
-  gap: 12px;
+  padding: 24px 24px 18px;
+  gap: 18px;
+}
+
+.confirm-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
 }
 
 .confirm-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  background: rgba(74,158,255,.12);
-  border: 1px solid rgba(74,158,255,.2);
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  border-radius: 11px;
   display: flex;
   align-items: center;
   justify-content: center;
 
-  i {
-    font-size: 1.1rem !important;
-    color: #4a9eff !important;
+  i { font-size: 1.05rem !important; }
+
+  &--create {
+    background: rgba(74,158,255,.12);
+    border: 1px solid rgba(74,158,255,.22);
+    i { color: #4a9eff !important; }
+  }
+
+  &--upload {
+    background: rgba(255,176,74,.10);
+    border: 1px solid rgba(255,176,74,.22);
+    i { color: #ffb04a !important; }
   }
 }
 
-.confirm-body { display: flex; flex-direction: column; gap: 6px; }
+.confirm-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 2px;
+  min-width: 0;
+}
 
 .confirm-title {
   font-family: 'Syne', sans-serif;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--text);
   margin: 0;
@@ -405,35 +306,283 @@
   line-height: 1.5;
 }
 
+.confirm-where {
+  color: var(--text);
+  font-weight: 600;
+  background: rgba(255,255,255,.05);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1px 7px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+// ─── Форма в диалоге создания папки ───
+
+.confirm-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.confirm-label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text3);
+  letter-spacing: .5px;
+  text-transform: uppercase;
+}
+
+:host ::ng-deep .confirm-form .p-inputtext {
+  background: var(--bg3) !important;
+  border: 1px solid var(--border2) !important;
+  border-radius: var(--radius-sm) !important;
+  color: var(--text) !important;
+  font-family: 'DM Sans', sans-serif !important;
+  font-size: 14px !important;
+  padding: 10px 12px !important;
+  transition: border-color .2s, background .2s !important;
+  width: 100% !important;
+
+  &:hover { border-color: var(--text3) !important; }
+
+  &:focus {
+    border-color: rgba(74,158,255,.5) !important;
+    background: rgba(74,158,255,.04) !important;
+    box-shadow: 0 0 0 3px rgba(74,158,255,.10) !important;
+    outline: none !important;
+  }
+
+  &::placeholder { color: var(--text3) !important; }
+}
+
+// ─── Действия (кнопки) ───
+
 .confirm-actions {
   display: flex;
   gap: 8px;
   justify-content: flex-end;
-  padding-top: 8px;
+  align-items: center;
+  padding-top: 14px;
   border-top: 1px solid var(--border);
-  margin-top: 4px;
 }
 
-::ng-deep .confirm-actions .p-button {
-  border-radius: 8px !important;
+:host ::ng-deep .confirm-actions .p-button {
+  border-radius: var(--radius-sm) !important;
   font-family: 'DM Sans', sans-serif !important;
   font-size: 13px !important;
+  height: 36px !important;
+  padding: 0 18px !important;
+  transition:
+    background .18s ease,
+    border-color .18s ease,
+    color .18s ease,
+    box-shadow .18s ease,
+    transform .12s ease,
+    opacity .15s ease !important;
 
   &.p-button-text {
     color: var(--text2) !important;
     background: transparent !important;
-    border: none !important;
+    border: 1px solid transparent !important;
 
-    &:hover { color: var(--text) !important; background: rgba(128,128,128,.08) !important; }
+    &:hover:not(:disabled) {
+      color: var(--text) !important;
+      background: rgba(128,128,128,.12) !important;
+      border-color: var(--border2) !important;
+    }
+
+    &:active:not(:disabled) {
+      background: rgba(128,128,128,.18) !important;
+    }
+  }
+
+  &:disabled {
+    opacity: .4 !important;
+    cursor: not-allowed !important;
+    box-shadow: none !important;
+    transform: none !important;
   }
 }
 
-::ng-deep .confirm-btn-upload {
-  background: rgba(255,255,255,.08) !important;
-  border: 1px solid rgba(255,255,255,.14) !important;
-  color: #f0f0f0 !important;
+:host ::ng-deep .confirm-btn-upload {
+  background: var(--text) !important;
+  border: 1px solid var(--text) !important;
+  color: var(--bg) !important;
+  font-weight: 600 !important;
 
-  &:hover { background: rgba(255,255,255,.14) !important; }
+  &:hover:not(:disabled) {
+    background: var(--text) !important;
+    box-shadow:
+      0 6px 18px rgba(0, 0, 0, .35),
+      0 0 0 3px rgba(120, 120, 120, .10) !important;
+    transform: translateY(-1px) !important;
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0) !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, .35) !important;
+  }
+}
+
+// ─── Очередь множественной загрузки ───
+
+:host ::ng-deep .upload-queue-dialog .p-dialog-content {
+  background-image: none !important;
+}
+
+.upload-queue-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 320px;
+  overflow-y: auto;
+  padding: 2px;
+
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb {
+    background: var(--border2);
+    border-radius: 3px;
+    &:hover { background: var(--text3); }
+  }
+}
+
+.upload-queue-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: border-color .15s, background .15s;
+
+  &:hover {
+    border-color: var(--border2);
+    background: rgba(255, 255, 255, .02);
+  }
+}
+
+.upload-queue-thumb {
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  i {
+    font-size: 1.05rem !important;
+    color: var(--text3) !important;
+  }
+}
+
+.upload-queue-meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.upload-queue-name {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.upload-queue-size {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  color: var(--text3);
+  letter-spacing: .3px;
+}
+
+.upload-queue-remove {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--text3);
+  transition: color .15s, background .15s, border-color .15s;
+
+  i { font-size: 11px !important; color: inherit !important; }
+
+  &:hover {
+    color: #ff6b6b;
+    background: rgba(255, 107, 107, .08);
+    border-color: rgba(255, 107, 107, .22);
+  }
+
+  &:active {
+    background: rgba(255, 107, 107, .14);
+  }
+}
+
+.upload-queue-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 9px 12px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: 'DM Sans', sans-serif;
+  transition: background .18s, border-color .18s, color .18s;
+
+  &-label {
+    font-size: 11px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    i { font-size: 12px !important; color: inherit !important; }
+  }
+
+  &-value {
+    color: var(--text);
+    font-weight: 600;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 12px;
+    letter-spacing: .3px;
+  }
+
+  &--exceeded {
+    background: rgba(255, 107, 107, .08);
+    border-color: rgba(255, 107, 107, .28);
+
+    .upload-queue-summary-label,
+    .upload-queue-summary-value {
+      color: #ff7676 !important;
+    }
+  }
 }
 
 // ─── Светлая тема ───
