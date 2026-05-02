@@ -43,13 +43,13 @@ export class ShareFile implements OnInit {
   linkCopied = signal(false);
 
   // ─── Видео плеер ───
-  isPlaying      = false;
-  isMuted        = false;
-  volume         = 1;
-  progress       = 0;
-  currentTimeStr = '0:00';
-  durationStr    = '0:00';
-  controlsHidden = false;
+  isPlaying      = signal(false);
+  isMuted        = signal(false);
+  volume         = signal(1);
+  progress       = signal(0);
+  currentTimeStr = signal('0:00');
+  durationStr    = signal('0:00');
+  controlsHidden = signal(false);
   private controlsTimer: any;
   private rafId: any;
 
@@ -206,34 +206,36 @@ export class ShareFile implements OnInit {
   togglePlay() {
     const v = this.videoPlayerRef?.nativeElement;
     if (!v) return;
-    if (v.paused) { v.play(); this.isPlaying = true; this.startLoop(); }
-    else          { v.pause(); this.isPlaying = false; this.stopLoop(); }
+    if (v.paused) { v.play(); this.isPlaying.set(true); this.startLoop(); }
+    else          { v.pause(); this.isPlaying.set(false); this.stopLoop(); }
   }
 
   toggleMute() {
     const v = this.videoPlayerRef?.nativeElement;
     if (!v) return;
-    v.muted = !v.muted; this.isMuted = v.muted;
+    v.muted = !v.muted; this.isMuted.set(v.muted);
   }
 
   onVolumeChange(e: Event) {
     const v = this.videoPlayerRef?.nativeElement; if (!v) return;
-    const val = parseFloat((e.target as HTMLInputElement).value);
-    v.volume = val; this.volume = val; this.isMuted = val === 0;
+    const input = e.target as HTMLInputElement;
+    const val = parseFloat(input.value);
+    v.volume = val; this.volume.set(val); this.isMuted.set(val === 0);
+    input.style.setProperty('--volume-pct', `${val * 100}%`);
   }
 
   onTimeUpdate() {
     const v = this.videoPlayerRef?.nativeElement; if (!v) return;
-    this.progress = v.duration ? (v.currentTime / v.duration) * 100 : 0;
-    this.currentTimeStr = this.formatTime(v.currentTime);
+    this.progress.set(v.duration ? (v.currentTime / v.duration) * 100 : 0);
+    this.currentTimeStr.set(this.formatTime(v.currentTime));
   }
 
   onMetaLoaded() {
     const v = this.videoPlayerRef?.nativeElement; if (!v) return;
-    this.durationStr = this.formatTime(v.duration);
+    this.durationStr.set(this.formatTime(v.duration));
   }
 
-  onEnded() { this.isPlaying = false; this.progress = 0; this.stopLoop(); }
+  onEnded() { this.isPlaying.set(false); this.progress.set(0); this.stopLoop(); }
 
   seek(e: MouseEvent) {
     const v = this.videoPlayerRef?.nativeElement;
@@ -245,19 +247,20 @@ export class ShareFile implements OnInit {
 
   toggleFullscreen() {
     const v = this.videoPlayerRef?.nativeElement; if (!v) return;
-    document.fullscreenElement ? document.exitFullscreen() : v.requestFullscreen();
+    const wrapper = v.parentElement as HTMLElement;
+    document.fullscreenElement ? document.exitFullscreen() : wrapper.requestFullscreen();
   }
 
   onPlayerMouseMove() {
-    this.controlsHidden = false;
+    this.controlsHidden.set(false);
     clearTimeout(this.controlsTimer);
-    this.controlsTimer = setTimeout(() => { if (this.isPlaying) this.controlsHidden = true; }, 2500);
+    this.controlsTimer = setTimeout(() => { if (this.isPlaying()) this.controlsHidden.set(true); }, 2500);
   }
 
   onPlayerMouseLeave() {
-    if (this.isPlaying) {
+    if (this.isPlaying()) {
       clearTimeout(this.controlsTimer);
-      this.controlsTimer = setTimeout(() => { this.controlsHidden = true; }, 800);
+      this.controlsTimer = setTimeout(() => { this.controlsHidden.set(true); }, 800);
     }
   }
 
@@ -266,9 +269,8 @@ export class ShareFile implements OnInit {
     const v = this.videoPlayerRef?.nativeElement; if (!v) return;
     const tick = () => {
       if (!v.paused && !v.ended) {
-        this.progress = v.duration ? (v.currentTime / v.duration) * 100 : 0;
-        this.currentTimeStr = this.formatTime(v.currentTime);
-        this.cdr.markForCheck();
+        this.progress.set(v.duration ? (v.currentTime / v.duration) * 100 : 0);
+        this.currentTimeStr.set(this.formatTime(v.currentTime));
         this.rafId = requestAnimationFrame(tick);
       }
     };

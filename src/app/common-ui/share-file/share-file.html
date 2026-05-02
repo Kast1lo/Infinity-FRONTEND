@@ -62,25 +62,25 @@
                 (ended)="onEnded()"
                 (click)="togglePlay()"
               ></video>
-              <div class="sp-center-btn" [class.sp-hidden]="isPlaying && controlsHidden" (click)="togglePlay()">
+              <div class="sp-center-btn" [class.sp-hidden]="isPlaying() && controlsHidden()" (click)="togglePlay()">
                 <div class="sp-center-icon">
-                  <i [class]="isPlaying ? 'pi pi-pause' : 'pi pi-play'" [style.margin-left]="isPlaying ? '0' : '3px'"></i>
+                  <i [class]="isPlaying() ? 'pi pi-pause' : 'pi pi-play'" [style.margin-left]="isPlaying() ? '0' : '3px'"></i>
                 </div>
               </div>
-              <div class="sp-controls" [class.sp-hidden]="isPlaying && controlsHidden">
+              <div class="sp-controls" [class.sp-hidden]="isPlaying() && controlsHidden()">
                 <div class="sp-progress" (click)="seek($event)">
                   <div class="sp-progress-bg"></div>
-                  <div class="sp-progress-fill" [style.width.%]="progress"></div>
-                  <div class="sp-progress-thumb" [style.left.%]="progress"></div>
+                  <div class="sp-progress-fill" [style.width.%]="progress()"></div>
+                  <div class="sp-progress-thumb" [style.left.%]="progress()"></div>
                 </div>
                 <div class="sp-bar">
                   <div class="sp-bar-left">
-                    <button class="vp-btn" (click)="togglePlay()"><i [class]="isPlaying ? 'pi pi-pause' : 'pi pi-play'"></i></button>
-                    <button class="vp-btn" (click)="toggleMute()"><i [class]="isMuted ? 'pi pi-volume-off' : 'pi pi-volume-up'"></i></button>
+                    <button class="vp-btn" (click)="togglePlay()"><i [class]="isPlaying() ? 'pi pi-pause' : 'pi pi-play'"></i></button>
+                    <button class="vp-btn" (click)="toggleMute()"><i [class]="isMuted() ? 'pi pi-volume-off' : 'pi pi-volume-up'"></i></button>
                     <div class="sp-volume-wrap">
-                      <input class="sp-volume" type="range" min="0" max="1" step="0.05" [value]="volume" (input)="onVolumeChange($event)"/>
+                      <input class="sp-volume" type="range" min="0" max="1" step="0.05" [value]="volume()" (input)="onVolumeChange($event)"/>
                     </div>
-                    <span class="sp-time">{{ currentTimeStr }} / {{ durationStr }}</span>
+                    <span class="sp-time">{{ currentTimeStr() }} / {{ durationStr() }}</span>
                   </div>
                   <div class="sp-bar-right">
                     <button class="vp-btn" (click)="toggleFullscreen()"><i class="pi pi-window-maximize"></i></button>
