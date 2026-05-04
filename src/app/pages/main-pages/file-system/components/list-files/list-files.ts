@@ -10,7 +10,8 @@ import {
   ViewChild,
   ElementRef,
 } from '@angular/core';
-import { DomSanitizer, SafeHtml, SecurityContext } from '@angular/platform-browser';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { SecurityContext } from '@angular/core';
 import { ScrollPanelModule } from 'primeng/scrollpanel';
 import { TableModule } from 'primeng/table';
 import { FileSystem } from '../../../../../services/file-system';
