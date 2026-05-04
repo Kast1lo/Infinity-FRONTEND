@@ -1,5 +1,6 @@
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   computed,
   effect,
@@ -43,6 +44,7 @@ export class ProfileCard implements OnInit {
   protected readonly fileSystem   = inject(FileSystem);
   protected readonly planService  = inject(PlanService);
   private   readonly messageService = inject(MessageService);
+  private   readonly cdr = inject(ChangeDetectorRef);
 
   profile   = this.userService.profile;
   isLoading = this.userService.isLoading;
@@ -63,12 +65,10 @@ export class ProfileCard implements OnInit {
   totalFiles   = this.fileSystem.totalFilesCount;
   totalFolders = computed(() => this.fs.folders().length);
 
-  // ─── Промокод ───
   promoCode       = signal('');
   promoLoading    = signal(false);
   showPromoInput  = signal(false);
 
-  // ─── Метки тарифов ───
   readonly planBadgeMap: Record<string, { label: string; class: string }> = {
     spark:   { label: 'Spark',   class: 'badge--spark'   },
     pulse:   { label: 'Pulse',   class: 'badge--pulse'   },
@@ -79,8 +79,8 @@ export class ProfileCard implements OnInit {
   constructor() {
     effect(() => {
       const total = this.totalTasks();
-      if (total === 0) { this.knobValue = 0; return; }
-      this.knobValue = Math.round((this.completedTasks() / total) * 100);
+      this.knobValue = total === 0 ? 0 : Math.round((this.completedTasks() / total) * 100);
+      this.cdr.markForCheck();
     });
   }
 
@@ -90,7 +90,6 @@ export class ProfileCard implements OnInit {
     this.planService.loadPlanInfo().subscribe();
   }
 
-  // ─── Форматирование хранилища ───
   get storageUsedLabel(): string {
     const info = this.planInfo();
     if (!info) return '0 Б';
@@ -111,7 +110,6 @@ export class ProfileCard implements OnInit {
     return this.planService.getStorageColor(this.storagePercent);
   }
 
-  // ─── Активировать промокод ───
   activatePromo() {
     const code = this.promoCode().trim();
     if (!code) return;

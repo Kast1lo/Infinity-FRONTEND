@@ -1,4 +1,3 @@
-// src/app/zinc-preset.ts
 import { definePreset } from '@primeuix/themes';
 import Aura from '@primeuix/themes/aura'; // Используйте ваш текущий базовый пресет
 import { colorScheme } from '@primeuix/themes/aura/autocomplete';

@@ -42,7 +42,6 @@ export class ShareFile implements OnInit {
   error      = signal<string | null>(null);
   linkCopied = signal(false);
 
-  // ─── Видео плеер ───
   isPlaying      = signal(false);
   isMuted        = signal(false);
   volume         = signal(1);
@@ -53,7 +52,6 @@ export class ShareFile implements OnInit {
   private controlsTimer: any;
   private rafId: any;
 
-  // ─── Аудио плеер ───
   audioDialogVisible = signal(false);
   audioUrl           = signal<string | null>(null);
   audioTitle         = signal('');
@@ -90,7 +88,6 @@ export class ShareFile implements OnInit {
       });
   }
 
-  // ─── Типы файлов ───
 
   isImage(mimeType: string):  boolean { return mimeType?.startsWith('image/') ?? false; }
   isVideo(mimeType: string):  boolean { return mimeType?.startsWith('video/') ?? false; }
@@ -201,7 +198,6 @@ export class ShareFile implements OnInit {
       document.body.removeChild(link);
   }
 
-  // ─── Видео плеер ───
 
   togglePlay() {
     const v = this.videoPlayerRef?.nativeElement;
@@ -281,7 +277,6 @@ export class ShareFile implements OnInit {
     if (this.rafId) { cancelAnimationFrame(this.rafId); this.rafId = null; }
   }
 
-  // ─── Аудио плеер ───
 
   openAudio() {
     const data = this.fileData();

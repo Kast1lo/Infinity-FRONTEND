@@ -12,13 +12,9 @@ import { MainPage } from './common-ui/main-page/main-page';
 
 export const routes: Routes = [
     {
-        path:'',
-        redirectTo: 'main',
+        path: '',
+        component: MainPage,
         pathMatch: 'full'
-    },
-    {
-        path: 'main',
-        component: MainPage
     },
     {
         path: 'login',

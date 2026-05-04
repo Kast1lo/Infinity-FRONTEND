@@ -21,9 +21,6 @@ export class FileSystem {
 
   private _loadFilesToken = 0;
 
-  // Подсчёт файлов для статистики (профиль).
-  // _files() содержит файлы только текущей папки, поэтому общий счётчик
-  // считаем по дереву (всё, что во вложенных папках) + отдельно корневые.
   private _filesInFoldersCount = signal(0);
   private _rootFilesCount      = signal(0);
 
@@ -150,8 +147,6 @@ export class FileSystem {
     });
   }
 
-  // Загружает статистику для профиля: дерево (счётчик файлов в папках)
-  // + корневые файлы (счётчик), не затрагивая _files() текущей папки.
   loadFilesStats() {
     this.loadTree();
     this.http.get<FileItem[]>(`${this.apiUrl}/file-system/files`, { withCredentials: true }).subscribe({
@@ -173,9 +168,6 @@ export class FileSystem {
     return result;
   }
 
-  // Рекурсивно считает все файлы во всех (вложенных) папках дерева.
-  // Корневые файлы (parentId=null) сюда не попадают — бэк возвращает их
-  // отдельным эндпоинтом /file-system/files.
   private countFilesInTree(folders: any[]): number {
     let total = 0;
     for (const folder of folders) {
@@ -302,16 +294,17 @@ export class FileSystem {
   deleteItem(id: string, type: 'file' | 'folder') {
     this._loading.set(true);
     this._error.set(null);
-    this.http.delete(`${this.apiUrl}/file-system/delete/${id}?type=${type}`, { withCredentials: true }).pipe(
-      catchError(err => this.handleError(err, `Не удалось удалить ${type}`))
-    ).subscribe({
-      next: () => {
-        this.loadTree();
-        this.loadFiles(this.currentFolderId());
-        this._loading.set(false);
-      },
-      error: () => { this._loading.set(false); },
-    });
+    return this.http.delete(`${this.apiUrl}/file-system/delete/${id}?type=${type}`, { withCredentials: true }).pipe(
+      catchError(err => this.handleError(err, `Не удалось удалить ${type}`)),
+      tap({
+        next: () => {
+          this.loadTree();
+          this.loadFiles(this.currentFolderId());
+          this._loading.set(false);
+        },
+        error: () => { this._loading.set(false); },
+      }),
+    );
   }
 
   createFolder(name: string, parentId: string | null = null) {
@@ -425,8 +418,6 @@ export class FileSystem {
       ),
     ]);
 
-    // Дерево всегда обновляем — оно общее. А вот файлы перезаписываем
-    // только если за время запроса юзер не успел уйти в другую папку.
     this._folders.set(this.flattenFolders(folders));
     this._filesInFoldersCount.set(this.countFilesInTree(folders));
     if (folderId === null) this._rootFilesCount.set((files || []).length);

@@ -1,6 +1,6 @@
-<!-- ── Navbar ── -->
+
 <nav class="sf-nav">
-  <a class="sf-nav-brand" routerLink="/main">
+  <a class="sf-nav-brand" routerLink="/">
     <img class="sf-logo" [src]="isDark() ? 'infinityLogo.svg' : 'infinity.svg'" alt="Infinity"/>
   </a>
   <div class="sf-nav-cta">
@@ -9,7 +9,6 @@
   </div>
 </nav>
 
-<!-- ── Ambient orbs ── -->
 <div class="sf-orbs" aria-hidden="true">
   <span class="orb orb--1"></span>
   <span class="orb orb--2"></span>
@@ -29,7 +28,7 @@
       <div class="sf-error-icon"><i class="pi pi-exclamation-circle"></i></div>
       <h2 class="sf-error-title">Файл <em class="gradient-text">не найден</em></h2>
       <p class="sf-error-msg">{{ error() }}</p>
-      <a class="btn-hero-ghost" routerLink="/main">
+      <a class="btn-hero-ghost" routerLink="/">
         <i class="pi pi-arrow-left"></i> На главную
       </a>
     </div>
@@ -39,7 +38,7 @@
 
     <div class="sf-grid">
 
-      <!-- ─── LEFT: Превью ─── -->
+      
       <section class="sf-preview-wrap">
         <span class="sf-preview-glow" aria-hidden="true"></span>
         <div class="sf-preview" [class.sf-preview--media]="isImage(file.mimeType) || isVideo(file.mimeType)">
@@ -132,7 +131,7 @@
         </div>
       </section>
 
-      <!-- ─── RIGHT: Info panel ─── -->
+      
       <aside class="sf-info">
 
         <div class="sf-info-head">
@@ -203,7 +202,6 @@
 
 </main>
 
-<!-- ─── АУДИО ПЛЕЕР ─── -->
 <p-dialog
   [(visible)]="audioDialogVisible"
   [modal]="true"

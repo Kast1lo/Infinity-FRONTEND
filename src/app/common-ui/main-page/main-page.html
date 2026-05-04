@@ -20,9 +20,9 @@
   </div>
 </nav>
 
-<!-- ── HERO ── -->
+
 <section class="hero">
-  <!-- Ambient gradient orbs -->
+  
   <div class="hero-orbs" aria-hidden="true">
     <span class="orb orb--1"></span>
     <span class="orb orb--2"></span>
@@ -52,12 +52,12 @@
     <a class="btn-hero-ghost" routerLink="/login"><i class="pi pi-sign-in"></i> Войти</a>
   </div>
 
-  <!-- Hero preview — bento -->
+  
   <div class="hero-preview">
     <span class="hp-glow" aria-hidden="true"></span>
     <div class="hp-bento">
 
-      <!-- Tile: Kanban -->
+      
       <div class="hp-tile hp-tile--kanban">
         <div class="hp-tile-head">
           <span class="hp-tile-label"><i class="pi pi-th-large"></i> Infinity-life</span>
@@ -97,7 +97,7 @@
         </div>
       </div>
 
-      <!-- Tile: Storage donut -->
+      
       <div class="hp-tile hp-tile--storage">
         <div class="hp-tile-head">
           <span class="hp-tile-label"><i class="pi pi-database"></i> Хранилище</span>
@@ -123,7 +123,7 @@
         </div>
       </div>
 
-      <!-- Tile: Plan -->
+      
       <div class="hp-tile hp-tile--plan">
         <span class="hp-plan-badge"><span class="hp-plan-dot"></span> Активен</span>
         <span class="hp-plan-name">Infinity <em class="gradient-text">Pulse</em></span>
@@ -131,7 +131,7 @@
         <span class="hp-plan-price">399 ₽<em>/ мес</em></span>
       </div>
 
-      <!-- Tile: Recent files -->
+      
       <div class="hp-tile hp-tile--files">
         <div class="hp-tile-head">
           <span class="hp-tile-label"><i class="pi pi-folder-open"></i> Недавние файлы</span>
@@ -153,7 +153,7 @@
         </div>
       </div>
 
-      <!-- Tile: Brand -->
+      
       <div class="hp-tile hp-tile--brand">
         <i class="pi pi-infinity hp-brand-icon"></i>
         <span class="hp-brand-text"><span class="gradient-text">Infinity</span></span>
@@ -163,7 +163,7 @@
     </div>
   </div>
 
-  <!-- Trust strip -->
+  
   <div class="trust-strip">
     <ul class="trust-list">
       @for (t of trustItems; track t.label) {
@@ -173,7 +173,7 @@
   </div>
 </section>
 
-<!-- ── FEATURES + STATS (объединённая секция) ── -->
+
 <section class="features" id="features">
   <div class="container">
     <div class="section-header reveal">
@@ -182,7 +182,7 @@
       <p class="section-sub">Никаких переключений между приложениями. Всё в одном месте — быстро, чисто, продуктивно.</p>
     </div>
 
-    <!-- Цифры в компактной полосе сверху -->
+    
     <div class="stats-strip reveal">
       <div class="stat-cell">
         <div class="stat-num">2</div>
@@ -202,7 +202,7 @@
       </div>
     </div>
 
-    <!-- Сетка фичей -->
+    
     <div class="features-grid">
       @for (f of features; let i = $index; track f.title) {
         <div class="feat-card reveal"
@@ -220,7 +220,7 @@
 
 <div class="container"><div class="divider reveal"></div></div>
 
-<!-- ── KANBAN SPLIT ── -->
+
 <section class="split" id="kanban">
   <div class="container">
     <div class="split-inner reveal">
@@ -239,9 +239,9 @@
         </div>
       </div>
 
-      <!-- ── Точное превью Kanban ── -->
+      
       <div class="split-visual sv-kanban-real">
-        <!-- Шапка как в реальном приложении -->
+        
         <div class="svk-header">
           <span class="svk-logo">INFINITY</span>
           <div class="svk-tabs">
@@ -249,9 +249,9 @@
             <span class="svk-tab">Список</span>
           </div>
         </div>
-        <!-- Колонки -->
+        
         <div class="svk-body">
-          <!-- Колонка 1 -->
+          
           <div class="svk-col">
             <div class="svk-col-header">
               <span class="svk-col-title">Готово</span>
@@ -266,7 +266,7 @@
             </div>
             <button class="svk-add-task"><i class="pi pi-plus"></i> Создать задачу</button>
           </div>
-          <!-- Колонка 2 -->
+          
           <div class="svk-col">
             <div class="svk-col-header">
               <span class="svk-col-title">В ПРОЦЕССЕ</span>
@@ -298,7 +298,7 @@
             </div>
             <button class="svk-add-task"><i class="pi pi-plus"></i> Создать задачу</button>
           </div>
-          <!-- Колонка 3 — new col -->
+          
           <div class="svk-col svk-col--new">
             <i class="pi pi-plus"></i>
             <span>Создать колонку</span>
@@ -309,7 +309,7 @@
   </div>
 </section>
 
-<!-- ── FILES SPLIT ── -->
+
 <section class="split" id="files">
   <div class="container">
     <div class="split-inner split-reverse reveal">
@@ -328,9 +328,9 @@
         </div>
       </div>
 
-      <!-- ── Точное превью файловой системы ── -->
+      
       <div class="split-visual sv-files-real">
-        <!-- Toolbar -->
+        
         <div class="svf-toolbar">
           <div class="svf-tb-row svf-tb-row--top">
             <div class="svf-tb-left">
@@ -358,20 +358,20 @@
             </div>
           </div>
         </div>
-        <!-- Тело -->
+        
         <div class="svf-body">
-          <!-- Папки -->
+          
           <div class="svf-folders">
             <div class="svf-folder">
               <div class="svf-folder-info"><i class="pi pi-folder"></i><span>Лучшие раб...</span></div>
               <i class="pi pi-ellipsis-v svf-folder-dots"></i>
             </div>
           </div>
-          <!-- Разделитель -->
+          
           <div class="svf-hr"></div>
-          <!-- Файлы -->
+          
           <div class="svf-files">
-            <!-- Video -->
+            
             <div class="svf-file-card">
               <div class="svf-file-top">
                 <span class="svf-file-name">Sitephone.mov</span>
@@ -381,7 +381,7 @@
                 <div class="svf-file-play"><i class="pi pi-play-circle"></i></div>
               </div>
             </div>
-            <!-- Text doc -->
+            
             <div class="svf-file-card">
               <div class="svf-file-top">
                 <span class="svf-file-name">git.txt</span>
@@ -389,7 +389,7 @@
               </div>
               <div class="svf-file-preview svf-file-doc svf-file-txt"><i class="pi pi-file"></i></div>
             </div>
-            <!-- Audio -->
+            
             <div class="svf-file-card">
               <div class="svf-file-top">
                 <span class="svf-file-name">scarlxrd - Serxtxnin.m...</span>
@@ -399,7 +399,7 @@
                 <div class="svf-audio-bars"><span></span><span></span><span></span><span></span><span></span></div>
               </div>
             </div>
-            <!-- Infinity logo image -->
+            
             <div class="svf-file-card">
               <div class="svf-file-top">
                 <span class="svf-file-name">infinity-logo.jpg</span>
@@ -418,7 +418,7 @@
 
 <div class="container"><div class="divider reveal"></div></div>
 
-<!-- ── PRICING ── -->
+
 <section class="pricing" id="pricing">
   <div class="container">
     <div class="section-header reveal pricing-header">
@@ -428,7 +428,7 @@
     </div>
     <div class="plans-grid">
 
-      <!-- Infinity Spark -->
+      
       <div class="plan-card reveal reveal-delay-1">
         <div class="plan-name-row"><span class="plan-tier-badge plan-tier-badge--trial">7 дней бесплатно</span></div>
         <div class="plan-header">
@@ -448,7 +448,7 @@
         <a class="plan-btn" routerLink="/registration">Начать бесплатно <i class="pi pi-arrow-right"></i></a>
       </div>
 
-      <!-- Infinity Pulse -->
+      
       <div class="plan-card plan-card--pulse reveal reveal-delay-2">
         <div class="plan-name-row"><span class="plan-tier-badge plan-tier-badge--pulse">Ежемесячно</span></div>
         <div class="plan-header">
@@ -469,7 +469,7 @@
         <a class="plan-btn" routerLink="/registration">Подключить Pulse <i class="pi pi-arrow-right"></i></a>
       </div>
 
-      <!-- Infinity Horizon -->
+      
       <div class="plan-card plan-card--horizon reveal reveal-delay-3">
         <div class="plan-popular-badge"><i class="pi pi-star-fill"></i> Лучший выбор</div>
         <div class="plan-name-row"><span class="plan-tier-badge plan-tier-badge--horizon">Экономия 35%</span></div>
@@ -492,7 +492,7 @@
         <a class="plan-btn plan-btn--primary" routerLink="/registration">Выбрать Horizon <i class="pi pi-arrow-right"></i></a>
       </div>
 
-      <!-- Infinity Eternal -->
+      
       <div class="plan-card plan-card--eternal reveal reveal-delay-1">
         <div class="plan-name-row"><span class="plan-tier-badge plan-tier-badge--eternal">Навсегда</span></div>
         <div class="plan-header">
@@ -519,7 +519,7 @@
 
 <div class="container"><div class="divider reveal"></div></div>
 
-<!-- ── FAQ ── -->
+
 <section class="faq" id="faq">
   <div class="container">
     <div class="section-header reveal faq-header">
@@ -543,7 +543,7 @@
 
 <div class="container"><div class="divider reveal"></div></div>
 
-<!-- ── CTA ── -->
+
 <section class="cta-section">
   <div class="cta-orbs" aria-hidden="true">
     <span class="orb orb--1"></span>
@@ -567,7 +567,7 @@
   </div>
 </section>
 
-<!-- ── FOOTER ── -->
+
 <footer class="footer">
   <div class="container">
     <div class="footer-grid">
@@ -575,9 +575,9 @@
         <img class="logo" [src]="imagePath()" alt="Infinity">
         <p class="footer-desc">All-in-one рабочее пространство — Kanban-доски и файловое хранилище в одном минималистичном интерфейсе.</p>
         <div class="footer-socials">
-          <a href="https://t.me/Anton_Kast1lo" aria-label="Telegram" target="_blank" class="social-btn"><i class="pi pi-send"></i></a>
-          <a href="https://github.com/Kast1lo" aria-label="GitHub" target="_blank" class="social-btn"><i class="pi pi-github"></i></a>
-          <a href="infinity.corpa@gmail.com"  aria-label="Email" target="_blank" class="social-btn"><i class="pi pi-envelope"></i></a>
+          <a href="https://t.me/Anton_Kast1lo" aria-label="Telegram" target="_blank" rel="noopener noreferrer" class="social-btn"><i class="pi pi-send"></i></a>
+          <a href="https://github.com/Kast1lo" aria-label="GitHub" target="_blank" rel="noopener noreferrer" class="social-btn"><i class="pi pi-github"></i></a>
+          <a href="mailto:infinity.corpa@gmail.com" aria-label="Email" class="social-btn"><i class="pi pi-envelope"></i></a>
         </div>
       </div>
 

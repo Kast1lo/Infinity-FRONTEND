@@ -46,7 +46,6 @@ export class AuthService {
       );
   }
 
-  // ─── Регистрация — возвращает email, не редиректит ───
   register(data: RegisterData): Observable<{ message: string; email: string }> {
     this._isLoading.set(true);
     this._error.set(null);
@@ -65,7 +64,6 @@ export class AuthService {
       );
   }
 
-  // ─── Подтверждение кода ───
   verifyEmail(email: string, code: string): Observable<UserProfile> {
     this._isLoading.set(true);
     this._error.set(null);
@@ -84,7 +82,6 @@ export class AuthService {
       );
   }
 
-  // ─── Повторная отправка кода ───
   resendCode(email: string): Observable<{ message: string }> {
     return this.http
       .post<{ message: string }>(

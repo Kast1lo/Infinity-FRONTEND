@@ -10,7 +10,7 @@ import {
   ViewChild,
   ElementRef,
 } from '@angular/core';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { DomSanitizer, SafeHtml, SecurityContext } from '@angular/platform-browser';
 import { ScrollPanelModule } from 'primeng/scrollpanel';
 import { TableModule } from 'primeng/table';
 import { FileSystem } from '../../../../../services/file-system';
@@ -69,17 +69,14 @@ export class ListFiles implements OnInit {
   renameValue = signal('');
   private renameTarget: { id: string; type: 'file' | 'folder' } | null = null;
 
-  // ─── Перемещение файла ───
   moveDialogVisible = signal(false);
   moveTargetFile    = signal<FileItem | null>(null);
   selectedFolderId  = signal<string | null>(null);
 
-  // ─── Видео плеер ───
   videoDialogVisible = false;
   videoUrl: string | null = null;
   videoTitle = '';
 
-  // ─── Аудио плеер ───
   audioDialogVisible = signal(false);
   audioUrl           = signal<string | null>(null);
   audioTitle         = signal('');
@@ -91,32 +88,27 @@ export class ListFiles implements OnInit {
   audioDuration      = signal('0:00');
   private audioRafId: any;
 
-  // ─── Превью изображений ───
   imagePreviewVisible = false;
   imagePreviewUrl: string | null = null;
   imagePreviewTitle = '';
 
-  // ─── Просмотрщик документов ───
   docDialogVisible = false;
   docTitle = '';
   docLoading = false;
   docHtml = signal<string>('');
   docType: 'word' | 'excel' | 'ppt' | 'pdf' | null = null;
 
-  // ─── PDF ───
   pdfDialogVisible = false;
   pdfTitle = '';
   pdfLoading = false;
   pdfPages = signal<string[]>([]);
 
-  // ─── ZIP ───
   zipDialogVisible = false;
   zipTitle = '';
   zipLoading = false;
   zipEntries = signal<ZipEntry[]>([]);
   private zipRef: any = null;
 
-  // ─── Видео плеер состояние ───
   isPlaying = false;
   isMuted = false;
   volume = 1;
@@ -130,15 +122,10 @@ export class ListFiles implements OnInit {
   isDragging = signal(false);
   private dragCounter = 0;
 
-  // ─── Внутренний D&D (перемещение файла в папку) ───
-  // Тип используется как «маркер» нашего собственного drag:
-  // если он есть в dataTransfer.types — drag внутренний (не показываем
-  // оверлей загрузки), если есть только 'Files' — внешний из ОС.
   private static readonly INTERNAL_FILE_MIME = 'application/x-infinity-file';
   draggingFileId      = signal<string | null>(null);
   draggedOverFolderId = signal<string | null>(null);
 
-  // ─── Confirm загрузки папки ───
   uploadConfirmVisible = signal(false);
   uploadConfirmTitle   = signal('');
   uploadConfirmMessage = signal('');
@@ -426,12 +413,14 @@ export class ListFiles implements OnInit {
     this.imagePreviewUrl = file.downloadUrl;
     this.imagePreviewTitle = decodeURIComponent(file.name);
     this.imagePreviewVisible = true;
+    this.cdr.markForCheck();
   }
 
   closeImagePreview() {
     this.imagePreviewVisible = false;
     this.imagePreviewUrl = null;
     this.imagePreviewTitle = '';
+    this.cdr.markForCheck();
   }
 
   async openPdf(file: FileItem) {
@@ -602,18 +591,14 @@ export class ListFiles implements OnInit {
     return 'unknown';
   }
 
-  // Минимальный рендер RTF: достаём plain-текст, теряя форматирование.
-  // Для полноценного просмотра пользователь может скачать файл.
   private renderRtf(bytes: Uint8Array): string {
     const text = new TextDecoder('latin1').decode(bytes);
     let s = text;
-    // \uNNNN? — юникод-символы (RTF использует signed int16)
     s = s.replace(/\\u(-?\d+)\??/g, (_m, n) => {
       let code = parseInt(n, 10);
       if (code < 0) code += 65536;
       return String.fromCharCode(code);
     });
-    // \'XX — байт в hex (cp1251 для кириллицы — типичный случай)
     const cp1251 = (h: string) => {
       const code = parseInt(h, 16);
       if (code < 0x80) return String.fromCharCode(code);
@@ -626,15 +611,10 @@ export class ListFiles implements OnInit {
       return '';
     };
     s = s.replace(/\\'([0-9a-fA-F]{2})/g, (_m, h) => cp1251(h));
-    // Управляющие группы { \fonttbl ... } и т.п. — выкидываем то, что в них
     s = s.replace(/\{\\\*?[^{}]*\}/g, '');
-    // Команды \par, \line → перенос строки
     s = s.replace(/\\par[d ]?/g, '\n').replace(/\\line ?/g, '\n');
-    // Остальные команды \word — убираем
     s = s.replace(/\\[a-zA-Z]+-?\d* ?/g, '');
-    // Скобки групп
     s = s.replace(/[{}]/g, '');
-    // Лишние пробелы
     s = s.replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
     const escaped = this.escapeHtml(s);
     return `<div class="doc-rtf-notice" style="opacity:.6;font-size:.85em;margin-bottom:12px;"><i class="pi pi-info-circle"></i> RTF-файл — отображается без форматирования. Для полного просмотра скачайте.</div><pre style="white-space:pre-wrap;font-family:inherit;margin:0;">${escaped}</pre>`;
@@ -645,9 +625,12 @@ export class ListFiles implements OnInit {
   }
 
   closeDocument() { this.docDialogVisible = false; this.docHtml.set(''); this.docTitle = ''; this.docType = null; this.docLoading = false; }
-  getSafeHtml(html: string): SafeHtml { return this.sanitizer.bypassSecurityTrustHtml(html); }
+  getSafeHtml(html: string): SafeHtml {
+    const cleaned = this.sanitizer.sanitize(SecurityContext.HTML, html) ?? '';
+    return this.sanitizer.bypassSecurityTrustHtml(cleaned);
+  }
 
-  openVideo(file: FileItem) { this.videoUrl = file.downloadUrl; this.videoTitle = decodeURIComponent(file.name); this.videoDialogVisible = true; }
+  openVideo(file: FileItem) { this.videoUrl = file.downloadUrl; this.videoTitle = decodeURIComponent(file.name); this.videoDialogVisible = true; this.cdr.markForCheck(); }
 
   closeVideo() {
     const video = this.videoPlayerRef?.nativeElement;
@@ -655,6 +638,7 @@ export class ListFiles implements OnInit {
     this.isPlaying = false; this.progress = 0; this.currentTimeStr = '0:00'; this.durationStr = '0:00';
     this.videoUrl = null; this.videoTitle = ''; this.videoDialogVisible = false;
     clearTimeout(this.controlsTimer); this.stopProgressLoop();
+    this.cdr.markForCheck();
   }
 
   togglePlay() {
@@ -662,21 +646,23 @@ export class ListFiles implements OnInit {
     if (!video) return;
     if (video.paused) { video.play(); this.isPlaying = true; this.startProgressLoop(); }
     else { video.pause(); this.isPlaying = false; this.stopProgressLoop(); }
+    this.cdr.markForCheck();
   }
 
-  toggleMute() { const video = this.videoPlayerRef?.nativeElement; if (!video) return; video.muted = !video.muted; this.isMuted = video.muted; }
+  toggleMute() { const video = this.videoPlayerRef?.nativeElement; if (!video) return; video.muted = !video.muted; this.isMuted = video.muted; this.cdr.markForCheck(); }
 
   onVolumeChange(event: Event) {
     const video = this.videoPlayerRef?.nativeElement; if (!video) return;
     const val = parseFloat((event.target as HTMLInputElement).value);
     video.volume = val; this.volume = val; this.isMuted = val === 0;
+    this.cdr.markForCheck();
   }
 
-  onTimeUpdate() { const video = this.videoPlayerRef?.nativeElement; if (!video) return; this.progress = video.duration ? (video.currentTime / video.duration) * 100 : 0; this.currentTimeStr = this.formatTime(video.currentTime); }
+  onTimeUpdate() { const video = this.videoPlayerRef?.nativeElement; if (!video) return; this.progress = video.duration ? (video.currentTime / video.duration) * 100 : 0; this.currentTimeStr = this.formatTime(video.currentTime); this.cdr.markForCheck(); }
 
-  onMetaLoaded() { const video = this.videoPlayerRef?.nativeElement; if (!video) return; this.durationStr = this.formatTime(video.duration); video.play(); this.isPlaying = true; this.startProgressLoop(); }
+  onMetaLoaded() { const video = this.videoPlayerRef?.nativeElement; if (!video) return; this.durationStr = this.formatTime(video.duration); video.play(); this.isPlaying = true; this.startProgressLoop(); this.cdr.markForCheck(); }
 
-  onEnded() { this.isPlaying = false; this.progress = 0; this.stopProgressLoop(); }
+  onEnded() { this.isPlaying = false; this.progress = 0; this.stopProgressLoop(); this.cdr.markForCheck(); }
 
   seek(event: MouseEvent) {
     const video = this.videoPlayerRef?.nativeElement; const bar = event.currentTarget as HTMLElement;
@@ -688,18 +674,30 @@ export class ListFiles implements OnInit {
   toggleFullscreen() { const video = this.videoPlayerRef?.nativeElement; if (!video) return; document.fullscreenElement ? document.exitFullscreen() : video.requestFullscreen(); }
 
   onPlayerMouseMove() {
-    this.controlsHidden = false; clearTimeout(this.controlsTimer);
-    this.controlsTimer = setTimeout(() => { if (this.isPlaying) this.controlsHidden = true; }, 2500);
+    this.controlsHidden = false;
+    this.cdr.markForCheck();
+    clearTimeout(this.controlsTimer);
+    this.controlsTimer = setTimeout(() => { if (this.isPlaying) { this.controlsHidden = true; this.cdr.markForCheck(); } }, 2500);
   }
 
   onPlayerMouseLeave() {
-    if (this.isPlaying) { clearTimeout(this.controlsTimer); this.controlsTimer = setTimeout(() => { this.controlsHidden = true; }, 800); }
+    if (this.isPlaying) {
+      clearTimeout(this.controlsTimer);
+      this.controlsTimer = setTimeout(() => { this.controlsHidden = true; this.cdr.markForCheck(); }, 800);
+    }
   }
 
   private startProgressLoop() {
     this.stopProgressLoop();
     const video = this.videoPlayerRef?.nativeElement; if (!video) return;
-    const tick = () => { if (!video.paused && !video.ended) { this.progress = video.duration ? (video.currentTime / video.duration) * 100 : 0; this.currentTimeStr = this.formatTime(video.currentTime); this.rafId = requestAnimationFrame(tick); } };
+    const tick = () => {
+      if (!video.paused && !video.ended) {
+        this.progress = video.duration ? (video.currentTime / video.duration) * 100 : 0;
+        this.currentTimeStr = this.formatTime(video.currentTime);
+        this.cdr.markForCheck();
+        this.rafId = requestAnimationFrame(tick);
+      }
+    };
     this.rafId = requestAnimationFrame(tick);
   }
 
@@ -817,7 +815,6 @@ export class ListFiles implements OnInit {
 
   onFileDropped(files: FileList) { this.uploadQueue.open(files); }
 
-  // ─── D&D: начало перетаскивания файла-карточки ───
   onFileDragStart(event: DragEvent, file: FileItem) {
     if (!event.dataTransfer) return;
     event.dataTransfer.setData(ListFiles.INTERNAL_FILE_MIME, file.id);
@@ -850,7 +847,6 @@ export class ListFiles implements OnInit {
     this.draggedOverFolderId.set(null);
   }
 
-  // ─── D&D: папка как точка приёма ───
   onFolderDragOver(event: DragEvent, folder: FolderItem) {
     if (!this.isInternalFileDrag(event)) return;
     event.preventDefault();
@@ -863,8 +859,6 @@ export class ListFiles implements OnInit {
 
   onFolderDragLeave(event: DragEvent, folder: FolderItem) {
     if (!this.isInternalFileDrag(event)) return;
-    // dragleave стреляет и при переходе на дочерний элемент — игнорируем,
-    // если курсор всё ещё внутри карточки папки.
     const related = event.relatedTarget as Node | null;
     const target  = event.currentTarget as HTMLElement;
     if (related && target.contains(related)) return;
@@ -929,18 +923,24 @@ export class ListFiles implements OnInit {
     menu.toggle(event);
   }
 
-  shareFile() {
+  async shareFile() {
     const item = this.selectedItem();
     if (!item || !('name' in item)) { this.messageService.add({ severity: 'secondary', summary: 'Внимание', detail: 'Выберите файл для пересылки', life: 1000, key: 'br' }); return; }
-    try { this.shareService.copyShareLink(item.name); this.messageService.add({ severity: 'secondary', summary: 'Успешно', detail: `Ссылка на "${item.name}" скопирована`, life: 1000, key: 'br' }); }
-    catch { this.messageService.add({ severity: 'secondary', summary: 'Ошибка', detail: 'Не удалось скопировать ссылку', life: 1000, key: 'br' }); }
+    try {
+      await this.shareService.copyShareLink(item.name);
+      this.messageService.add({ severity: 'secondary', summary: 'Успешно', detail: `Ссылка на "${item.name}" скопирована`, life: 1000, key: 'br' });
+    } catch {
+      this.messageService.add({ severity: 'secondary', summary: 'Ошибка', detail: 'Не удалось скопировать ссылку', life: 1000, key: 'br' });
+    }
   }
 
   deleteSelected() {
     const item = this.selectedItem(); if (!item) return;
     const isFile = 'downloadUrl' in item && 'mimeType' in item;
     const type: 'file' | 'folder' = isFile ? 'file' : 'folder';
-    this.fileSystem.deleteItem(item.id, type);
-    this.messageService.add({ severity: 'secondary', summary: 'Готово', detail: `${isFile ? 'Файл' : 'Папка'} удалён(а)`, key: 'br' });
+    this.fileSystem.deleteItem(item.id, type).subscribe({
+      next: () => this.messageService.add({ severity: 'secondary', summary: 'Готово', detail: `${isFile ? 'Файл' : 'Папка'} удалён(а)`, key: 'br' }),
+      error: () => this.messageService.add({ severity: 'secondary', summary: 'Ошибка', detail: 'Не удалось удалить', key: 'br' }),
+    });
   }
 }

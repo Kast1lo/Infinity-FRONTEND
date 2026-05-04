@@ -14,25 +14,15 @@ export class ShareService {
     return encodeURIComponent(fileName.trim()).replace(/\./g, '%2E');
   }
 
-  copyShareLink(fileName: string) {
+  async copyShareLink(fileName: string): Promise<void> {
     const profile = this.userService.profile();
-    if (!profile || !profile.username) {
-      return;
-    }
+    if (!profile?.username) throw new Error('Профиль не загружен');
     const shareUrl = `${window.location.origin}/share/${profile.username}/${this.encodeForRoute(fileName)}`;
-    navigator.clipboard.writeText(shareUrl).then(() => {
-    }).catch(() => {
-    });
+    await navigator.clipboard.writeText(shareUrl);
   }
 
-  copyDownloadLink(username: string, fileName: string) {
+  async copyDownloadLink(username: string, fileName: string): Promise<void> {
     const downloadUrl = `${window.location.origin}/share/download/${username}/${this.encodeForRoute(fileName)}`;
-    navigator.clipboard.writeText(downloadUrl).then(() => {
-    }).catch(() => {
-      this.showError('Не удалось скопировать ссылку');
-    });
-  }
-
-  private showError(message: string) {
+    await navigator.clipboard.writeText(downloadUrl);
   }
 }

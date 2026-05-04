@@ -86,7 +86,7 @@
 
 </div>
 
-<!-- ─── СОЗДАТЬ КОЛОНКУ ─── -->
+
 <p-dialog header="Новая колонка" [modal]="true" [style]="{width: '420px'}" [(visible)]="showCreateColumnDialog">
   <div class="dialog-field">
     <label>Название колонки</label>
@@ -98,7 +98,7 @@
   </ng-template>
 </p-dialog>
 
-<!-- ─── СОЗДАТЬ ЗАДАЧУ ─── -->
+
 <p-dialog header="Новая задача" [(visible)]="showCreateTaskDialog" [modal]="true"
   [style]="{width: '600px'}" [dismissableMask]="true">
   <div class="tasks-create">
@@ -160,7 +160,7 @@
   </ng-template>
 </p-dialog>
 
-<!-- ─── ДЕТАЛИ ЗАДАЧИ ─── -->
+
 <p-dialog [(visible)]="showTaskDetailDialog" [modal]="true"
   [style]="{width: '600px'}" [dismissableMask]="true"
   styleClass="task-detail-dialog">
@@ -278,7 +278,7 @@
   </ng-template>
 </p-dialog>
 
-<!-- ─── ПЕРЕИМЕНОВАТЬ КОЛОНКУ ─── -->
+
 <p-dialog header="Переименовать колонку" [(visible)]="showRenameColumnDialog" [modal]="true"
   [style]="{width: '420px'}" [dismissableMask]="true">
   <div class="dialog-field">

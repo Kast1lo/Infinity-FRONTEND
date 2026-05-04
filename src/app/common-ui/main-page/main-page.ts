@@ -19,7 +19,6 @@ export class MainPage implements OnInit, OnDestroy {
   readonly themeService = inject(ThemeService);
   isDark = computed(() => this.themeService.theme() === 'dark');
 
-  // Логотип меняется в зависимости от темы
   imagePath = computed(() =>
     this.isDark() ? 'infinityLogo.svg' : 'infinity.svg'
   );

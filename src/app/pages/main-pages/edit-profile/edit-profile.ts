@@ -46,12 +46,10 @@ export class EditProfile {
   profile   = this.userService.profile;
   isLoading = this.userService.isLoading;
 
-  // ─── Смена логина ───
   newUsername = signal('');
 
   hasUsernameChanges = computed(() => !!this.newUsername());
 
-  // ─── Смена пароля ───
   currentPassword = signal('');
   newPassword     = signal('');
   confirmPassword = signal('');
@@ -68,20 +66,16 @@ export class EditProfile {
     return name.substring(0, 2).toUpperCase();
   });
 
-  // ─── Аватар ───
   selectedFile  = signal<File | null>(null);
   avatarPreview = signal<string | null>(null);
   isUploading   = signal(false);
 
-  // ─── Кроппер ───
   showCropper  = signal(false);
   cropImageSrc = signal<string>('');
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private cropper: any = null;
 
   @ViewChild('cropperImage') cropperImageRef!: ElementRef<HTMLImageElement>;
 
-  // ─── Сохранить логин ───
   saveUsername() {
     if (!this.newUsername()) return;
     const updates: UpdateProfile = { username: this.newUsername() };
@@ -107,7 +101,6 @@ export class EditProfile {
     });
   }
 
-  // ─── Сменить пароль ───
   changePassword() {
     this.pwdError.set(null);
 
@@ -143,7 +136,6 @@ export class EditProfile {
     });
   }
 
-  // ─── Аватар: выбор файла → открыть кроппер ───
   onAvatarFileChange(event: Event) {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
@@ -157,7 +149,6 @@ export class EditProfile {
     };
     reader.readAsDataURL(file);
 
-    // Сброс input чтобы можно было выбрать тот же файл повторно
     (event.target as HTMLInputElement).value = '';
   }
 
@@ -170,7 +161,6 @@ export class EditProfile {
     const img = this.cropperImageRef?.nativeElement;
     if (!img) return;
 
-    // Используем any чтобы избежать конфликтов типов между v1 и v2
     const CropperClass = Cropper as any;
 
     this.cropper = new CropperClass(img, {
@@ -188,12 +178,9 @@ export class EditProfile {
     });
   }
 
-  // ─── Кроппер: подтвердить ───
   confirmCrop() {
     if (!this.cropper) return;
 
-    // getCropperCanvas — метод в v2, getCroppedCanvas — в v1
-    // Определяем автоматически какой метод доступен
     const canvas: HTMLCanvasElement =
       typeof this.cropper.getCropperCanvas === 'function'
         ? this.cropper.getCropperCanvas({ width: 256, height: 256 })
@@ -218,7 +205,6 @@ export class EditProfile {
     this.closeCropper();
   }
 
-  // ─── Кроппер: закрыть ───
   closeCropper() {
     this.showCropper.set(false);
     if (this.cropper) {
@@ -227,13 +213,11 @@ export class EditProfile {
     }
   }
 
-  // ─── Аватар: отмена выбора ───
   cancelAvatarSelect() {
     this.selectedFile.set(null);
     this.avatarPreview.set(null);
   }
 
-  // ─── Аватар: загрузка на сервер ───
   onAvatarUpload() {
     const file = this.selectedFile();
     if (!file) return;
@@ -264,7 +248,6 @@ export class EditProfile {
     });
   }
 
-  // ─── Фон приложения ───
   onCustomBg(event: Event) {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (file) {

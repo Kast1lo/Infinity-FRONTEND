@@ -1,6 +1,6 @@
 <aside class="fone-side-bar">
 
-  <!-- ─── ВЕРХ: аватар ─── -->
+  
   <div class="sb-top">
     <div class="sb-avatar-wrap" routerLink="/profile">
       <p-avatar
@@ -11,7 +11,7 @@
     </div>
   </div>
 
-  <!-- ─── СЕРЕДИНА: навигация ─── -->
+  
   <nav class="sb-nav">
 
     <a class="sb-item" routerLink="/profile" routerLinkActive="sb-item--active" [routerLinkActiveOptions]="{ exact: true }" pTooltip="Профиль" tooltipPosition="right">
@@ -45,10 +45,10 @@
 
   </nav>
 
-  <!-- ─── НИЗ: тема, настройки, выход ─── -->
+  
   <div class="sb-bottom">
 
-    <!-- Переключатель темы -->
+    
     <button
       class="sb-item sb-item--theme"
       (click)="themeService.toggle()"

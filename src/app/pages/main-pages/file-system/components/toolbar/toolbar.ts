@@ -84,8 +84,6 @@ export class Toolbar implements OnInit {
     ];
   }
 
-  // ─── Поиск и фильтры ───
-
   setFilter(filter: FileFilter) {
     this.fileSystem.activeFilter.set(filter);
   }
@@ -97,8 +95,6 @@ export class Toolbar implements OnInit {
   onSearchInput(event: Event) {
     this.fileSystem.searchQuery.set((event.target as HTMLInputElement).value);
   }
-
-  // ─── Загрузка файлов ───
 
   onFilesSelected(event: any) {
     const files: File[] = event.files;
@@ -118,14 +114,10 @@ export class Toolbar implements OnInit {
     });
   }
 
-  // ─── Загрузка папки ───
-
-  // Шаг 1: показываем свой confirm до открытия системного диалога
   triggerFolderUpload() {
     this.folderConfirmVisible.set(true);
   }
 
-  // Шаг 2: пользователь подтвердил — открываем системный диалог
   onFolderConfirmAccept() {
     this.folderConfirmVisible.set(false);
     this.folderInputRef.nativeElement.value = '';
@@ -136,7 +128,6 @@ export class Toolbar implements OnInit {
     this.folderConfirmVisible.set(false);
   }
 
-  // Шаг 3: файлы выбраны — загружаем
   async onFolderSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     const files = input.files;
@@ -175,7 +166,6 @@ export class Toolbar implements OnInit {
     }
   }
 
-  // ─── Действия с выбранным элементом ───
 
   downloadSelected() {
     const item = this.selectedItem();
@@ -192,14 +182,13 @@ export class Toolbar implements OnInit {
     if (!item) return;
     const isFile = 'downloadUrl' in item && 'mimeType' in item;
     const type: 'file' | 'folder' = isFile ? 'file' : 'folder';
-    this.fileSystem.deleteItem(item.id, type);
-    this.messageService.add({
-      severity: 'secondary', summary: 'Готово',
-      detail: `${isFile ? 'Файл' : 'Папка'} удалён(а)`, key: 'br',
+    this.fileSystem.deleteItem(item.id, type).subscribe({
+      next: () => this.messageService.add({ severity: 'secondary', summary: 'Готово', detail: `${isFile ? 'Файл' : 'Папка'} удалён(а)`, key: 'br' }),
+      error: () => this.messageService.add({ severity: 'secondary', summary: 'Ошибка', detail: 'Не удалось удалить', key: 'br' }),
     });
   }
 
-  shareSelected() {
+  async shareSelected() {
     const item = this.selectedItem();
     if (!item || !('name' in item)) {
       this.messageService.add({
@@ -209,7 +198,7 @@ export class Toolbar implements OnInit {
       return;
     }
     try {
-      this.shareService.copyShareLink(item.name);
+      await this.shareService.copyShareLink(item.name);
       this.messageService.add({
         severity: 'secondary', summary: 'Успешно',
         detail: `Ссылка на "${item.name}" скопирована`, life: 1500, key: 'br',
@@ -222,7 +211,6 @@ export class Toolbar implements OnInit {
     }
   }
 
-  // ─── Создать папку ───
 
   openDialog() {
     this.folderName.set('');

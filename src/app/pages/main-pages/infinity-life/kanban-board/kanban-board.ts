@@ -64,14 +64,12 @@ export class KanbanBoard implements OnInit {
   columns = this.tasksService.columns;
   isLoading = this.tasksService.isLoading.asReadonly();
 
-  // ─── Column dialogs ───
   showCreateColumnDialog = signal(false);
   showRenameColumnDialog = signal(false);
   columnToRename = signal<any>(null);
   newColumnName = signal('');
   newColumnNameForRename = signal('');
 
-  // ─── Task dialogs ───
   showCreateTaskDialog = signal(false);
   showTaskDetailDialog = signal(false);
   selectedTask = signal<Task | null>(null);
@@ -79,11 +77,9 @@ export class KanbanBoard implements OnInit {
   newSubtaskTitle = signal('');
   creatingSubtask = signal(false);
 
-  // ─── Date signals (Date | null для p-datepicker) ───
   newTaskDueDate = signal<Date | null>(null);
   detailDueDate = signal<Date | null>(null);
 
-  // ─── Confirm ───
   confirmVisible = signal(false);
   confirmTitle = signal('');
   confirmMessage = signal('');
@@ -128,7 +124,6 @@ export class KanbanBoard implements OnInit {
     ];
   }
 
-  // ─── Confirm ───
 
   openConfirm(title: string, message: string, callback: () => void) {
     this.confirmTitle.set(title);
@@ -150,7 +145,6 @@ export class KanbanBoard implements OnInit {
     this.confirmCallback = null;
   }
 
-  // ─── Date utils ───
 
   isoToDate(iso: string | null | undefined): Date | null {
     if (!iso) return null;
@@ -162,7 +156,6 @@ export class KanbanBoard implements OnInit {
     return date ? date.toISOString() : null;
   }
 
-  // ─── Board ───
 
   loadBoard() {
     this.tasksService.loadBoard().subscribe({
@@ -177,7 +170,6 @@ export class KanbanBoard implements OnInit {
     this.loadBoard();
   }
 
-  // ─── Columns ───
 
   openColumnMenu(event: Event, column: any, menu: any) {
     if (!menu || !this.columnMenuItems) return;
@@ -267,7 +259,6 @@ export class KanbanBoard implements OnInit {
     });
   }
 
-  // ─── Tasks ───
 
   openCreateTaskDialog(columnId: string) {
     this.currentColumnId.set(columnId);
@@ -332,7 +323,6 @@ export class KanbanBoard implements OnInit {
     });
   }
 
-  // ─── Subtasks ───
 
   addSubtask(taskId: string, closeCallback: any) {
     if (this.creatingSubtask()) return;
@@ -343,9 +333,6 @@ export class KanbanBoard implements OnInit {
       .pipe(finalize(() => this.creatingSubtask.set(false)))
       .subscribe({
         next: (newSubtask) => {
-          // Обновляем и selectedTask (виден в диалоге), и доску — иначе при
-          // повторном открытии задачи мы возьмём из columns стейл и подзадача
-          // не отобразится.
           const current = this.selectedTask();
           if (current?.id === taskId) {
             const newSubtasks = [...(current.subtasks || []), newSubtask];
@@ -382,8 +369,6 @@ export class KanbanBoard implements OnInit {
     });
   }
 
-  // Точечно обновляет задачу внутри columns. Гарантирует консистентность
-  // между selectedTask и доской после изменений подзадач.
   private updateTaskInBoard(taskId: string, updater: (t: Task) => Task) {
     this.columns.update(cols => cols.map((col: any) => ({
       ...col,
@@ -391,7 +376,6 @@ export class KanbanBoard implements OnInit {
     })));
   }
 
-  // ─── Completion ───
 
   toggleCompletion(item: Task | Subtask) {
     if ('taskId' in item) {
@@ -441,7 +425,6 @@ export class KanbanBoard implements OnInit {
     return Math.round((subtasks.filter(s => s.isCompleted).length / subtasks.length) * 100);
   }
 
-  // ─── Drag & Drop ───
 
   drop(event: CdkDragDrop<Task[]>, newColumnId: string) {
     if (event.previousContainer === event.container) {
@@ -456,7 +439,6 @@ export class KanbanBoard implements OnInit {
     }
   }
 
-  // ─── Helpers ───
 
   isDueSoon(dueDate: string | null | undefined): boolean {
     if (!dueDate) return false;

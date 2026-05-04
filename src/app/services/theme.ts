@@ -10,10 +10,8 @@ export class ThemeService {
   readonly theme = signal<Theme>(this.getSavedTheme());
 
   constructor(private primeng: PrimeNG) {
-    // Применяем сразу при старте — до рендера
     this.applyTheme(this.theme());
 
-    // И при каждом изменении
     effect(() => {
       this.applyTheme(this.theme());
     });
@@ -26,7 +24,6 @@ export class ThemeService {
   private applyTheme(theme: Theme) {
     const root = document.documentElement;
 
-    // Применяем на document.documentElement (html) — это работает с Shadow DOM компонентов
     if (theme === 'dark') {
       root.classList.remove('light-theme');
       root.classList.add('dark-theme');
@@ -39,7 +36,6 @@ export class ThemeService {
       document.body.classList.add('light-theme');
     }
 
-    // Переключаем цветовую схему PrimeNG
     this.primeng.theme.update(t => ({
       ...t,
       options: {
@@ -54,7 +50,6 @@ export class ThemeService {
   private getSavedTheme(): Theme {
     const saved = localStorage.getItem(this.STORAGE_KEY);
     if (saved === 'light' || saved === 'dark') return saved;
-    // Определяем по системной теме
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   }
 }

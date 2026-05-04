@@ -3,7 +3,7 @@
 
   <p-toast position="bottom-right" key="profile-toast"></p-toast>
 
-  <!-- ── КРОППЕР МОДАЛКА ── -->
+  
   @if (showCropper()) {
     <div class="ep-cropper-backdrop" (click)="closeCropper()">
       <div class="ep-cropper-modal" (click)="$event.stopPropagation()">
@@ -32,10 +32,10 @@
   @if (userService.profile(); as user) {
     <div class="ep-page">
 
-      <!-- ── ЛЕВАЯ КОЛОНКА ── -->
+      
       <div class="ep-left">
 
-        <!-- Аватар -->
+        
         <div class="ep-card ep-avatar-card">
 
           <div class="ep-avatar-wrap" (click)="avatarFileInput.click()">
@@ -90,7 +90,7 @@
 
         </div>
 
-        <!-- Фон -->
+        
         <div class="ep-card ep-bg-card">
           <div class="ep-card-label">Фон приложения</div>
           <div class="ep-bg-upload" (click)="bgFileInput.click()">
@@ -130,10 +130,10 @@
 
       </div>
 
-      <!-- ── ПРАВАЯ КОЛОНКА ── -->
+      
       <div class="ep-right">
 
-        <!-- Смена логина -->
+        
         <div class="ep-card ep-form-card">
           <div class="ep-card-label">Основная информация</div>
 
@@ -169,7 +169,7 @@
           </div>
         </div>
 
-        <!-- Смена пароля -->
+        
         <div class="ep-card ep-form-card ep-pwd-card">
           <div class="ep-card-label">Смена пароля</div>
 

@@ -702,7 +702,7 @@ hr {
 
 .vp-progress-bg { position: absolute; inset: 7px 0; background: rgba(255,255,255,.15); border-radius: 100px; transition: background .2s; }
 .vp-progress-fill { position: absolute; left: 0; top: 7px; bottom: 7px; background: rgba(255,255,255,.85); border-radius: 100px; pointer-events: none; will-change: width; }
-.vp-progress-thumb { position: absolute; top: 50%; width: 14px; height: 14px; border-radius: 50%; background: #fff; transform: translateX(-50%) scale(0); transition: transform .15s, opacity .15s; opacity: 0; pointer-events: none; box-shadow: 0 0 6px rgba(0,0,0,.5); }
+.vp-progress-thumb { position: absolute; top: 50%; margin-top: -7px; width: 14px; height: 14px; border-radius: 50%; background: #fff; transform: translateX(-50%) scale(0); transition: transform .15s, opacity .15s; opacity: 0; pointer-events: none; box-shadow: 0 0 6px rgba(0,0,0,.5); }
 
 .vp-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .vp-bar-left, .vp-bar-right { display: flex; align-items: center; gap: 2px; }

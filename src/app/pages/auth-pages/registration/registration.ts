@@ -4,6 +4,7 @@ import {
   Component,
   computed,
   inject,
+  OnDestroy,
   signal,
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
@@ -36,7 +37,7 @@ import { ThemeService } from '../../../services/theme';
   styleUrl:    './registration.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class Registration {
+export class Registration implements OnDestroy {
   private readonly router      = inject(Router);
   private readonly authService = inject(AuthService);
   private readonly cdr         = inject(ChangeDetectorRef);
@@ -53,6 +54,7 @@ export class Registration {
   isVerifying    = signal(false);
   isResending    = signal(false);
   resendCooldown = signal(0);
+  private cooldownInterval: ReturnType<typeof setInterval> | null = null;
 
   registerModel = signal<RegisterData>({
     username:     '',
@@ -192,12 +194,22 @@ export class Registration {
     });
   }
 
+  ngOnDestroy() {
+    if (this.cooldownInterval !== null) clearInterval(this.cooldownInterval);
+  }
+
   private startResendCooldown() {
+    if (this.cooldownInterval !== null) clearInterval(this.cooldownInterval);
     this.resendCooldown.set(60);
-    const interval = setInterval(() => {
+    this.cooldownInterval = setInterval(() => {
       const current = this.resendCooldown();
-      if (current <= 1) { clearInterval(interval); this.resendCooldown.set(0); }
-      else this.resendCooldown.set(current - 1);
+      if (current <= 1) {
+        clearInterval(this.cooldownInterval!);
+        this.cooldownInterval = null;
+        this.resendCooldown.set(0);
+      } else {
+        this.resendCooldown.set(current - 1);
+      }
       this.cdr.markForCheck();
     }, 1000);
   }
