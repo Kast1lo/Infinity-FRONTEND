@@ -4,8 +4,12 @@
     <img class="sf-logo" [src]="isDark() ? 'infinityLogo.svg' : 'infinity.svg'" alt="Infinity"/>
   </a>
   <div class="sf-nav-cta">
-    <p-button label="Войти" [text]="true" severity="secondary" size="small" routerLink="/login"/>
-    <p-button label="Регистрация" [outlined]="true" severity="secondary" size="small" routerLink="/registration"/>
+    <button class="lang-toggle" (click)="langService.toggle()"
+      [title]="t().langSwitch">
+      {{ langService.lang() === 'ru' ? 'EN' : 'RU' }}
+    </button>
+    <p-button [label]="t().navLogin" [text]="true" severity="secondary" size="small" routerLink="/login"/>
+    <p-button [label]="t().navRegister" [outlined]="true" severity="secondary" size="small" routerLink="/registration"/>
   </div>
 </nav>
 
@@ -19,17 +23,17 @@
   @if (loading()) {
     <div class="sf-state">
       <p-progressSpinner strokeWidth="3"/>
-      <span>Загрузка файла…</span>
+      <span>{{ t().loading }}</span>
     </div>
   }
 
-  @else if (error()) {
+  @else if (errorMsg()) {
     <div class="sf-state sf-state--error">
       <div class="sf-error-icon"><i class="pi pi-exclamation-circle"></i></div>
-      <h2 class="sf-error-title">Файл <em class="gradient-text">не найден</em></h2>
-      <p class="sf-error-msg">{{ error() }}</p>
+      <h2 class="sf-error-title">{{ t().errorTitlePart1 }} <em class="gradient-text">{{ t().errorTitleEm }}</em></h2>
+      <p class="sf-error-msg">{{ errorMsg() }}</p>
       <a class="btn-hero-ghost" routerLink="/">
-        <i class="pi pi-arrow-left"></i> На главную
+        <i class="pi pi-arrow-left"></i> {{ t().errorBack }}
       </a>
     </div>
   }
@@ -38,7 +42,7 @@
 
     <div class="sf-grid">
 
-      
+
       <section class="sf-preview-wrap">
         <span class="sf-preview-glow" aria-hidden="true"></span>
         <div class="sf-preview" [class.sf-preview--media]="isImage(file.mimeType) || isVideo(file.mimeType)">
@@ -96,48 +100,48 @@
                 <span></span><span></span><span></span><span></span><span></span>
                 <span></span><span></span><span></span><span></span><span></span>
               </div>
-              <span class="sf-audio-hint">Нажмите для прослушивания</span>
+              <span class="sf-audio-hint">{{ t().audioHint }}</span>
             </div>
 
           } @else if (isPdf(file.mimeType)) {
             <div class="sf-empty">
               <div class="sf-empty-icon sf-empty-icon--pdf"><i class="pi pi-file-pdf"></i></div>
-              <h3 class="sf-empty-title">PDF документ</h3>
-              <p class="sf-empty-sub">Скачайте файл, чтобы открыть его в просмотрщике</p>
+              <h3 class="sf-empty-title">{{ t().pdfTitle }}</h3>
+              <p class="sf-empty-sub">{{ t().pdfSub }}</p>
             </div>
 
           } @else if (isZip(file.mimeType)) {
             <div class="sf-empty">
               <div class="sf-empty-icon sf-empty-icon--zip"><i class="pi pi-box"></i></div>
-              <h3 class="sf-empty-title">Архив</h3>
-              <p class="sf-empty-sub">Скачайте и распакуйте архивом-ридером</p>
+              <h3 class="sf-empty-title">{{ t().zipTitle }}</h3>
+              <p class="sf-empty-sub">{{ t().zipSub }}</p>
             </div>
 
           } @else if (isDocument(file.mimeType)) {
             <div class="sf-empty">
               <div class="sf-empty-icon sf-empty-icon--doc"><i [class]="'pi ' + getFileIcon(file.mimeType)"></i></div>
               <h3 class="sf-empty-title">{{ getFileType(file.mimeType) }}</h3>
-              <p class="sf-empty-sub">Превью недоступно — скачайте файл</p>
+              <p class="sf-empty-sub">{{ t().previewUnavailableSub }}</p>
             </div>
 
           } @else {
             <div class="sf-empty">
               <div class="sf-empty-icon"><i [class]="'pi ' + getFileIcon(file.mimeType)"></i></div>
               <h3 class="sf-empty-title">{{ getFileExt(file.name) }}</h3>
-              <p class="sf-empty-sub">Превью для этого типа файлов недоступно</p>
+              <p class="sf-empty-sub">{{ t().previewNoTypeSub }}</p>
             </div>
           }
 
         </div>
       </section>
 
-      
+
       <aside class="sf-info">
 
         <div class="sf-info-head">
           <div class="sf-badge">
             <span class="sf-badge-dot"></span>
-            Поделились с вами
+            {{ t().sharedBadge }}
           </div>
 
           <div class="sf-type-icon" [attr.data-kind]="getFileKind(file.mimeType, file.name)">
@@ -156,17 +160,17 @@
 
         <ul class="sf-stats">
           <li class="sf-stat">
-            <span class="sf-stat-label"><i class="pi pi-database"></i> Размер</span>
+            <span class="sf-stat-label"><i class="pi pi-database"></i> {{ t().statSize }}</span>
             <span class="sf-stat-value">
               <strong class="gradient-text">{{ formatSizeShort(file.size) }}</strong> {{ getSizeUnit(file.size) }}
             </span>
           </li>
           <li class="sf-stat">
-            <span class="sf-stat-label"><i class="pi pi-calendar"></i> Загружен</span>
+            <span class="sf-stat-label"><i class="pi pi-calendar"></i> {{ t().statUploaded }}</span>
             <span class="sf-stat-value">{{ file.createdAt | date:'dd MMM yyyy' }}</span>
           </li>
           <li class="sf-stat">
-            <span class="sf-stat-label"><i class="pi pi-clock"></i> Время</span>
+            <span class="sf-stat-label"><i class="pi pi-clock"></i> {{ t().statTime }}</span>
             <span class="sf-stat-value">{{ file.createdAt | date:'HH:mm' }}</span>
           </li>
         </ul>
@@ -174,25 +178,25 @@
         <div class="sf-actions">
           <button class="btn-hero-primary" (click)="downloadFile()">
             <i class="pi pi-download"></i>
-            Скачать <span class="sf-btn-sub">{{ formatSizeFull(file.size) }}</span>
+            {{ t().downloadBtn }} <span class="sf-btn-sub">{{ formatSizeFull(file.size) }}</span>
           </button>
           <div class="sf-actions-row">
             @if (isAudio(file.mimeType, file.name)) {
               <button class="btn-hero-ghost" (click)="openAudio()">
-                <i class="pi pi-play"></i> Прослушать
+                <i class="pi pi-play"></i> {{ t().listenBtn }}
               </button>
             }
             <button class="btn-hero-ghost" (click)="copyLink()">
               <i [class]="linkCopied() ? 'pi pi-check' : 'pi pi-link'"></i>
-              {{ linkCopied() ? 'Скопировано' : 'Ссылка' }}
+              {{ linkCopied() ? t().linkCopied : t().linkBtn }}
             </button>
           </div>
         </div>
 
         <ul class="sf-trust-list">
-          <li class="sf-trust-item"><i class="pi pi-shield"></i> Безопасно</li>
-          <li class="sf-trust-item"><i class="pi pi-eye-slash"></i> Без регистрации</li>
-          <li class="sf-trust-item"><i class="pi pi-bolt"></i> 1 клик</li>
+          <li class="sf-trust-item"><i class="pi pi-shield"></i> {{ t().trustSafe }}</li>
+          <li class="sf-trust-item"><i class="pi pi-eye-slash"></i> {{ t().trustNoReg }}</li>
+          <li class="sf-trust-item"><i class="pi pi-bolt"></i> {{ t().trustOneClick }}</li>
         </ul>
       </aside>
 

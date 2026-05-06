@@ -16,6 +16,7 @@ import { ButtonModule } from 'primeng/button';
 import { ProgressSpinner } from 'primeng/progressspinner';
 import { DialogModule } from 'primeng/dialog';
 import { ThemeService } from '../../services/theme';
+import { LangService } from '../../services/lang';
 import { environment } from '../../../environments/environment';
 
 @Component({
@@ -32,14 +33,23 @@ export class ShareFile implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly http  = inject(HttpClient);
   private readonly cdr   = inject(ChangeDetectorRef);
-  private readonly themeService = inject(ThemeService);
+  private readonly themeService  = inject(ThemeService);
+  readonly         langService   = inject(LangService);
   private readonly apiUrl = environment.apiUrl;
 
   isDark = computed(() => this.themeService.theme() === 'dark');
+  t      = computed(() => this.langService.t().pages.shareFile);
+
+  errorKey = signal<'invalidLink' | 'notFound' | null>(null);
+  errorMsg = computed(() => {
+    const key = this.errorKey();
+    if (!key) return null;
+    const sf = this.t();
+    return key === 'invalidLink' ? sf.errorInvalidLink : sf.errorNotFound;
+  });
 
   fileData   = signal<any>(null);
   loading    = signal(true);
-  error      = signal<string | null>(null);
   linkCopied = signal(false);
 
   isPlaying      = signal(false);
@@ -68,7 +78,7 @@ export class ShareFile implements OnInit {
     const filename  = this.route.snapshot.paramMap.get('filename');
 
     if (!username || !filename) {
-      this.error.set('Неверная ссылка');
+      this.errorKey.set('invalidLink');
       this.loading.set(false);
       return;
     }
@@ -81,7 +91,7 @@ export class ShareFile implements OnInit {
           this.cdr.markForCheck();
         },
         error: () => {
-          this.error.set('Файл не найден или ссылка недействительна');
+          this.errorKey.set('notFound');
           this.loading.set(false);
           this.cdr.markForCheck();
         },
@@ -125,14 +135,15 @@ export class ShareFile implements OnInit {
   }
 
   getFileType(mimeType: string): string {
-    if (mimeType?.startsWith('image/'))  return 'Изображение';
-    if (mimeType?.startsWith('video/'))  return 'Видео';
-    if (mimeType?.startsWith('audio/'))  return 'Аудио';
+    const sf = this.langService.t().pages.shareFile;
+    if (mimeType?.startsWith('image/'))  return sf.typeImage;
+    if (mimeType?.startsWith('video/'))  return sf.typeVideo;
+    if (mimeType?.startsWith('audio/'))  return sf.typeAudio;
     if (mimeType === 'application/pdf')  return 'PDF';
     if (mimeType?.includes('word'))      return 'Word';
     if (mimeType?.includes('excel'))     return 'Excel';
-    if (mimeType?.includes('zip'))       return 'Архив';
-    return 'Документ';
+    if (mimeType?.includes('zip'))       return sf.typeZip;
+    return sf.typeDoc;
   }
 
   formatSizeShort(size: string | number): string {
@@ -146,20 +157,22 @@ export class ShareFile implements OnInit {
 
   formatSizeFull(size: string | number): string {
     const bytes = typeof size === 'string' ? parseInt(size, 10) : size;
-    if (isNaN(bytes)) return '0 Б';
-    if (bytes < 1024)        return `${bytes} Б`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} КБ`;
-    if (bytes < 1024 ** 3)   return `${(bytes / 1024 ** 2).toFixed(1)} МБ`;
-    return `${(bytes / 1024 ** 3).toFixed(1)} ГБ`;
+    const u = this.langService.t().pages.shareFile;
+    if (isNaN(bytes)) return `0 ${u.unitB}`;
+    if (bytes < 1024)        return `${bytes} ${u.unitB}`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} ${u.unitKB}`;
+    if (bytes < 1024 ** 3)   return `${(bytes / 1024 ** 2).toFixed(1)} ${u.unitMB}`;
+    return `${(bytes / 1024 ** 3).toFixed(1)} ${u.unitGB}`;
   }
 
   getSizeUnit(size: string | number): string {
     const bytes = typeof size === 'string' ? parseInt(size, 10) : size;
-    if (isNaN(bytes))        return 'Б';
-    if (bytes < 1024)        return 'Б';
-    if (bytes < 1024 * 1024) return 'КБ';
-    if (bytes < 1024 ** 3)   return 'МБ';
-    return 'ГБ';
+    const u = this.langService.t().pages.shareFile;
+    if (isNaN(bytes))        return u.unitB;
+    if (bytes < 1024)        return u.unitB;
+    if (bytes < 1024 * 1024) return u.unitKB;
+    if (bytes < 1024 ** 3)   return u.unitMB;
+    return u.unitGB;
   }
 
   getFileKind(mimeType: string, name?: string): string {

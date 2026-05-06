@@ -41,7 +41,7 @@
     <div class="hero-badge hero-badge-sm"><i class="pi pi-check-circle"></i> {{ t().hero.badge2 }}</div>
     <div class="hero-badge hero-badge-sm"><i class="pi pi-lock"></i> {{ t().hero.badge3 }}</div>
   </div>
-  <h1 class="hero-title">{{ t().hero.title1 }}<br><em class="gradient-text">{{ t().hero.title2 }}</em><br>{{ t().hero.title3 }}</h1>
+  <h1 class="hero-title">{{ t().hero.title1 }}@if (langService.lang() === 'ru') {<br>}@else { }<em class="gradient-text">{{ t().hero.title2 }}</em><br>{{ t().hero.title3 }}</h1>
   <p class="hero-subtitle">{{ t().hero.subtitle }}</p>
   <div class="hero-meta">
     <span class="hero-meta-item"><i class="pi pi-th-large"></i> {{ t().hero.meta1 }}</span>
@@ -133,7 +133,7 @@
         <span class="hp-plan-badge"><span class="hp-plan-dot"></span> {{ t().bento.planActive }}</span>
         <span class="hp-plan-name">Infinity <em class="gradient-text">Pulse</em></span>
         <span class="hp-plan-meta">{{ t().bento.planMeta }}</span>
-        <span class="hp-plan-price">399 ₽<em>{{ t().bento.planPeriod }}</em></span>
+        <span class="hp-plan-price">{{ t().bento.planPrice }}<em>{{ t().bento.planPeriod }}</em></span>
       </div>
 
 
@@ -171,7 +171,7 @@
 
   <div class="trust-strip">
     <ul class="trust-list">
-      @for (item of trust(); track item.label) {
+      @for (item of trust(); track $index) {
         <li class="trust-item"><i [class]="item.icon"></i><span>{{ item.label }}</span></li>
       }
     </ul>
@@ -189,7 +189,7 @@
 
 
     <div class="stats-strip reveal">
-      @for (s of stats(); track s.label) {
+      @for (s of stats(); track $index) {
         <div class="stat-cell" [class.stat-cell--accent]="s.num === '∞'">
           <div class="stat-num">{{ s.num }}</div>
           <div class="stat-label">{{ s.label }}</div>
@@ -199,7 +199,7 @@
 
 
     <div class="features-grid">
-      @for (f of features(); let i = $index; track f.title) {
+      @for (f of features(); let i = $index; track $index) {
         <div class="feat-card reveal"
           [class.reveal-delay-1]="i % 3 === 0"
           [class.reveal-delay-2]="i % 3 === 1"
@@ -430,7 +430,7 @@
           <h3 class="plan-name">Infinity <em class="gradient-text">Spark</em></h3>
           <p class="plan-slogan">{{ t().pricing.spark.slogan }}</p>
           <div class="plan-price">
-            <span class="price-num">0</span><span class="price-currency">₽</span><span class="price-period">{{ t().pricing.spark.period }}</span>
+            <span class="price-num">{{ t().pricing.spark.priceNum }}</span><span class="price-currency">{{ t().pricing.spark.priceCurrency }}</span><span class="price-period">{{ t().pricing.spark.period }}</span>
           </div>
         </div>
         <ul class="plan-features">
@@ -450,7 +450,7 @@
           <h3 class="plan-name">Infinity <em class="gradient-text">Pulse</em></h3>
           <p class="plan-slogan">{{ t().pricing.pulse.slogan }}</p>
           <div class="plan-price">
-            <span class="price-num">399</span><span class="price-currency">₽</span><span class="price-period">{{ t().pricing.pulse.period }}</span>
+            <span class="price-num">{{ t().pricing.pulse.priceNum }}</span><span class="price-currency">{{ t().pricing.pulse.priceCurrency }}</span><span class="price-period">{{ t().pricing.pulse.period }}</span>
           </div>
         </div>
         <ul class="plan-features">
@@ -472,7 +472,7 @@
           <h3 class="plan-name">Infinity <em class="gradient-text">Horizon</em></h3>
           <p class="plan-slogan">{{ t().pricing.horizon.slogan }}</p>
           <div class="plan-price">
-            <span class="price-num">3599</span><span class="price-currency">₽</span><span class="price-period">{{ t().pricing.horizon.period }}</span>
+            <span class="price-num">{{ t().pricing.horizon.priceNum }}</span><span class="price-currency">{{ t().pricing.horizon.priceCurrency }}</span><span class="price-period">{{ t().pricing.horizon.period }}</span>
           </div>
           <p class="price-note">{{ t().pricing.horizon.note }}</p>
         </div>
@@ -494,7 +494,7 @@
           <h3 class="plan-name">Infinity <em class="gradient-text">Eternal</em></h3>
           <p class="plan-slogan">{{ t().pricing.eternal.slogan }}</p>
           <div class="plan-price">
-            <span class="price-num">4999</span><span class="price-currency">₽</span><span class="price-period">{{ t().pricing.eternal.period }}</span>
+            <span class="price-num">{{ t().pricing.eternal.priceNum }}</span><span class="price-currency">{{ t().pricing.eternal.priceCurrency }}</span><span class="price-period">{{ t().pricing.eternal.period }}</span>
           </div>
           <p class="price-note">{{ t().pricing.eternal.note }}</p>
         </div>
@@ -523,7 +523,7 @@
       <p class="section-sub">{{ t().faqSection.subtitle }}</p>
     </div>
     <div class="faq-list">
-      @for (item of faqs(); let i = $index; track item.q) {
+      @for (item of faqs(); let i = $index; track $index) {
         <div class="faq-item reveal" [class.faq-item--open]="openFaq === i">
           <button class="faq-q" (click)="toggleFaq(i)" [attr.aria-expanded]="openFaq === i">
             <span>{{ item.q }}</span>

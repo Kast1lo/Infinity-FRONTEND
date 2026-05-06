@@ -114,6 +114,25 @@
 
 .sf-nav-cta { display: flex; gap: 6px; align-items: center; }
 
+.lang-toggle {
+  display: flex; align-items: center; justify-content: center;
+  height: 32px; padding: 0 12px;
+  border-radius: 100px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px; font-weight: 600; letter-spacing: .04em;
+  cursor: pointer;
+  transition: color .2s, border-color .2s, background .2s;
+
+  &:hover {
+    color: var(--text);
+    border-color: var(--text-muted);
+    background: var(--surface-hover);
+  }
+}
+
 ::ng-deep .sf-nav-cta .p-button {
   font-family: 'DM Sans', sans-serif !important;
   border-radius: 100px !important;
