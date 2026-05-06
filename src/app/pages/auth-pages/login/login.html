@@ -19,7 +19,7 @@
         <div class="field-wrap">
           <div class="input-field" [class.input-field--error]="showUsernameError()">
             <i class="pi pi-user field-icon"></i>
-            <input pInputText placeholder="Введите логин" [formField]="loginForm.username"/>
+            <input pInputText [placeholder]="t().usernamePlaceholder" [formField]="loginForm.username"/>
           </div>
           @if (showUsernameError()) {
             <span class="field-error">{{ usernameError() }}</span>
@@ -30,7 +30,7 @@
           <div class="input-field" [class.input-field--error]="showPasswordError()">
             <i class="pi pi-lock field-icon"></i>
             <p-password
-              placeholder="Пароль"
+              [placeholder]="t().passwordPlaceholder"
               [toggleMask]="true"
               [feedback]="false"
               [formField]="$any(loginForm.passwordHash)"
@@ -50,20 +50,20 @@
       <div class="btn-submit">
         <p-button
           type="submit"
-          label="Войти"
+          [label]="t().submitBtn"
           [loading]="isSubmitting()"
           [disabled]="isSubmitting()"
         />
       </div>
 
-      
+
       <div class="auth-divider">
         <span class="auth-divider-line"></span>
-        <span class="auth-divider-text">или</span>
+        <span class="auth-divider-text">{{ t().dividerOr }}</span>
         <span class="auth-divider-line"></span>
       </div>
 
-      
+
       <a class="btn-google" [href]="googleAuthUrl">
         <svg class="btn-google-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -71,11 +71,11 @@
           <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
           <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
         </svg>
-        <span>Войти через Google</span>
+        <span>{{ t().googleBtn }}</span>
       </a>
 
-      <p class="notreg">Ещё не зарегистрированы?</p>
-      <p-button class="go-login" routerLink="/registration" label="Зарегистрироваться"/>
+      <p class="notreg">{{ t().noAccount }}</p>
+      <p-button class="go-login" routerLink="/registration" [label]="t().registerBtn"/>
 
     </div>
   </form>

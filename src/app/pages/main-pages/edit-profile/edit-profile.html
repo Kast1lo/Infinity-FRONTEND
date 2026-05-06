@@ -8,7 +8,7 @@
     <div class="ep-cropper-backdrop" (click)="closeCropper()">
       <div class="ep-cropper-modal" (click)="$event.stopPropagation()">
         <div class="ep-cropper-header">
-          <span class="ep-cropper-title">Выберите область</span>
+          <span class="ep-cropper-title">{{ t().cropTitle }}</span>
           <button class="ep-cropper-close" (click)="closeCropper()">
             <i class="pi pi-times"></i>
           </button>
@@ -18,11 +18,11 @@
         </div>
         <div class="ep-cropper-footer">
           <button class="ep-cropper-btn ep-cropper-btn--cancel" (click)="closeCropper()">
-            Отмена
+            {{ t().cropCancel }}
           </button>
           <button class="ep-cropper-btn ep-cropper-btn--confirm" (click)="confirmCrop()">
             <i class="pi pi-check"></i>
-            Применить
+            {{ t().cropApply }}
           </button>
         </div>
       </div>
@@ -78,7 +78,7 @@
                 [class.pi-spinner]="isUploading()"
                 [class.pi-spin]="isUploading()"
               ></i>
-              {{ isUploading() ? 'Загрузка...' : selectedFile() ? 'Сохранить фото' : 'Изменить фото' }}
+              {{ isUploading() ? t().uploading : selectedFile() ? t().savePhoto : t().changePhoto }}
             </button>
 
             @if (selectedFile()) {
@@ -92,14 +92,14 @@
 
         
         <div class="ep-card ep-bg-card">
-          <div class="ep-card-label">Фон приложения</div>
+          <div class="ep-card-label">{{ t().bgLabel }}</div>
           <div class="ep-bg-upload" (click)="bgFileInput.click()">
             <i class="pi pi-cloud-upload"></i>
-            <span>Загрузить изображение</span>
+            <span>{{ t().bgUpload }}</span>
             <input #bgFileInput type="file" accept="image/*" style="display:none" (change)="onCustomBg($event)" />
           </div>
           @if (bgService.history().length > 0) {
-            <div class="ep-card-label ep-bg-history-label">История</div>
+            <div class="ep-card-label ep-bg-history-label">{{ t().bgHistoryLabel }}</div>
             <div class="ep-bg-grid">
               @for (url of bgService.history(); track url) {
                 <div
@@ -123,7 +123,7 @@
           }
           @if (bgService.backgroundUrl()) {
             <button class="ep-reset-bg" (click)="bgService.clearBackground()">
-              <i class="pi pi-eye-slash"></i> Убрать фон
+              <i class="pi pi-eye-slash"></i> {{ t().bgRemove }}
             </button>
           }
         </div>
@@ -135,10 +135,10 @@
 
         
         <div class="ep-card ep-form-card">
-          <div class="ep-card-label">Основная информация</div>
+          <div class="ep-card-label">{{ t().infoLabel }}</div>
 
           <div class="ep-field">
-            <label class="ep-field-label">Текущий логин</label>
+            <label class="ep-field-label">{{ t().currentLoginLabel }}</label>
             <div class="ep-input-wrap ep-input-wrap--readonly">
               <i class="pi pi-user ep-input-icon"></i>
               <input pInputText [value]="user.username" class="ep-input" readonly />
@@ -146,13 +146,13 @@
           </div>
 
           <div class="ep-field">
-            <label class="ep-field-label">Новый логин</label>
+            <label class="ep-field-label">{{ t().newLoginLabel }}</label>
             <div class="ep-input-wrap">
               <i class="pi pi-user ep-input-icon"></i>
               <input
                 pInputText
                 [(ngModel)]="newUsername"
-                placeholder="Введите новый логин"
+                [placeholder]="t().newLoginPlaceholder"
                 class="ep-input"
               />
             </div>
@@ -160,7 +160,7 @@
 
           <div class="ep-form-actions">
             <p-button
-              label="Сохранить логин"
+              [label]="t().saveLoginBtn"
               icon="pi pi-check"
               [disabled]="!hasUsernameChanges() || isLoading()"
               [loading]="isLoading()"
@@ -171,15 +171,15 @@
 
         
         <div class="ep-card ep-form-card ep-pwd-card">
-          <div class="ep-card-label">Смена пароля</div>
+          <div class="ep-card-label">{{ t().pwdSectionLabel }}</div>
 
           <div class="ep-field">
-            <label class="ep-field-label">Текущий пароль</label>
+            <label class="ep-field-label">{{ t().currentPwdLabel }}</label>
             <div class="ep-input-wrap">
               <i class="pi pi-lock ep-input-icon"></i>
               <p-password
                 [(ngModel)]="currentPassword"
-                placeholder="Введите текущий пароль"
+                [placeholder]="t().currentPwdPlaceholder"
                 [toggleMask]="true"
                 [feedback]="false"
                 styleClass="ep-pwd-input"
@@ -188,12 +188,12 @@
           </div>
 
           <div class="ep-field">
-            <label class="ep-field-label">Новый пароль</label>
+            <label class="ep-field-label">{{ t().newPwdLabel }}</label>
             <div class="ep-input-wrap">
               <i class="pi pi-lock-open ep-input-icon"></i>
               <p-password
                 [(ngModel)]="newPassword"
-                placeholder="Минимум 6 символов"
+                [placeholder]="t().newPwdPlaceholder"
                 [toggleMask]="true"
                 [feedback]="false"
                 styleClass="ep-pwd-input"
@@ -202,12 +202,12 @@
           </div>
 
           <div class="ep-field">
-            <label class="ep-field-label">Подтвердите новый пароль</label>
+            <label class="ep-field-label">{{ t().confirmPwdLabel }}</label>
             <div class="ep-input-wrap">
               <i class="pi pi-lock-open ep-input-icon"></i>
               <p-password
                 [(ngModel)]="confirmPassword"
-                placeholder="Повторите новый пароль"
+                [placeholder]="t().confirmPwdPlaceholder"
                 [toggleMask]="true"
                 [feedback]="false"
                 styleClass="ep-pwd-input"
@@ -221,7 +221,7 @@
 
           <div class="ep-form-actions">
             <p-button
-              label="Сменить пароль"
+              [label]="t().changePwdBtn"
               icon="pi pi-shield"
               [disabled]="!hasPasswordChanges() || isChangingPwd()"
               [loading]="isChangingPwd()"

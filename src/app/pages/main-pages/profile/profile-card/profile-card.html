@@ -5,7 +5,6 @@
   @if (userService.profile(); as profile) {
     <div class="profile-content">
 
-      
       <div class="profile-header">
         <div class="avatar-wrap">
           <p-avatar [image]="avatarUrl()" size="xlarge" shape="circle"/>
@@ -14,7 +13,6 @@
           <h1 class="profile-name">{{ profile.username }}</h1>
           <p class="profile-email">{{ profile.email }}</p>
 
-          
           @if (planInfo(); as plan) {
             <div class="plan-badge-wrap">
               <span class="plan-badge" [ngClass]="'badge--' + plan.planType">
@@ -22,56 +20,53 @@
                 {{ planBadgeMap[plan.planType]?.label ?? plan.planType }}
               </span>
 
-              
               @if (plan.planType === 'spark' && !plan.isFrozen && plan.daysLeft !== null) {
                 <span class="plan-timer" [class.plan-timer--warn]="plan.daysLeft <= 2">
                   <i class="pi pi-clock"></i>
                   @if (plan.daysLeft > 0) {
-                    {{ plan.daysLeft }} {{ plan.daysLeft === 1 ? 'день' : plan.daysLeft < 5 ? 'дня' : 'дней' }}
+                    {{ plan.daysLeft }} {{ daysWord(plan.daysLeft) }}
                   } @else {
-                    Истекает сегодня
+                    {{ t().expiresToday }}
                   }
                 </span>
               }
 
-              
               @if (plan.isFrozen) {
                 <span class="plan-timer plan-timer--frozen">
                   <i class="pi pi-lock"></i>
-                  Данные заморожены · удаление через {{ plan.freezeDaysLeft }} дн.
+                  {{ t().frozenNoticePrefix }} {{ plan.freezeDaysLeft }} {{ t().frozenNoticeSuffix }}
                 </span>
               }
             </div>
           }
         </div>
         <div class="profile-header-actions">
-          <p-button label="Редактировать" icon="pi pi-pencil" [outlined]="true" severity="secondary" routerLink="/edit"/>
+          <p-button [label]="t().editBtn" icon="pi pi-pencil" [outlined]="true" severity="secondary" routerLink="/edit"/>
           <p-button icon="pi pi-sign-out" [text]="true" severity="secondary" (onClick)="authService.logout()" routerLink="/login"/>
         </div>
       </div>
 
-      
       <div class="stats-grid">
         <div class="stat-card">
-          <div class="stat-label">Всего задач</div>
+          <div class="stat-label">{{ t().totalTasksLabel }}</div>
           <div class="stat-num">{{ totalTasks() }}</div>
           <div class="stat-sub">
-            <span class="stat-done">{{ completedTasks() }} выполнено</span>
+            <span class="stat-done">{{ completedTasks() }} {{ t().completedSuffix }}</span>
             <span class="stat-sep">·</span>
-            <span class="stat-left">{{ totalTasks() - completedTasks() }} осталось</span>
+            <span class="stat-left">{{ totalTasks() - completedTasks() }} {{ t().remainingSuffix }}</span>
           </div>
         </div>
 
         <div class="stat-card">
-          <div class="stat-label">Файлов</div>
+          <div class="stat-label">{{ t().filesLabel }}</div>
           <div class="stat-num">{{ totalFiles() }}</div>
           <div class="stat-sub">
-            <span class="stat-done">{{ totalFolders() }} папок</span>
+            <span class="stat-done">{{ totalFolders() }} {{ t().foldersSuffix }}</span>
           </div>
         </div>
 
         <div class="stat-card">
-          <div class="stat-label">Колонок на доске</div>
+          <div class="stat-label">{{ t().columnsLabel }}</div>
           <div class="stat-num">{{ infinityLife.columns().length }}</div>
           <div class="stat-sub">
             <span class="stat-done">Kanban</span>
@@ -79,13 +74,11 @@
         </div>
       </div>
 
-      
       @if (planInfo(); as plan) {
         <div class="plan-section">
 
-          
           <div class="plan-card storage-card">
-            <div class="section-label">Хранилище</div>
+            <div class="section-label">{{ t().storageSectionLabel }}</div>
             <div class="storage-numbers">
               <span class="storage-used" [style.color]="storageColor">{{ storageUsedLabel }}</span>
               <span class="storage-sep">/</span>
@@ -102,45 +95,42 @@
               <span class="storage-percent">{{ storagePercent }}%</span>
             </div>
             <div class="storage-hint">
-              {{ storageLimitLabel }} доступно на тарифе {{ plan.planLabel }}
+              {{ storageLimitLabel }} {{ t().storageAvailable }} {{ plan.planLabel }}
             </div>
           </div>
 
-          
           <div class="plan-card plan-info-card" [class.plan-card--eternal]="plan.planType === 'eternal'">
-            <div class="section-label">Тариф</div>
+            <div class="section-label">{{ t().planSectionLabel }}</div>
             <div class="plan-info-row">
               <div class="plan-info-name">{{ plan.planLabel }}</div>
               @if (plan.planType === 'spark' && !plan.isFrozen) {
                 <div class="plan-info-expires">
-                  Триал истекает: {{ plan.planExpiresAt | date:'dd.MM.yyyy' }}
+                  {{ t().trialExpires }} {{ plan.planExpiresAt | date:'dd.MM.yyyy' }}
                 </div>
               }
               @if (plan.isFrozen) {
                 <div class="plan-info-frozen">
                   <i class="pi pi-exclamation-triangle"></i>
-                  Данные заморожены. Оформите подписку.
+                  {{ t().dataFrozenNotice }}
                 </div>
               }
             </div>
 
-            
             @if (plan.planType === 'eternal') {
               <ul class="plan-features-list">
-                <li><i class="pi pi-check"></i> 1 ТБ хранилища навсегда</li>
-                <li><i class="pi pi-check"></i> Безлимитные задачи и доски</li>
-                <li><i class="pi pi-check"></i> Все будущие обновления</li>
-                <li><i class="pi pi-infinity"></i> Никаких платежей — никогда</li>
+                <li><i class="pi pi-check"></i> {{ t().eternalF1 }}</li>
+                <li><i class="pi pi-check"></i> {{ t().eternalF2 }}</li>
+                <li><i class="pi pi-check"></i> {{ t().eternalF3 }}</li>
+                <li><i class="pi pi-infinity"></i> {{ t().eternalF4 }}</li>
               </ul>
             }
 
-            
             @if (plan.planType !== 'eternal') {
               <div class="promo-section">
                 @if (!showPromoInput()) {
                   <button class="promo-toggle-btn" (click)="showPromoInput.set(true)">
                     <i class="pi pi-tag"></i>
-                    Ввести промокод
+                    {{ t().enterPromo }}
                   </button>
                 } @else {
                   <div class="promo-input-row">
@@ -160,7 +150,7 @@
                       @if (promoLoading()) {
                         <i class="pi pi-spinner pi-spin"></i>
                       } @else {
-                        Применить
+                        {{ t().applyPromo }}
                       }
                     </button>
                     <button class="promo-cancel-btn" (click)="showPromoInput.set(false); promoCode.set('')">
@@ -175,10 +165,9 @@
         </div>
       }
 
-      
       <div class="progress-section">
         <div class="progress-card knob-card">
-          <div class="section-label">Выполнение задач</div>
+          <div class="section-label">{{ t().progressLabel }}</div>
           <div class="knob-wrap">
             <p-knob
               [(ngModel)]="knobValue"
@@ -193,23 +182,23 @@
           <div class="knob-legend">
             <div class="legend-item">
               <span class="legend-dot done"></span>
-              <span>Выполнено — {{ completedTasks() }}</span>
+              <span>{{ t().legendDone }} — {{ completedTasks() }}</span>
             </div>
             <div class="legend-item">
               <span class="legend-dot left"></span>
-              <span>Осталось — {{ totalTasks() - completedTasks() }}</span>
+              <span>{{ t().legendLeft }} — {{ totalTasks() - completedTasks() }}</span>
             </div>
           </div>
         </div>
 
         <div class="progress-card links-card">
-          <div class="section-label">Быстрый переход</div>
+          <div class="section-label">{{ t().quickNavLabel }}</div>
           <div class="quick-links">
             <a class="quick-link" routerLink="/infinity-life">
               <div class="ql-icon"><i class="pi pi-objects-column"></i></div>
               <div class="ql-text">
-                <span class="ql-title">Kanban-доска</span>
-                <span class="ql-sub">{{ infinityLife.columns().length }} колонок · {{ totalTasks() }} задач</span>
+                <span class="ql-title">{{ t().kanbanLinkTitle }}</span>
+                <span class="ql-sub">{{ infinityLife.columns().length }} {{ t().kanbanColsSuffix }} · {{ totalTasks() }} {{ t().kanbanTasksSuffix }}</span>
               </div>
               <i class="pi pi-chevron-right ql-arrow"></i>
             </a>
@@ -217,8 +206,8 @@
             <a class="quick-link" routerLink="/file-system">
               <div class="ql-icon"><i class="pi pi-folder-open"></i></div>
               <div class="ql-text">
-                <span class="ql-title">Хранилище файлов</span>
-                <span class="ql-sub">{{ totalFiles() }} файлов · {{ totalFolders() }} папок</span>
+                <span class="ql-title">{{ t().storageLinkTitle }}</span>
+                <span class="ql-sub">{{ totalFiles() }} {{ t().storageFilesSuffix }} · {{ totalFolders() }} {{ t().storageFoldersSuffix }}</span>
               </div>
               <i class="pi pi-chevron-right ql-arrow"></i>
             </a>
@@ -226,8 +215,8 @@
             <a class="quick-link" routerLink="/edit">
               <div class="ql-icon"><i class="pi pi-user-edit"></i></div>
               <div class="ql-text">
-                <span class="ql-title">Редактировать профиль</span>
-                <span class="ql-sub">Аватар, логин, email</span>
+                <span class="ql-title">{{ t().editLinkTitle }}</span>
+                <span class="ql-sub">{{ t().editLinkSub }}</span>
               </div>
               <i class="pi pi-chevron-right ql-arrow"></i>
             </a>

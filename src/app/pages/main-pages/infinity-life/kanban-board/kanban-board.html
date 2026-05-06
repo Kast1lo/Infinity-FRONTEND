@@ -4,9 +4,9 @@
     <div class="no-columns-info">
       <div class="info">
         <i class="pi pi-objects-column" style="font-size: 2rem"></i>
-        <h2>У вас пока нет колонок</h2>
-        <p>Создайте первую колонку, чтобы начать организовывать свои задачи</p>
-        <p-button label="Создать первую доску" (onClick)="showCreateColumnDialog.set(true)"/>
+        <h2>{{ t().noColumnsTitle }}</h2>
+        <p>{{ t().noColumnsDesc }}</p>
+        <p-button [label]="t().noColumnsBtn" (onClick)="showCreateColumnDialog.set(true)"/>
       </div>
     </div>
   } @else {
@@ -53,7 +53,7 @@
               </div>
             }
             <div class="new-task-button">
-              <p-button label="Создать задачу" icon="pi pi-plus" severity="secondary" text fluid
+              <p-button [label]="t().createTaskBtn" icon="pi pi-plus" severity="secondary" text fluid
                 (onClick)="openCreateTaskDialog(column.id)"/>
             </div>
           </div>
@@ -64,14 +64,14 @@
       <div class="add-column-card">
         <p-inplace #inplace>
           <ng-template #display>
-            <div><span class="create-col">+ Создать новую колонку</span></div>
+            <div><span class="create-col">{{ t().createNewCol }}</span></div>
           </ng-template>
           <ng-template #content let-closeCallback="closeCallback">
             <div>
               <input pInputText type="text" [(ngModel)]="newColumnName"
-                placeholder="Название колонки" (keyup.enter)="createColumnAndClose(inplace)" autofocus/>
+                [placeholder]="t().colNamePlaceholder" (keyup.enter)="createColumnAndClose(inplace)" autofocus/>
               <div class="buttons-col">
-                <p-button label="Создать" icon="pi pi-check" size="small"
+                <p-button [label]="t().createBtn" icon="pi pi-check" size="small"
                   [disabled]="!newColumnName().trim()" (onClick)="createColumnAndClose(inplace)"/>
                 <p-button icon="pi pi-times" severity="secondary" text size="small"
                   (onClick)="closeCallback($event)"/>
@@ -87,42 +87,42 @@
 </div>
 
 
-<p-dialog header="Новая колонка" [modal]="true" [style]="{width: '420px'}" [(visible)]="showCreateColumnDialog">
+<p-dialog [header]="t().newColDialogTitle" [modal]="true" [style]="{width: '420px'}" [(visible)]="showCreateColumnDialog">
   <div class="dialog-field">
-    <label>Название колонки</label>
+    <label>{{ t().colNameLabel }}</label>
     <input pInputText type="text" [(ngModel)]="newColumnName" autofocus fluid>
   </div>
   <ng-template pTemplate="footer">
-    <p-button label="Отмена" severity="secondary" text (onClick)="showCreateColumnDialog.set(false)"/>
-    <p-button label="Создать" [disabled]="!newColumnName().trim()" (onClick)="createColumn()"/>
+    <p-button [label]="t().cancelBtn" severity="secondary" text (onClick)="showCreateColumnDialog.set(false)"/>
+    <p-button [label]="t().createBtn" [disabled]="!newColumnName().trim()" (onClick)="createColumn()"/>
   </ng-template>
 </p-dialog>
 
 
-<p-dialog header="Новая задача" [(visible)]="showCreateTaskDialog" [modal]="true"
+<p-dialog [header]="t().newTaskDialogTitle" [(visible)]="showCreateTaskDialog" [modal]="true"
   [style]="{width: '600px'}" [dismissableMask]="true">
   <div class="tasks-create">
 
     <div class="dialog-field">
-      <label>Название</label>
-      <input pInputText [(ngModel)]="newTask().title" placeholder="Что нужно сделать?" autofocus fluid>
+      <label>{{ t().taskNameLabel }}</label>
+      <input pInputText [(ngModel)]="newTask().title" [placeholder]="t().taskNamePlaceholder" autofocus fluid>
     </div>
 
     <div class="dialog-row">
       <div class="dialog-field">
-        <label>Приоритет</label>
-        <p-select [(ngModel)]="newTask().priority" [options]="priorities"
-          optionLabel="label" optionValue="value" placeholder="Выберите приоритет" fluid/>
+        <label>{{ t().priorityLabel }}</label>
+        <p-select [(ngModel)]="newTask().priority" [options]="priorities()"
+          optionLabel="label" optionValue="value" [placeholder]="t().priorityPlaceholder" fluid/>
       </div>
       <div class="dialog-field">
-        <label>Дедлайн</label>
+        <label>{{ t().deadlineLabel }}</label>
         <p-datepicker
           [(ngModel)]="newTaskDueDate"
           [showIcon]="true"
           [showOnFocus]="false"
           [showClear]="true"
           dateFormat="dd.mm.yy"
-          placeholder="дд.мм.гггг"
+          [placeholder]="t().deadlinePlaceholder"
           [minDate]="today"
           appendTo="body"
           fluid
@@ -131,9 +131,9 @@
     </div>
 
     <div class="dialog-field">
-      <label>Метка</label>
+      <label>{{ t().labelLabel }}</label>
       <div class="color-picker">
-        @for (c of labelColors; track c.value) {
+        @for (c of labelColors(); track c.value) {
           <button class="color-dot"
             [class.color-dot--active]="newTask().color === c.value"
             [style.background]="c.hex === 'transparent' ? 'transparent' : c.hex"
@@ -147,15 +147,15 @@
     </div>
 
     <div class="dialog-field">
-      <label>Описание</label>
+      <label>{{ t().descLabel }}</label>
       <textarea pTextarea rows="4" [(ngModel)]="newTask().notes"
-        placeholder="Добавьте описание, ссылки, детали..." autoResize fluid></textarea>
+        [placeholder]="t().descPlaceholder" autoResize fluid></textarea>
     </div>
 
   </div>
   <ng-template pTemplate="footer">
-    <p-button label="Отмена" severity="secondary" text (onClick)="showCreateTaskDialog.set(false)"/>
-    <p-button label="Создать" icon="pi pi-check"
+    <p-button [label]="t().cancelBtn" severity="secondary" text (onClick)="showCreateTaskDialog.set(false)"/>
+    <p-button [label]="t().createBtn" icon="pi pi-check"
       [disabled]="!newTask().title.trim()" (onClick)="createTask()"/>
   </ng-template>
 </p-dialog>
@@ -182,7 +182,7 @@
       <div class="detail-meta">
 
         <div class="detail-meta-row">
-          <span class="meta-label"><i class="pi pi-calendar"></i>Дедлайн</span>
+          <span class="meta-label"><i class="pi pi-calendar"></i>{{ t().deadlineMeta }}</span>
           <p-datepicker
             [ngModel]="detailDueDate()"
             (ngModelChange)="onDetailDateChange($event)"
@@ -190,16 +190,16 @@
             [showOnFocus]="false"
             [showClear]="true"
             dateFormat="dd.mm.yy"
-            placeholder="дд.мм.гггг"
+            [placeholder]="t().deadlinePlaceholder"
             appendTo="body"
             styleClass="detail-datepicker"
           />
         </div>
 
         <div class="detail-meta-row">
-          <span class="meta-label"><i class="pi pi-tag"></i>Метка</span>
+          <span class="meta-label"><i class="pi pi-tag"></i>{{ t().labelMeta }}</span>
           <div class="color-picker">
-            @for (c of labelColors; track c.value) {
+            @for (c of labelColors(); track c.value) {
               <button class="color-dot color-dot--sm"
                 [class.color-dot--active]="task.color === c.value"
                 [style.background]="c.hex === 'transparent' ? 'transparent' : c.hex"
@@ -221,7 +221,7 @@
       @if (task.subtasks && task.subtasks.length > 0) {
         <div class="detail-progress">
           <div class="detail-progress-header">
-            <span class="meta-label"><i class="pi pi-list-check"></i>Подзадачи</span>
+            <span class="meta-label"><i class="pi pi-list-check"></i>{{ t().subtasksLabel }}</span>
             <span class="progress-fraction">{{ selectedTask()?.progress ?? 0 }}%</span>
           </div>
           <p-progressBar [value]="selectedTask()?.progress ?? 0" [showValue]="false"/>
@@ -245,15 +245,15 @@
 
         <p-inplace #subtaskInplace>
           <ng-template #display>
-            <span class="add-subtask-hint">+ добавить подзадачу</span>
+            <span class="add-subtask-hint">{{ t().addSubtaskHint }}</span>
           </ng-template>
           <ng-template #content let-closeCallback="closeCallback">
             <div class="create-subtasks">
-              <input pInputText [(ngModel)]="newSubtaskTitle" placeholder="Название подзадачи"
+              <input pInputText [(ngModel)]="newSubtaskTitle" [placeholder]="t().subtaskPlaceholder"
                 [disabled]="creatingSubtask()"
                 (keyup.enter)="addSubtask(task.id, closeCallback)" autofocus>
               <div class="create-buttons">
-                <p-button label="Добавить" size="small"
+                <p-button [label]="t().addSubtaskBtn" size="small"
                   [loading]="creatingSubtask()"
                   [disabled]="creatingSubtask() || !newSubtaskTitle().trim()"
                   (onClick)="addSubtask(task.id, closeCallback)"/>
@@ -273,22 +273,22 @@
     <div class="detail-footer">
       <p-button icon="pi pi-trash" [text]="true" severity="danger"
         (onClick)="selectedTask() && deleteTask(selectedTask()!.id)"/>
-      <p-button label="Закрыть" severity="secondary" (onClick)="showTaskDetailDialog.set(false)"/>
+      <p-button [label]="t().closeBtn" severity="secondary" (onClick)="showTaskDetailDialog.set(false)"/>
     </div>
   </ng-template>
 </p-dialog>
 
 
-<p-dialog header="Переименовать колонку" [(visible)]="showRenameColumnDialog" [modal]="true"
+<p-dialog [header]="t().renameColDialogTitle" [(visible)]="showRenameColumnDialog" [modal]="true"
   [style]="{width: '420px'}" [dismissableMask]="true">
   <div class="dialog-field">
-    <label>Новое название</label>
+    <label>{{ t().renameColLabel }}</label>
     <input pInputText type="text" [(ngModel)]="newColumnNameForRename"
-      placeholder="Введите новое название" autofocus fluid (keyup.enter)="saveColumnRename()">
+      [placeholder]="t().renameColPlaceholder" autofocus fluid (keyup.enter)="saveColumnRename()">
   </div>
   <ng-template pTemplate="footer">
-    <p-button label="Отмена" severity="secondary" text (onClick)="closeRenameDialog()"/>
-    <p-button label="Сохранить" icon="pi pi-check"
+    <p-button [label]="t().cancelBtn" severity="secondary" text (onClick)="closeRenameDialog()"/>
+    <p-button [label]="t().saveBtn" icon="pi pi-check"
       [disabled]="!newColumnNameForRename().trim() || newColumnNameForRename().trim() === columnToRename()?.name"
       (onClick)="saveColumnRename()"/>
   </ng-template>
@@ -304,8 +304,8 @@
       <p class="confirm-message">{{ confirmMessage() }}</p>
     </div>
     <div class="confirm-actions">
-      <p-button label="Отмена" [text]="true" severity="secondary" (onClick)="onConfirmReject()"/>
-      <p-button label="Удалить" (onClick)="onConfirmAccept()" styleClass="confirm-btn-danger"/>
+      <p-button [label]="t().cancelBtn" [text]="true" severity="secondary" (onClick)="onConfirmReject()"/>
+      <p-button [label]="t().deleteBtn" (onClick)="onConfirmAccept()" styleClass="confirm-btn-danger"/>
     </div>
   </div>
 </p-dialog>

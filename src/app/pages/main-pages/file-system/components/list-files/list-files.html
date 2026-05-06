@@ -8,7 +8,7 @@
     <div class="drop-overlay">
       <div class="drop-overlay-inner">
         <i class="pi pi-cloud-upload"></i>
-        <span>Отпустите чтобы загрузить</span>
+        <span>{{ t().dropOverlay }}</span>
       </div>
     </div>
   }
@@ -57,8 +57,8 @@
     } @else if (files().length === 0 && folders().length === 0) {
       <div class="empty-state">
         <i class="pi pi-folder-open"></i>
-        <h3 class="empty-title">Здесь пока пусто</h3>
-        <p class="empty-sub">Загрузите файлы или создайте папку</p>
+        <h3 class="empty-title">{{ t().emptyTitle }}</h3>
+        <p class="empty-sub">{{ t().emptySub }}</p>
       </div>
     } @else {
       <div class="file-grid">
@@ -114,7 +114,7 @@
                 </div>
                 <div class="preview preview-doc preview-pdf" (click)="openPdf(file); $event.stopPropagation()">
                   <i class="pi pi-file-pdf"></i>
-                  <span class="doc-open-hint">Нажмите для просмотра</span>
+                  <span class="doc-open-hint">{{ t().clickToView }}</span>
                 </div>
 
               } @else if (isZip(file)) {
@@ -128,7 +128,7 @@
                 </div>
                 <div class="preview preview-doc preview-zip" (click)="openZip(file); $event.stopPropagation()">
                   <i class="pi pi-box"></i>
-                  <span class="doc-open-hint">Нажмите для просмотра</span>
+                  <span class="doc-open-hint">{{ t().clickToView }}</span>
                 </div>
 
               } @else if (isAudio(file)) {
@@ -145,7 +145,7 @@
                     <div class="audio-card-bars">
                       <span></span><span></span><span></span><span></span><span></span>
                     </div>
-                    <span class="audio-card-hint">Нажмите для прослушивания</span>
+                    <span class="audio-card-hint">{{ t().clickToListen }}</span>
                   </div>
                 </div>
 
@@ -161,7 +161,7 @@
                 @if (isDocument(file)) {
                   <div class="preview preview-doc" (click)="openDocument(file); $event.stopPropagation()">
                     <i [class]="'pi ' + getFileIcon(file.mimeType)"></i>
-                    <span class="doc-open-hint">Нажмите для просмотра</span>
+                    <span class="doc-open-hint">{{ t().clickToView }}</span>
                   </div>
                 } @else {
                   <div class="preview">
@@ -299,7 +299,7 @@
     </div>
     <div class="doc-content">
       @if (docLoading) {
-        <div class="doc-loading"><p-progressSpinner strokeWidth="3"/><span>Загрузка документа...</span></div>
+        <div class="doc-loading"><p-progressSpinner strokeWidth="3"/><span>{{ t().loadingDoc }}</span></div>
       } @else {
         <div class="doc-body" [innerHTML]="getSafeHtml(docHtml())"></div>
       }
@@ -320,9 +320,9 @@
     </div>
     <div class="doc-content pdf-content">
       @if (pdfLoading) {
-        <div class="doc-loading"><p-progressSpinner strokeWidth="3"/><span>Загрузка PDF...</span></div>
+        <div class="doc-loading"><p-progressSpinner strokeWidth="3"/><span>{{ t().loadingPdf }}</span></div>
       } @else if (pdfPages().length === 0) {
-        <div class="doc-error"><i class="pi pi-exclamation-circle"></i><p>Не удалось загрузить PDF</p></div>
+        <div class="doc-error"><i class="pi pi-exclamation-circle"></i><p>{{ t().pdfFailed }}</p></div>
       } @else {
         <div class="pdf-pages">
           @for (page of pdfPages(); track $index) {
@@ -347,9 +347,9 @@
     </div>
     <div class="doc-content zip-content">
       @if (zipLoading) {
-        <div class="doc-loading"><p-progressSpinner strokeWidth="3"/><span>Загрузка архива...</span></div>
+        <div class="doc-loading"><p-progressSpinner strokeWidth="3"/><span>{{ t().loadingArchive }}</span></div>
       } @else if (zipEntries().length === 0) {
-        <div class="doc-error"><i class="pi pi-exclamation-circle"></i><p>Не удалось открыть архив или архив пуст</p></div>
+        <div class="doc-error"><i class="pi pi-exclamation-circle"></i><p>{{ t().archiveFailed }}</p></div>
       } @else {
         <div class="zip-tree">
           @for (entry of zipEntries(); track entry.path) {
@@ -374,20 +374,20 @@
   </div>
 </p-dialog>
 
-<p-dialog header="Переименовать" [(visible)]="renameDialogVisible" [modal]="true"
+<p-dialog [header]="t().renameDialogTitle" [(visible)]="renameDialogVisible" [modal]="true"
     [style]="{ width: '420px' }" [dismissableMask]="true" styleClass="rename-dialog">
   <div class="rename-field">
-    <label>Новое название</label>
+    <label>{{ t().renameLabel }}</label>
     <input pInputText type="text" [ngModel]="renameValue()" (ngModelChange)="renameValue.set($event)"
-      placeholder="Введите название" (keyup.enter)="submitRename()" autofocus fluid/>
+      [placeholder]="t().renamePlaceholder" (keyup.enter)="submitRename()" autofocus fluid/>
   </div>
   <ng-template pTemplate="footer">
-    <p-button label="Отмена" severity="secondary" [text]="true" (onClick)="closeRenameDialog()"/>
-    <p-button label="Сохранить" icon="pi pi-check" [disabled]="!renameValue().trim()" (onClick)="submitRename()"/>
+    <p-button [label]="t().cancelBtn" severity="secondary" [text]="true" (onClick)="closeRenameDialog()"/>
+    <p-button [label]="t().saveBtn" icon="pi pi-check" [disabled]="!renameValue().trim()" (onClick)="submitRename()"/>
   </ng-template>
 </p-dialog>
 
-<p-dialog header="Переместить файл" [(visible)]="moveDialogVisible" [modal]="true"
+<p-dialog [header]="t().moveDialogTitle" [(visible)]="moveDialogVisible" [modal]="true"
     [draggable]="false" [resizable]="false" [dismissableMask]="true"
     [style]="{ width: '420px' }" styleClass="move-dialog">
   <div class="move-content">
@@ -399,7 +399,7 @@
     }
     <div class="move-tree">
       <div class="move-folder-item" [class.move-folder-item--active]="selectedFolderId() === null" (click)="selectedFolderId.set(null)">
-        <i class="pi pi-home"></i><span>Корневая папка</span>
+        <i class="pi pi-home"></i><span>{{ t().rootFolder }}</span>
         @if (selectedFolderId() === null) { <i class="pi pi-check move-check"></i> }
       </div>
       @for (folder of getRootFolders(); track folder.id) {
@@ -413,7 +413,7 @@
       [class.move-folder-item--current]="moveTargetFile()?.folderId === folder.id"
       (click)="moveTargetFile()?.folderId !== folder.id && selectedFolderId.set(folder.id)">
       <i class="pi pi-folder"></i><span>{{ folder.name }}</span>
-      @if (moveTargetFile()?.folderId === folder.id) { <span class="move-current-label">текущая</span> }
+      @if (moveTargetFile()?.folderId === folder.id) { <span class="move-current-label">{{ t().currentFolderLabel }}</span> }
       @if (selectedFolderId() === folder.id) { <i class="pi pi-check move-check"></i> }
     </div>
     @for (child of getChildFolders(folder.id); track child.id) {
@@ -421,8 +421,8 @@
     }
   </ng-template>
   <ng-template pTemplate="footer">
-    <p-button label="Отмена" severity="secondary" [text]="true" (onClick)="closeMoveDialog()"/>
-    <p-button label="Переместить" icon="pi pi-arrow-right-arrow-left"
+    <p-button [label]="t().cancelBtn" severity="secondary" [text]="true" (onClick)="closeMoveDialog()"/>
+    <p-button [label]="t().moveBtn" icon="pi pi-arrow-right-arrow-left"
       [disabled]="selectedFolderId() === (moveTargetFile()?.folderId ?? null)" (onClick)="submitMove()"/>
   </ng-template>
 </p-dialog>
@@ -437,8 +437,8 @@
       <p class="confirm-message">{{ uploadConfirmMessage() }}</p>
     </div>
     <div class="confirm-actions">
-      <p-button label="Отмена" [text]="true" severity="secondary" (onClick)="onUploadConfirmReject()"/>
-      <p-button label="Загрузить" icon="pi pi-upload" (onClick)="onUploadConfirmAccept()" styleClass="confirm-btn-upload"/>
+      <p-button [label]="langService.t().pages.toolbar.cancelBtn" [text]="true" severity="secondary" (onClick)="onUploadConfirmReject()"/>
+      <p-button [label]="langService.t().pages.toolbar.uploadBtn" icon="pi pi-upload" (onClick)="onUploadConfirmAccept()" styleClass="confirm-btn-upload"/>
     </div>
   </div>
 </p-dialog>

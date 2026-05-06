@@ -35,6 +35,7 @@ import { NgTemplateOutlet } from '@angular/common';
 import { ShareService } from '../../../../../services/share';
 import { UploadQueueService } from '../../../../../services/upload-queue';
 import { ZipEntry } from '../../../../../interfaces/file-system-interfeces/zip-entry.model';
+import { LangService } from '../../../../../services/lang';
 
 @Component({
   selector: 'app-list-files',
@@ -57,8 +58,11 @@ export class ListFiles implements OnInit {
   protected readonly fileSystem = inject(FileSystem);
   protected readonly shareService = inject(ShareService);
   protected readonly uploadQueue = inject(UploadQueueService);
+  protected readonly langService = inject(LangService);
   private readonly sanitizer = inject(DomSanitizer);
   private readonly cdr = inject(ChangeDetectorRef);
+
+  t = computed(() => this.langService.t().pages.listFiles);
 
   files = this.fileSystem.filteredFiles;
   folders = this.fileSystem.filteredFolders;
@@ -153,15 +157,16 @@ export class ListFiles implements OnInit {
 
     const isFile = 'downloadUrl' in selected;
     const type: 'file' | 'folder' = isFile ? 'file' : 'folder';
+    const lf = this.langService.t().pages.listFiles;
 
     const renameItem: MenuItem = {
-      label: 'переименовать',
+      label: lf.menuRename,
       icon: PrimeIcons.PENCIL,
       command: () => this.openRenameDialog(selected, type),
     };
 
     const deleteItem: MenuItem = {
-      label: 'удалить',
+      label: lf.menuDelete,
       icon: PrimeIcons.TRASH,
       command: () => this.deleteSelected(),
     };
@@ -169,30 +174,30 @@ export class ListFiles implements OnInit {
     if (isFile) {
       const file = selected as FileItem;
       const menuItems: MenuItem[] = [
-        { label: 'скачать', icon: PrimeIcons.DOWNLOAD, command: () => this.fileSystem.downloadFile(file) },
+        { label: lf.menuDownload, icon: PrimeIcons.DOWNLOAD, command: () => this.fileSystem.downloadFile(file) },
         renameItem,
-        { label: 'переместить', icon: PrimeIcons.ARROW_RIGHT_ARROW_LEFT, command: () => this.openMoveDialog(file) },
+        { label: lf.menuMove, icon: PrimeIcons.ARROW_RIGHT_ARROW_LEFT, command: () => this.openMoveDialog(file) },
         deleteItem,
-        { label: 'переслать', icon: PrimeIcons.SEND, command: () => this.shareFile() },
+        { label: lf.menuShare, icon: PrimeIcons.SEND, command: () => this.shareFile() },
       ];
 
       if (this.isAudio(file)) {
-        menuItems.unshift({ label: 'слушать', icon: PrimeIcons.VOLUME_UP, command: () => this.openAudio(file) });
+        menuItems.unshift({ label: lf.clickToListen, icon: PrimeIcons.VOLUME_UP, command: () => this.openAudio(file) });
       } else if (this.isVideo(file)) {
-        menuItems.unshift({ label: 'смотреть', icon: PrimeIcons.PLAY, command: () => this.openVideo(file) });
+        menuItems.unshift({ label: lf.clickToView, icon: PrimeIcons.PLAY, command: () => this.openVideo(file) });
       }
       if (this.isPdf(file)) {
-        menuItems.unshift({ label: 'открыть', icon: PrimeIcons.EYE, command: () => this.openPdf(file) });
+        menuItems.unshift({ label: lf.clickToView, icon: PrimeIcons.EYE, command: () => this.openPdf(file) });
       } else if (this.isZip(file)) {
-        menuItems.unshift({ label: 'открыть', icon: PrimeIcons.EYE, command: () => this.openZip(file) });
+        menuItems.unshift({ label: lf.clickToView, icon: PrimeIcons.EYE, command: () => this.openZip(file) });
       } else if (this.isDocument(file)) {
-        menuItems.unshift({ label: 'открыть', icon: PrimeIcons.EYE, command: () => this.openDocument(file) });
+        menuItems.unshift({ label: lf.clickToView, icon: PrimeIcons.EYE, command: () => this.openDocument(file) });
       }
 
       return menuItems;
     } else {
       return [
-        { label: 'скачать', icon: PrimeIcons.DOWNLOAD, command: () => this.fileSystem.downloadFolder(selected.id, selected.name) },
+        { label: lf.menuDownload, icon: PrimeIcons.DOWNLOAD, command: () => this.fileSystem.downloadFolder(selected.id, selected.name) },
         renameItem,
         deleteItem,
       ];
@@ -369,12 +374,13 @@ export class ListFiles implements OnInit {
     const newName = this.renameValue().trim();
     if (!newName || !this.renameTarget) return;
     const { id, type } = this.renameTarget;
+    const lf = this.langService.t().pages.listFiles;
     this.fileSystem.renameItem(id, type, newName).subscribe({
       next: () => {
-        this.messageService.add({ severity: 'secondary', summary: 'Готово', detail: `${type === 'file' ? 'Файл' : 'Папка'} переименован(а)`, key: 'br' });
+        this.messageService.add({ severity: 'secondary', summary: lf.toastDone, detail: lf.menuRename, key: 'br' });
         this.closeRenameDialog();
       },
-      error: (err) => this.messageService.add({ severity: 'secondary', summary: 'Ошибка', detail: err?.message || 'Не удалось переименовать', key: 'br' }),
+      error: (err) => this.messageService.add({ severity: 'secondary', summary: lf.toastError, detail: err?.message || lf.menuRename, key: 'br' }),
     });
   }
 
@@ -400,9 +406,10 @@ export class ListFiles implements OnInit {
     const file = this.moveTargetFile();
     const folderId = this.selectedFolderId();
     if (!file) return;
+    const lf = this.langService.t().pages.listFiles;
     this.fileSystem.moveFile(file.id, folderId).subscribe({
-      next: () => { this.messageService.add({ severity: 'secondary', summary: 'Готово', detail: 'Файл перемещён', key: 'br' }); this.closeMoveDialog(); },
-      error: () => this.messageService.add({ severity: 'secondary', summary: 'Ошибка', detail: 'Не удалось переместить файл', key: 'br' }),
+      next: () => { this.messageService.add({ severity: 'secondary', summary: lf.toastDone, detail: lf.menuMove, key: 'br' }); this.closeMoveDialog(); },
+      error: () => this.messageService.add({ severity: 'secondary', summary: lf.toastError, detail: lf.menuMove, key: 'br' }),
     });
   }
 
@@ -769,14 +776,16 @@ export class ListFiles implements OnInit {
     const hasFolder = entries.some(e => e.isDirectory);
     if (hasFolder) {
       const folderNames = entries.filter(e => e.isDirectory).map(e => `«${e.name}»`).join(', ');
-      this.uploadConfirmTitle.set('Загрузить папку?');
-      this.uploadConfirmMessage.set(`Будет загружена структура папок: ${folderNames} со всеми файлами внутри.`);
+      const lf = this.langService.t().pages.listFiles;
+      const tb = this.langService.t().pages.toolbar;
+      this.uploadConfirmTitle.set(tb.uploadFolderDialogTitle);
+      this.uploadConfirmMessage.set(`${tb.uploadFolderDialogDesc}: ${folderNames}`);
       this.pendingUpload = async () => {
         try {
           const allFiles = await this.readEntriesRecursive(entries);
           await this.fileSystem.uploadFolderStructure(allFiles, folderId);
-          this.messageService.add({ severity: 'secondary', summary: 'Готово', detail: 'Папка загружена', life: 2000, key: 'br' });
-        } catch { this.messageService.add({ severity: 'secondary', summary: 'Ошибка', detail: 'Не удалось загрузить папку', key: 'br' }); }
+          this.messageService.add({ severity: 'secondary', summary: tb.toastDone, detail: tb.folderUploaded, life: 2000, key: 'br' });
+        } catch { this.messageService.add({ severity: 'secondary', summary: tb.toastError, detail: tb.folderUploadFailed, key: 'br' }); }
       };
       this.uploadConfirmVisible.set(true);
     } else {
@@ -881,14 +890,15 @@ export class ListFiles implements OnInit {
     const file = this.fileSystem.files().find(f => f.id === fileId);
     if (file && file.folderId === folder.id) return;
 
+    const lf = this.langService.t().pages.listFiles;
     this.fileSystem.moveFile(fileId, folder.id).subscribe({
       next: () => this.messageService.add({
-        severity: 'secondary', summary: 'Готово',
-        detail: `Файл перемещён в «${folder.name}»`, life: 2000, key: 'br',
+        severity: 'secondary', summary: lf.toastDone,
+        detail: lf.menuMove, life: 2000, key: 'br',
       }),
       error: () => this.messageService.add({
-        severity: 'secondary', summary: 'Ошибка',
-        detail: 'Не удалось переместить файл', life: 2000, key: 'br',
+        severity: 'secondary', summary: lf.toastError,
+        detail: lf.menuMove, life: 2000, key: 'br',
       }),
     });
   }
@@ -926,12 +936,13 @@ export class ListFiles implements OnInit {
 
   async shareFile() {
     const item = this.selectedItem();
-    if (!item || !('name' in item)) { this.messageService.add({ severity: 'secondary', summary: 'Внимание', detail: 'Выберите файл для пересылки', life: 1000, key: 'br' }); return; }
+    const lf = this.langService.t().pages.listFiles;
+    if (!item || !('name' in item)) { this.messageService.add({ severity: 'secondary', summary: lf.toastWarning, detail: lf.shareNoFile, life: 1000, key: 'br' }); return; }
     try {
       await this.shareService.copyShareLink(item.name);
-      this.messageService.add({ severity: 'secondary', summary: 'Успешно', detail: `Ссылка на "${item.name}" скопирована`, life: 1000, key: 'br' });
+      this.messageService.add({ severity: 'secondary', summary: lf.toastSuccess, detail: `${lf.shareLinkCopied} "${item.name}" ${lf.shareLinkSuffix}`, life: 1000, key: 'br' });
     } catch {
-      this.messageService.add({ severity: 'secondary', summary: 'Ошибка', detail: 'Не удалось скопировать ссылку', life: 1000, key: 'br' });
+      this.messageService.add({ severity: 'secondary', summary: lf.toastError, detail: lf.shareFailed, life: 1000, key: 'br' });
     }
   }
 
@@ -939,9 +950,10 @@ export class ListFiles implements OnInit {
     const item = this.selectedItem(); if (!item) return;
     const isFile = 'downloadUrl' in item && 'mimeType' in item;
     const type: 'file' | 'folder' = isFile ? 'file' : 'folder';
+    const lf = this.langService.t().pages.listFiles;
     this.fileSystem.deleteItem(item.id, type).subscribe({
-      next: () => this.messageService.add({ severity: 'secondary', summary: 'Готово', detail: `${isFile ? 'Файл' : 'Папка'} удалён(а)`, key: 'br' }),
-      error: () => this.messageService.add({ severity: 'secondary', summary: 'Ошибка', detail: 'Не удалось удалить', key: 'br' }),
+      next: () => this.messageService.add({ severity: 'secondary', summary: lf.toastDone, detail: lf.menuDelete, key: 'br' }),
+      error: () => this.messageService.add({ severity: 'secondary', summary: lf.toastError, detail: lf.menuDelete, key: 'br' }),
     });
   }
 }

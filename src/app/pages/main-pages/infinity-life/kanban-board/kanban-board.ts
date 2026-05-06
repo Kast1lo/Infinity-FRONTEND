@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  computed,
   inject,
   OnInit,
   signal,
@@ -27,6 +28,7 @@ import { SelectModule } from 'primeng/select';
 import { TagModule } from 'primeng/tag';
 import { TextareaModule } from 'primeng/textarea';
 import { Toast, ToastModule } from 'primeng/toast';
+import { LangService } from '../../../../services/lang';
 
 @Component({
   selector: 'app-kanban-board',
@@ -58,6 +60,9 @@ export class KanbanBoard implements OnInit {
   private tasksService = inject(InfinityLife);
   private messageService = inject(MessageService);
   private cdr = inject(ChangeDetectorRef);
+  readonly langService = inject(LangService);
+
+  t = computed(() => this.langService.t().pages.kanban);
 
   readonly today = new Date();
 
@@ -94,21 +99,27 @@ export class KanbanBoard implements OnInit {
     color: null,
   });
 
-  readonly labelColors = [
-    { value: null,      label: 'Нет',         hex: 'transparent' },
-    { value: '#e05555', label: 'Красный',     hex: '#e05555' },
-    { value: '#e08c2a', label: 'Оранжевый',   hex: '#e08c2a' },
-    { value: '#d4b84a', label: 'Жёлтый',     hex: '#d4b84a' },
-    { value: '#4caf76', label: 'Зелёный',     hex: '#4caf76' },
-    { value: '#4a9eff', label: 'Синий',       hex: '#4a9eff' },
-    { value: '#9c6bda', label: 'Фиолетовый',  hex: '#9c6bda' },
-  ];
+  readonly labelColors = computed(() => {
+    const k = this.langService.t().pages.kanban;
+    return [
+      { value: null,      label: k.colorNone,    hex: 'transparent' },
+      { value: '#e05555', label: k.colorRed,      hex: '#e05555' },
+      { value: '#e08c2a', label: k.colorOrange,   hex: '#e08c2a' },
+      { value: '#d4b84a', label: k.colorYellow,   hex: '#d4b84a' },
+      { value: '#4caf76', label: k.colorGreen,    hex: '#4caf76' },
+      { value: '#4a9eff', label: k.colorBlue,     hex: '#4a9eff' },
+      { value: '#9c6bda', label: k.colorPurple,   hex: '#9c6bda' },
+    ];
+  });
 
-  readonly priorities = [
-    { label: 'Высокий', value: 'HIGH' },
-    { label: 'Средний', value: 'MEDIUM' },
-    { label: 'Низкий',  value: 'LOW' },
-  ];
+  readonly priorities = computed(() => {
+    const k = this.langService.t().pages.kanban;
+    return [
+      { label: k.priorityHigh,   value: 'HIGH' },
+      { label: k.priorityMedium, value: 'MEDIUM' },
+      { label: k.priorityLow,    value: 'LOW' },
+    ];
+  });
 
   columnMenuItems: MenuItem[] | undefined;
 
@@ -117,10 +128,11 @@ export class KanbanBoard implements OnInit {
   }
 
   ngOnInit() {
+    const k = this.langService.t().pages.kanban;
     this.columnMenuItems = [
-      { label: 'Переименовать', icon: 'pi pi-pencil' },
+      { label: k.menuRename, icon: 'pi pi-pencil' },
       { separator: true },
-      { label: 'Удалить колонку', icon: 'pi pi-trash' },
+      { label: k.menuDeleteCol, icon: 'pi pi-trash' },
     ];
   }
 
@@ -162,7 +174,7 @@ export class KanbanBoard implements OnInit {
       next: (columns) => {
         this.columns.set(columns.map(col => ({ ...col, tasks: [...(col.tasks || [])] })));
       },
-      error: () => this.toast('Не удалось загрузить доску'),
+      error: () => this.toast(this.langService.t().pages.kanban.boardLoadFailed),
     });
   }
 
@@ -172,20 +184,24 @@ export class KanbanBoard implements OnInit {
 
 
   openColumnMenu(event: Event, column: any, menu: any) {
-    if (!menu || !this.columnMenuItems) return;
-    menu.model = this.columnMenuItems.map(item => ({
-      ...item,
-      command: () => {
-        if (item.label === 'Переименовать') this.renameColumn(column);
-        if (item.label === 'Удалить колонку') {
-          this.openConfirm(
-            'Удалить колонку',
-            `Удалить колонку «${column.name}» и все её задачи?`,
-            () => this.deleteColumnAction(column),
-          );
-        }
+    const k = this.langService.t().pages.kanban;
+    menu.model = [
+      {
+        label: k.menuRename,
+        icon: 'pi pi-pencil',
+        command: () => this.renameColumn(column),
       },
-    }));
+      { separator: true },
+      {
+        label: k.menuDeleteCol,
+        icon: 'pi pi-trash',
+        command: () => this.openConfirm(
+          k.deleteColTitle,
+          `${k.deleteColMsgPrefix}${column.name}${k.deleteColMsgSuffix}`,
+          () => this.deleteColumnAction(column),
+        ),
+      },
+    ];
     menu.toggle(event);
   }
 
@@ -197,9 +213,9 @@ export class KanbanBoard implements OnInit {
         this.refreshBoard();
         this.showCreateColumnDialog.set(false);
         this.newColumnName.set('');
-        this.toast('Колонка создана', true);
+        this.toast(this.langService.t().pages.kanban.colCreated, true);
       },
-      error: () => this.toast('Не удалось создать колонку'),
+      error: () => this.toast(this.langService.t().pages.kanban.colCreateFailed),
     });
   }
 
@@ -210,10 +226,10 @@ export class KanbanBoard implements OnInit {
       next: () => {
         this.refreshBoard();
         this.newColumnName.set('');
-        this.toast('Колонка создана', true);
+        this.toast(this.langService.t().pages.kanban.colCreated, true);
         inplace.deactivate();
       },
-      error: () => this.toast('Не удалось создать колонку'),
+      error: () => this.toast(this.langService.t().pages.kanban.colCreateFailed),
     });
   }
 
@@ -233,11 +249,11 @@ export class KanbanBoard implements OnInit {
     }
     this.tasksService.updateColumn(column.id, { name: newName }).subscribe({
       next: () => {
-        this.toast('Колонка переименована', true);
+        this.toast(this.langService.t().pages.kanban.colRenamed, true);
         this.refreshBoard();
         this.closeRenameDialog();
       },
-      error: () => this.toast('Не удалось переименовать колонку'),
+      error: () => this.toast(this.langService.t().pages.kanban.colRenameFailed),
     });
   }
 
@@ -252,10 +268,10 @@ export class KanbanBoard implements OnInit {
     this.cdr.markForCheck();
     this.tasksService.deleteColumn(column.id).subscribe({
       next: () => {
-        this.toast('Колонка удалена', true);
+        this.toast(this.langService.t().pages.kanban.colDeleted, true);
         this.loadBoard();
       },
-      error: () => this.toast('Не удалось удалить колонку'),
+      error: () => this.toast(this.langService.t().pages.kanban.colDeleteFailed),
     });
   }
 
@@ -276,17 +292,17 @@ export class KanbanBoard implements OnInit {
   createTask() {
     const task = this.newTask();
     if (!task.title?.trim()) {
-      this.toast('Название задачи обязательно');
+      this.toast(this.langService.t().pages.kanban.taskTitleRequired);
       return;
     }
     const dto = { ...task, dueDate: this.dateToIso(this.newTaskDueDate()) };
     this.tasksService.createTask(dto).subscribe({
       next: () => {
-        this.toast('Задача создана', true);
+        this.toast(this.langService.t().pages.kanban.taskCreated, true);
         this.loadBoard();
         this.showCreateTaskDialog.set(false);
       },
-      error: () => this.toast('Не удалось создать задачу'),
+      error: () => this.toast(this.langService.t().pages.kanban.taskCreateFailed),
     });
   }
 
@@ -301,7 +317,7 @@ export class KanbanBoard implements OnInit {
         this.selectedTask.set({ ...task, ...dto });
         this.loadBoard();
       },
-      error: () => this.toast('Не удалось сохранить'),
+      error: () => this.toast(this.langService.t().pages.kanban.taskSaveFailed),
     });
   }
 
@@ -311,14 +327,15 @@ export class KanbanBoard implements OnInit {
   }
 
   deleteTask(taskId: string) {
-    this.openConfirm('Удалить задачу', 'Удалить задачу и все её подзадачи?', () => {
+    const k = this.langService.t().pages.kanban;
+    this.openConfirm(k.deleteTaskTitle, k.deleteTaskMsg, () => {
       this.tasksService.deleteTask(taskId).subscribe({
         next: () => {
-          this.toast('Задача удалена', true);
+          this.toast(k.taskDeleted, true);
           this.loadBoard();
           this.showTaskDetailDialog.set(false);
         },
-        error: () => this.toast('Не удалось удалить задачу'),
+        error: () => this.toast(k.taskDeleteFailed),
       });
     });
   }
@@ -345,15 +362,16 @@ export class KanbanBoard implements OnInit {
           this.newSubtaskTitle.set('');
           closeCallback();
         },
-        error: () => this.toast('Не удалось добавить подзадачу'),
+        error: () => this.toast(this.langService.t().pages.kanban.subtaskAddFailed),
       });
   }
 
   deleteSubtask(subtaskId: string, taskId: string) {
-    this.openConfirm('Удалить подзадачу', 'Вы уверены?', () => {
+    const k = this.langService.t().pages.kanban;
+    this.openConfirm(k.deleteSubtaskTitle, k.deleteSubtaskMsg, () => {
       this.tasksService.deleteSubtask(subtaskId).subscribe({
         next: () => {
-          this.toast('Подзадача удалена', true);
+          this.toast(k.subtaskDeleted, true);
           const current = this.selectedTask();
           if (current?.id === taskId) {
             const newSubtasks = (current.subtasks || []).filter(s => s.id !== subtaskId);
@@ -364,7 +382,7 @@ export class KanbanBoard implements OnInit {
             subtasks: (t.subtasks || []).filter(s => s.id !== subtaskId),
           }));
         },
-        error: () => this.toast('Не удалось удалить подзадачу'),
+        error: () => this.toast(this.langService.t().pages.kanban.subtaskDeleteFailed),
       });
     });
   }
@@ -383,7 +401,7 @@ export class KanbanBoard implements OnInit {
     } else {
       this.tasksService.toggleTaskCompletion(item.id).subscribe({
         next: () => this.refreshBoard(),
-        error: () => this.toast('Не удалось изменить статус задачи'),
+        error: () => this.toast(this.langService.t().pages.kanban.taskStatusFailed),
       });
     }
   }
@@ -402,7 +420,7 @@ export class KanbanBoard implements OnInit {
     this.tasksService.toggleSubtaskCompletion(subtask.id).subscribe({
       error: () => {
         this.revertOptimisticSubtaskToggle(subtask.id);
-        this.toast('Не удалось изменить статус подзадачи');
+        this.toast(this.langService.t().pages.kanban.subtaskStatusFailed);
       },
     });
   }
@@ -433,8 +451,8 @@ export class KanbanBoard implements OnInit {
       const task = event.previousContainer.data[event.previousIndex];
       transferArrayItem(event.previousContainer.data, event.container.data, event.previousIndex, event.currentIndex);
       this.tasksService.moveTaskToColumn(task.id, newColumnId).subscribe({
-        next: () => this.toast('Задача перемещена', true),
-        error: () => { this.toast('Не удалось переместить задачу'); this.loadBoard(); },
+        next: () => this.toast(this.langService.t().pages.kanban.taskMoved, true),
+        error: () => { this.toast(this.langService.t().pages.kanban.taskMoveFailed); this.loadBoard(); },
       });
     }
   }
@@ -453,11 +471,13 @@ export class KanbanBoard implements OnInit {
 
   formatDueDate(dueDate: string | null | undefined): string {
     if (!dueDate) return '';
-    return new Date(dueDate).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+    const locale = this.langService.lang() === 'ru' ? 'ru-RU' : 'en-US';
+    return new Date(dueDate).toLocaleDateString(locale, { day: 'numeric', month: 'short' });
   }
 
   getPriorityLabel(p: string): string {
-    const map: Record<string, string> = { HIGH: 'Высокий', MEDIUM: 'Средний', LOW: 'Низкий' };
+    const k = this.langService.t().pages.kanban;
+    const map: Record<string, string> = { HIGH: k.priorityHigh, MEDIUM: k.priorityMedium, LOW: k.priorityLow };
     return map[p] ?? p;
   }
 
@@ -467,9 +487,10 @@ export class KanbanBoard implements OnInit {
   }
 
   private toast(detail: string, success = false) {
+    const k = this.langService.t().pages.kanban;
     this.messageService.add({
       severity: 'secondary',
-      summary: success ? 'Готово' : 'Ошибка',
+      summary: success ? k.toastDone : k.toastError,
       detail,
       key: 'br',
     });

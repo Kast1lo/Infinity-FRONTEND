@@ -7,6 +7,7 @@ import { ButtonModule } from 'primeng/button';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { TooltipModule } from 'primeng/tooltip';
 import { ThemeService } from '../../services/theme';
+import { LangService } from '../../services/lang';
 
 @Component({
   selector: 'app-side-bar',
@@ -26,6 +27,7 @@ export class SideBar {
   public authService   = inject(AuthService);
   public userService   = inject(UserService);
   public themeService  = inject(ThemeService);
+  public langService   = inject(LangService);
 
   profile   = this.userService.profile;
   isLoading = this.userService.isLoading;
@@ -34,4 +36,5 @@ export class SideBar {
   avatarUrl = computed(() => this.profile()?.avatarUrl || '');
 
   isDark = computed(() => this.themeService.theme() === 'dark');
+  t      = computed(() => this.langService.t().sidebar);
 }

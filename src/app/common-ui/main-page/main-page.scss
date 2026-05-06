@@ -249,6 +249,19 @@
   &:hover { color: var(--text); background: rgba(128,128,128,.08); border-color: var(--border); i { transform: rotate(20deg); } }
 }
 
+.lang-toggle {
+  height: 34px; padding: 0 10px;
+  border-radius: var(--radius-sm);
+  background: transparent; border: 1px solid transparent;
+  color: var(--text2); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px; font-weight: 600; letter-spacing: .5px;
+  transition: color .2s, background .2s, border-color .2s;
+
+  &:hover { color: var(--text); background: rgba(128,128,128,.08); border-color: var(--border); }
+}
+
 // ─── p-button ───
 
 ::ng-deep .p-button {

@@ -22,6 +22,7 @@ import { InfinityLife } from '../../../../services/infinity-life';
 import { AuthService } from '../../../../services/auth';
 import { UserService } from '../../../../services/user-service';
 import { PlanService } from '../../../../services/plan';
+import { LangService } from '../../../../services/lang';
 
 
 @Component({
@@ -43,8 +44,11 @@ export class ProfileCard implements OnInit {
   protected readonly infinityLife = inject(InfinityLife);
   protected readonly fileSystem   = inject(FileSystem);
   protected readonly planService  = inject(PlanService);
+  protected readonly langService  = inject(LangService);
   private   readonly messageService = inject(MessageService);
   private   readonly cdr = inject(ChangeDetectorRef);
+
+  t = computed(() => this.langService.t().pages.profile);
 
   profile   = this.userService.profile;
   isLoading = this.userService.isLoading;
@@ -110,11 +114,22 @@ export class ProfileCard implements OnInit {
     return this.planService.getStorageColor(this.storagePercent);
   }
 
+  daysWord(n: number): string {
+    const t = this.langService.t().pages.profile;
+    if (this.langService.lang() === 'en') return n === 1 ? t.dayOne : t.dayMany;
+    const mod10 = n % 10, mod100 = n % 100;
+    if (mod100 >= 11 && mod100 <= 14) return t.dayMany;
+    if (mod10 === 1) return t.dayOne;
+    if (mod10 >= 2 && mod10 <= 4) return t.dayFew;
+    return t.dayMany;
+  }
+
   activatePromo() {
     const code = this.promoCode().trim();
     if (!code) return;
 
     this.promoLoading.set(true);
+    const t = this.langService.t().pages.profile;
 
     this.planService.activatePromo(code).subscribe({
       next: (res) => {
@@ -123,7 +138,7 @@ export class ProfileCard implements OnInit {
         this.showPromoInput.set(false);
         this.messageService.add({
           severity: 'success',
-          summary:  'Готово',
+          summary:  t.toastDone,
           detail:   res.message,
           life:     4000,
         });
@@ -132,8 +147,8 @@ export class ProfileCard implements OnInit {
         this.promoLoading.set(false);
         this.messageService.add({
           severity: 'error',
-          summary:  'Ошибка',
-          detail:   err.error?.message || 'Неверный промокод',
+          summary:  t.toastError,
+          detail:   err.error?.message || t.promoError,
           life:     4000,
         });
       },

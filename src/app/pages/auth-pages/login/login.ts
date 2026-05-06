@@ -18,6 +18,7 @@ import { form, FormField, maxLength, minLength, required } from '@angular/forms/
 import { AuthService } from '../../../services/auth';
 import { TooltipModule } from 'primeng/tooltip';
 import { ThemeService } from '../../../services/theme';
+import { LangService } from '../../../services/lang';
 import { environment } from '../../../../environments/environment';
 
 @Component({
@@ -41,10 +42,12 @@ export class Login {
   private readonly router      = inject(Router);
   private readonly authService = inject(AuthService);
   private readonly cdr         = inject(ChangeDetectorRef);
-  readonly themeService        = inject(ThemeService);
+  readonly themeService = inject(ThemeService);
+  readonly langService  = inject(LangService);
 
   isDark    = computed(() => this.themeService.theme() === 'dark');
   imagePath = computed(() => this.isDark() ? 'infinityLogo.svg' : 'infinity.svg');
+  t         = computed(() => this.langService.t().pages.auth.login);
 
   readonly googleAuthUrl = `${environment.apiUrl}/auth/google`;
 

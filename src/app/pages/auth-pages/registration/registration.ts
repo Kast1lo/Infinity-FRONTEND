@@ -19,6 +19,7 @@ import { RegisterData } from '../../../interfaces/auth-interfaces/register-data.
 import { email, form, FormField, maxLength, minLength, required } from '@angular/forms/signals';
 import { AuthService } from '../../../services/auth';
 import { ThemeService } from '../../../services/theme';
+import { LangService } from '../../../services/lang';
 
 @Component({
   selector: 'app-registration',
@@ -41,10 +42,12 @@ export class Registration implements OnDestroy {
   private readonly router      = inject(Router);
   private readonly authService = inject(AuthService);
   private readonly cdr         = inject(ChangeDetectorRef);
-  readonly themeService        = inject(ThemeService);
+  readonly themeService = inject(ThemeService);
+  readonly langService  = inject(LangService);
 
   isDark    = computed(() => this.themeService.theme() === 'dark');
   imagePath = computed(() => this.isDark() ? 'infinityLogo.svg' : 'infinity.svg');
+  t         = computed(() => this.langService.t().pages.auth.registration);
 
   screen       = signal<'register' | 'verify'>('register');
   pendingEmail = signal('');

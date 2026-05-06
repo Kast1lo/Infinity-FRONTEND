@@ -12,6 +12,7 @@ import Cropper from 'cropperjs';
 import { SideBar } from '../../../common-ui/side-bar/side-bar';
 import { UserService } from '../../../services/user-service';
 import { BackgroundService } from '../../../services/background';
+import { LangService } from '../../../services/lang';
 import { UpdateProfile } from '../../../interfaces/profile-interfaces/update-profile.model';
 import { FormsModule } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
@@ -42,6 +43,9 @@ export class EditProfile {
   bgService      = inject(BackgroundService);
   messageService = inject(MessageService);
   cdr            = inject(ChangeDetectorRef);
+  langService    = inject(LangService);
+
+  t = computed(() => this.langService.t().pages.editProfile);
 
   profile   = this.userService.profile;
   isLoading = this.userService.isLoading;
@@ -79,22 +83,23 @@ export class EditProfile {
   saveUsername() {
     if (!this.newUsername()) return;
     const updates: UpdateProfile = { username: this.newUsername() };
+    const t = this.langService.t().pages.editProfile;
 
     this.userService.updateProfile(updates).subscribe({
       next: () => {
         this.newUsername.set('');
         this.messageService.add({
           severity: 'secondary',
-          summary:  'Готово',
-          detail:   'Логин успешно изменён',
+          summary:  t.toastDone,
+          detail:   t.loginSaved,
           life:     3000,
         });
       },
       error: (err: any) => {
         this.messageService.add({
           severity: 'secondary',
-          summary:  'Ошибка',
-          detail:   err.error?.message || 'Не удалось изменить логин',
+          summary:  t.toastError,
+          detail:   err.error?.message || t.loginFailed,
           life:     4000,
         });
       },
@@ -103,14 +108,15 @@ export class EditProfile {
 
   changePassword() {
     this.pwdError.set(null);
+    const t = this.langService.t().pages.editProfile;
 
     if (this.newPassword() !== this.confirmPassword()) {
-      this.pwdError.set('Новый пароль и подтверждение не совпадают');
+      this.pwdError.set(t.pwdMismatch);
       return;
     }
 
     if (this.newPassword().length < 6) {
-      this.pwdError.set('Новый пароль должен содержать минимум 6 символов');
+      this.pwdError.set(t.pwdTooShort);
       return;
     }
 
@@ -124,14 +130,14 @@ export class EditProfile {
         this.confirmPassword.set('');
         this.messageService.add({
           severity: 'secondary',
-          summary:  'Готово',
-          detail:   'Пароль успешно изменён',
+          summary:  t.toastDone,
+          detail:   t.pwdSaved,
           life:     3000,
         });
       },
       error: (err: any) => {
         this.isChangingPwd.set(false);
-        this.pwdError.set(err.error?.message || 'Не удалось изменить пароль');
+        this.pwdError.set(err.error?.message || t.loginFailed);
       },
     });
   }
@@ -225,23 +231,25 @@ export class EditProfile {
 
     this.userService.uploadAvatar(file).subscribe({
       next: () => {
+        const t = this.langService.t().pages.editProfile;
         this.isUploading.set(false);
         this.selectedFile.set(null);
         this.avatarPreview.set(null);
         this.cdr.markForCheck()
         this.messageService.add({
           severity: 'secondary',
-          summary:  'Готово',
-          detail:   'Аватар обновлён',
+          summary:  t.toastDone,
+          detail:   t.avatarSaved,
           life:     3000,
         });
       },
       error: (err: any) => {
+        const t = this.langService.t().pages.editProfile;
         this.isUploading.set(false);
         this.messageService.add({
           severity: 'secondary',
-          summary:  'Ошибка',
-          detail:   err.error?.message || 'Ошибка загрузки аватара',
+          summary:  t.toastError,
+          detail:   err.error?.message || t.avatarFailed,
           life:     4000,
         });
       },

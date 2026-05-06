@@ -14,7 +14,7 @@
           mode="basic"
           name="file"
           chooseIcon="pi pi-cloud-upload"
-          chooseLabel="Загрузить файл"
+          [chooseLabel]="t().uploadFileBtn"
           severity="secondary"
           [multiple]="true"
           [auto]="true"
@@ -25,7 +25,7 @@
           icon="pi pi-folder-open"
           text
           severity="secondary"
-          label="Загрузить папку"
+          [label]="t().uploadFolderBtn"
           [loading]="folderUploading()"
           [disabled]="folderUploading()"
           (onClick)="triggerFolderUpload()"
@@ -35,7 +35,7 @@
           icon="pi pi-folder-plus"
           text
           severity="secondary"
-          label="создать папку"
+          [label]="t().createFolderBtn"
           (onClick)="openDialog()"
         />
         <hr class="toolbar-divider">
@@ -44,7 +44,7 @@
           <input
             class="search-input"
             type="text"
-            placeholder="Поиск файлов..."
+            [placeholder]="t().searchPlaceholder"
             [value]="searchQuery()"
             (input)="onSearchInput($event)"
           />
@@ -58,7 +58,7 @@
         <hr class="toolbar-divider">
 
         <div class="filter-tabs">
-          @for (f of filters; track f.value) {
+          @for (f of filters(); track f.value) {
             <button
               class="filter-tab"
               [class.filter-tab--active]="activeFilter() === f.value"
@@ -78,7 +78,7 @@
             icon="pi pi-download"
             variant="outlined"
             [disabled]="!selectedItem()"
-            pTooltip="Скачать"
+            [pTooltip]="t().downloadTooltip"
             tooltipPosition="bottom"
             (click)="downloadSelected()"
           />
@@ -86,16 +86,16 @@
             icon="pi pi-trash"
             variant="outlined"
             [disabled]="!selectedItem()"
-            pTooltip="Удалить"
+            [pTooltip]="t().deleteTooltip"
             tooltipPosition="bottom"
             (onClick)="deleteSelected()"
           />
           <p-button
             icon="pi pi-share-alt"
             variant="outlined"
-            label="переслать"
+            [label]="t().shareLabel"
             [disabled]="!selectedItem() || !('downloadUrl' in selectedItem()!)"
-            pTooltip="Скопировать ссылку"
+            [pTooltip]="t().shareTooltip"
             tooltipPosition="bottom"
             (onClick)="shareSelected()"
           />
@@ -121,30 +121,30 @@
         <i class="pi pi-folder-plus"></i>
       </div>
       <div class="confirm-body">
-        <h3 class="confirm-title">Новая папка</h3>
+        <h3 class="confirm-title">{{ t().newFolderTitle }}</h3>
         <p class="confirm-message">
-          Будет создана в&nbsp;<span class="confirm-where">{{ currentFolderName() }}</span>
+          {{ t().newFolderDescPrefix }}&nbsp;<span class="confirm-where">{{ currentFolderName() }}</span>
         </p>
       </div>
     </div>
 
     <div class="confirm-form">
-      <label for="nameFolder" class="confirm-label">Имя папки</label>
+      <label for="nameFolder" class="confirm-label">{{ t().folderNameLabel }}</label>
       <input
         pInputText
         id="nameFolder"
         [(ngModel)]="folderName"
         autocomplete="off"
-        placeholder="Например: Документы"
+        [placeholder]="t().folderNamePlaceholder"
         (keyup.enter)="createFolder()"
         (keyup.escape)="closeDialog()"
       />
     </div>
 
     <div class="confirm-actions">
-      <p-button label="Отмена" text severity="secondary" (onClick)="closeDialog()"/>
+      <p-button [label]="t().cancelBtn" text severity="secondary" (onClick)="closeDialog()"/>
       <p-button
-        label="Создать"
+        [label]="t().createBtn"
         styleClass="confirm-btn-upload"
         [disabled]="!isFolderNameValid()"
         (onClick)="createFolder()"
@@ -169,17 +169,17 @@
         <i class="pi pi-folder-open"></i>
       </div>
       <div class="confirm-body">
-        <h3 class="confirm-title">Загрузка папки</h3>
+        <h3 class="confirm-title">{{ t().uploadFolderDialogTitle }}</h3>
         <p class="confirm-message">
-          Все файлы и подпапки будут загружены с сохранением структуры в&nbsp;<span class="confirm-where">{{ currentFolderName() }}</span>.
+          {{ t().uploadFolderDialogDesc }}&nbsp;<span class="confirm-where">{{ currentFolderName() }}</span>.
         </p>
       </div>
     </div>
 
     <div class="confirm-actions">
-      <p-button label="Отмена" text severity="secondary" (onClick)="onFolderConfirmReject()"/>
+      <p-button [label]="t().cancelBtn" text severity="secondary" (onClick)="onFolderConfirmReject()"/>
       <p-button
-        label="Выбрать папку"
+        [label]="t().selectFolderBtn"
         styleClass="confirm-btn-upload"
         (onClick)="onFolderConfirmAccept()"
       />
@@ -205,12 +205,12 @@
         <i class="pi pi-cloud-upload"></i>
       </div>
       <div class="confirm-body">
-        <h3 class="confirm-title">Загрузка файлов</h3>
+        <h3 class="confirm-title">{{ t().uploadQueueTitle }}</h3>
         <p class="confirm-message">
           @if (uploadQueue.queue().length > 0) {
-            {{ uploadQueue.queue().length }} {{ uploadQueue.pluralFile(uploadQueue.queue().length) }} — будут загружены в&nbsp;<span class="confirm-where">{{ currentFolderName() }}</span>
+            {{ uploadQueue.queue().length }} {{ uploadQueue.pluralFile(uploadQueue.queue().length) }} — {{ t().uploadQueueDescSuffix }}&nbsp;<span class="confirm-where">{{ currentFolderName() }}</span>
           } @else {
-            Очередь пуста. Закройте окно и выберите файлы.
+            {{ t().uploadQueueEmpty }}
           }
         </p>
       </div>
@@ -248,9 +248,9 @@
         <span class="upload-queue-summary-label">
           @if (uploadQueue.limitExceeded()) {
             <i class="pi pi-exclamation-triangle"></i>
-            Превышен лимит {{ uploadQueue.limitFormatted }}
+            {{ t().limitExceeded }} {{ uploadQueue.limitFormatted }}
           } @else {
-            Итого
+            {{ t().totalLabel }}
           }
         </span>
         <span class="upload-queue-summary-value">
@@ -260,9 +260,9 @@
     }
 
     <div class="confirm-actions">
-      <p-button label="Отмена" text severity="secondary" (onClick)="uploadQueue.cancel()"/>
+      <p-button [label]="t().cancelBtn" text severity="secondary" (onClick)="uploadQueue.cancel()"/>
       <p-button
-        label="Загрузить"
+        [label]="t().uploadBtn"
         styleClass="confirm-btn-upload"
         [disabled]="!uploadQueue.canConfirm()"
         (onClick)="confirmUpload()"

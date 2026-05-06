@@ -2,11 +2,11 @@
 <div class="page-actions">
   <button class="page-btn" (click)="screen() === 'verify' ? goBack() : null"
     [routerLink]="screen() === 'register' ? '/' : null"
-    pTooltip="{{ screen() === 'verify' ? 'Назад' : 'На главную' }}" tooltipPosition="right">
+    [pTooltip]="screen() === 'verify' ? t().tooltipBack : t().tooltipHome" tooltipPosition="right">
     <i class="pi pi-arrow-left"></i>
   </button>
   <button class="page-btn" (click)="themeService.toggle()"
-    [pTooltip]="isDark() ? 'Светлая тема' : 'Тёмная тема'" tooltipPosition="left">
+    [pTooltip]="isDark() ? t().themeLight : t().themeDark" tooltipPosition="left">
     <i [class]="isDark() ? 'pi pi-sun' : 'pi pi-moon'"></i>
   </button>
 </div>
@@ -24,7 +24,7 @@
           <div class="field-wrap">
             <div class="input-field" [class.input-field--error]="showUsernameError()">
               <i class="pi pi-user field-icon"></i>
-              <input pInputText placeholder="Придумайте логин" [formField]="registerForm.username"/>
+              <input pInputText [placeholder]="t().usernamePlaceholder" [formField]="registerForm.username"/>
             </div>
             @if (showUsernameError()) {
               <span class="field-error">{{ usernameError() }}</span>
@@ -34,7 +34,7 @@
           <div class="field-wrap">
             <div class="input-field" [class.input-field--error]="showEmailError()">
               <i class="pi pi-at field-icon"></i>
-              <input type="email" pInputText placeholder="Введите e-mail" [formField]="registerForm.email"/>
+              <input type="email" pInputText [placeholder]="t().emailPlaceholder" [formField]="registerForm.email"/>
             </div>
             @if (showEmailError()) {
               <span class="field-error">{{ emailError() }}</span>
@@ -45,7 +45,7 @@
             <div class="input-field" [class.input-field--error]="showPasswordError()">
               <i class="pi pi-lock field-icon"></i>
               <p-password
-                placeholder="Придумайте пароль"
+                [placeholder]="t().passwordPlaceholder"
                 [toggleMask]="true"
                 [feedback]="false"
                 [formField]="$any(registerForm.passwordHash)"
@@ -65,14 +65,14 @@
         <div class="btn-submit">
           <p-button
             type="submit"
-            label="Зарегистрироваться"
+            [label]="t().submitBtn"
             [loading]="isSubmitting()"
             [disabled]="isSubmitting()"
           />
         </div>
 
-        <p class="notreg">Уже есть аккаунт?</p>
-        <p-button class="go-login" routerLink="/login" label="Авторизоваться"/>
+        <p class="notreg">{{ t().hasAccount }}</p>
+        <p-button class="go-login" routerLink="/login" [label]="t().loginBtn"/>
 
       </div>
     </form>
@@ -85,9 +85,9 @@
         <div class="verify-icon">
           <i class="pi pi-envelope"></i>
         </div>
-        <h2 class="verify-title">Проверьте почту</h2>
+        <h2 class="verify-title">{{ t().verifyTitle }}</h2>
         <p class="verify-subtitle">
-          Мы отправили 6-значный код на<br>
+          {{ t().verifySubtitle }}<br>
           <strong>{{ pendingEmail() }}</strong>
         </p>
       </div>
@@ -117,7 +117,7 @@
 
       <div class="btn-submit">
         <p-button
-          label="Подтвердить"
+          [label]="t().verifyBtn"
           [loading]="isVerifying()"
           [disabled]="isVerifying() || codeDigits().join('').length !== 6"
           (onClick)="submitCode()"
@@ -126,10 +126,10 @@
 
       <div class="resend-wrap">
         @if (resendCooldown() > 0) {
-          <span class="resend-timer">Отправить повторно через {{ resendCooldown() }} с</span>
+          <span class="resend-timer">{{ t().resendTimerPrefix }} {{ resendCooldown() }} {{ t().resendTimerSuffix }}</span>
         } @else {
           <button class="resend-btn" (click)="resendCode()" [disabled]="isResending()">
-            {{ isResending() ? 'Отправляем...' : 'Отправить код повторно' }}
+            {{ isResending() ? t().resending : t().resendBtn }}
           </button>
         }
       </div>

@@ -16,6 +16,7 @@ import { MessageModule } from 'primeng/message';
 import { ShareService } from '../../../../../services/share';
 import { TooltipModule } from 'primeng/tooltip';
 import { UploadQueueService } from '../../../../../services/upload-queue';
+import { LangService } from '../../../../../services/lang';
 
 @Component({
   selector: 'app-toolbar',
@@ -36,6 +37,9 @@ export class Toolbar implements OnInit {
   protected readonly fileSystem     = inject(FileSystem);
   protected readonly shareService   = inject(ShareService);
   protected readonly uploadQueue    = inject(UploadQueueService);
+  protected readonly langService    = inject(LangService);
+
+  t = computed(() => this.langService.t().pages.toolbar);
 
   visible         = signal(false);
   folderName      = signal<string>('');
@@ -47,7 +51,7 @@ export class Toolbar implements OnInit {
 
   readonly currentFolderName = computed(() => {
     const items = this.fileSystem.breadcrumbItems();
-    return items.length > 0 ? items[items.length - 1].label : 'Корневая папка';
+    return items.length > 0 ? items[items.length - 1].label : this.langService.t().pages.toolbar.rootFolder;
   });
 
   files        = this.fileSystem.files;
@@ -59,22 +63,14 @@ export class Toolbar implements OnInit {
   searchQuery  = this.fileSystem.searchQuery;
   activeFilter = this.fileSystem.activeFilter;
 
-  filters: { label: string; value: FileFilter; icon: string }[] = [
-    { label: 'Все',       value: 'all',      icon: 'pi-list' },
-    { label: 'Фото',      value: 'image',    icon: 'pi-image' },
-    { label: 'Видео',     value: 'video',    icon: 'pi-video' },
-    { label: 'Аудио',     value: 'audio',    icon: 'pi-volume-up' },
-    { label: 'Документы', value: 'document', icon: 'pi-file' },
-    { label: 'Архивы',    value: 'archive',  icon: 'pi-box' },
-    { label: 'Прочее',    value: 'other',    icon: 'pi-file' },
-  ];
+  filters = computed(() => this.langService.t().pages.toolbar.filters as unknown as { label: string; value: FileFilter; icon: string }[]);
 
   items: MenuItem[] | undefined;
 
   ngOnInit() {
     this.items = [
       {
-        label: 'скачать',
+        label: this.langService.t().pages.toolbar.downloadTooltip,
         icon: PrimeIcons.DOWNLOAD,
         command: () => {
           const item = this.selectedItem();
@@ -105,10 +101,11 @@ export class Toolbar implements OnInit {
   confirmUpload() {
     const result = this.uploadQueue.confirm(this.fileSystem.currentFolderId());
     if (!result) return;
+    const t = this.langService.t().pages.toolbar;
     this.messageService.add({
       severity: 'secondary',
-      summary: 'Загрузка',
-      detail: `Загружаем ${result.count} ${this.uploadQueue.pluralFile(result.count)}...`,
+      summary: t.toastUploadTitle,
+      detail: `${t.uploadingFilesMsg} ${result.count} ${this.uploadQueue.pluralFile(result.count)}...`,
       life: 2500,
       key: 'br',
     });
@@ -136,11 +133,12 @@ export class Toolbar implements OnInit {
     const fileArray = Array.from(files);
     const rootFolderId = this.fileSystem.currentFolderId();
 
+    const t = this.langService.t().pages.toolbar;
     this.folderUploading.set(true);
     this.messageService.add({
       severity: 'secondary',
-      summary: 'Загрузка',
-      detail: `Загружаем папку (${fileArray.length} файлов)...`,
+      summary: t.toastUploadTitle,
+      detail: `${t.uploadingFolderMsg} (${fileArray.length} ${t.filesWord})...`,
       life: 4000,
       key: 'br',
     });
@@ -149,16 +147,16 @@ export class Toolbar implements OnInit {
       await this.fileSystem.uploadFolderStructure(fileArray, rootFolderId);
       this.messageService.add({
         severity: 'secondary',
-        summary: 'Готово',
-        detail: 'Папка успешно загружена',
+        summary: t.toastDone,
+        detail: t.folderUploaded,
         life: 2000,
         key: 'br',
       });
     } catch {
       this.messageService.add({
         severity: 'secondary',
-        summary: 'Ошибка',
-        detail: 'Не удалось загрузить папку',
+        summary: t.toastError,
+        detail: t.folderUploadFailed,
         key: 'br',
       });
     } finally {
@@ -182,31 +180,33 @@ export class Toolbar implements OnInit {
     if (!item) return;
     const isFile = 'downloadUrl' in item && 'mimeType' in item;
     const type: 'file' | 'folder' = isFile ? 'file' : 'folder';
+    const t = this.langService.t().pages.toolbar;
     this.fileSystem.deleteItem(item.id, type).subscribe({
-      next: () => this.messageService.add({ severity: 'secondary', summary: 'Готово', detail: `${isFile ? 'Файл' : 'Папка'} удалён(а)`, key: 'br' }),
-      error: () => this.messageService.add({ severity: 'secondary', summary: 'Ошибка', detail: 'Не удалось удалить', key: 'br' }),
+      next: () => this.messageService.add({ severity: 'secondary', summary: t.toastDone, detail: isFile ? t.fileDeleted : t.folderDeleted, key: 'br' }),
+      error: () => this.messageService.add({ severity: 'secondary', summary: t.toastError, detail: t.deleteFailed, key: 'br' }),
     });
   }
 
   async shareSelected() {
     const item = this.selectedItem();
+    const t = this.langService.t().pages.toolbar;
     if (!item || !('name' in item)) {
       this.messageService.add({
-        severity: 'secondary', summary: 'Внимание',
-        detail: 'Выберите файл для пересылки', life: 1500, key: 'br',
+        severity: 'secondary', summary: t.shareWarningTitle,
+        detail: t.shareSelectFile, life: 1500, key: 'br',
       });
       return;
     }
     try {
       await this.shareService.copyShareLink(item.name);
       this.messageService.add({
-        severity: 'secondary', summary: 'Успешно',
-        detail: `Ссылка на "${item.name}" скопирована`, life: 1500, key: 'br',
+        severity: 'secondary', summary: t.shareSuccessTitle,
+        detail: `${t.shareCopied} "${item.name}" ${t.shareLinkSuffix}`, life: 1500, key: 'br',
       });
     } catch {
       this.messageService.add({
-        severity: 'secondary', summary: 'Ошибка',
-        detail: 'Не удалось скопировать ссылку', key: 'br',
+        severity: 'secondary', summary: t.toastError,
+        detail: t.shareFailed, key: 'br',
       });
     }
   }

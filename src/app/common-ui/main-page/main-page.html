@@ -3,26 +3,31 @@
     <img class="logo" [src]="imagePath()" alt="Infinity">
   </div>
   <ul class="nav-links">
-    <li><a (click)="scrollTo('features')"><i class="pi pi-sparkles"></i><span>Функции</span></a></li>
-    <li><a (click)="scrollTo('kanban')"><i class="pi pi-th-large"></i><span>Infinity-life</span></a></li>
-    <li><a (click)="scrollTo('files')"><i class="pi pi-folder"></i><span>Файлы</span></a></li>
-    <li><a (click)="scrollTo('pricing')"><i class="pi pi-tag"></i><span>Тарифы</span></a></li>
-    <li><a (click)="scrollTo('faq')"><i class="pi pi-question-circle"></i><span>FAQ</span></a></li>
+    <li><a (click)="scrollTo('features')"><i class="pi pi-sparkles"></i><span>{{ t().nav.features }}</span></a></li>
+    <li><a (click)="scrollTo('kanban')"><i class="pi pi-th-large"></i><span>{{ t().nav.kanban }}</span></a></li>
+    <li><a (click)="scrollTo('files')"><i class="pi pi-folder"></i><span>{{ t().nav.files }}</span></a></li>
+    <li><a (click)="scrollTo('pricing')"><i class="pi pi-tag"></i><span>{{ t().nav.pricing }}</span></a></li>
+    <li><a (click)="scrollTo('faq')"><i class="pi pi-question-circle"></i><span>{{ t().nav.faq }}</span></a></li>
   </ul>
   <div class="nav-cta">
     <button class="theme-toggle" (click)="themeService.toggle()"
-      [pTooltip]="isDark() ? 'Светлая тема' : 'Тёмная тема'" tooltipPosition="bottom"
-      aria-label="Переключить тему">
+      [pTooltip]="isDark() ? t().nav.themeLight : t().nav.themeDark" tooltipPosition="bottom"
+      aria-label="Toggle theme">
       <i [class]="isDark() ? 'pi pi-sun' : 'pi pi-moon'"></i>
     </button>
-    <p-button label="Войти" [text]="true" severity="secondary" size="small" routerLink="/login"/>
-    <p-button label="Зарегистрироваться" [outlined]="true" severity="secondary" size="small" routerLink="/registration"/>
+    <button class="lang-toggle" (click)="langService.toggle()"
+      [pTooltip]="t().nav.langSwitch" tooltipPosition="bottom"
+      aria-label="Switch language">
+      {{ langService.lang() === 'ru' ? 'EN' : 'RU' }}
+    </button>
+    <p-button [label]="t().nav.login" [text]="true" severity="secondary" size="small" routerLink="/login"/>
+    <p-button [label]="t().nav.register" [outlined]="true" severity="secondary" size="small" routerLink="/registration"/>
   </div>
 </nav>
 
 
 <section class="hero">
-  
+
   <div class="hero-orbs" aria-hidden="true">
     <span class="orb orb--1"></span>
     <span class="orb orb--2"></span>
@@ -31,42 +36,42 @@
   <div class="hero-tags">
     <div class="hero-badge hero-badge--gradient">
       <span class="badge-dot"></span>
-      All-in-one рабочее пространство нового поколения
+      {{ t().hero.badge1 }}
     </div>
-    <div class="hero-badge hero-badge-sm"><i class="pi pi-check-circle"></i> Бесплатный пробный период 7 дней</div>
-    <div class="hero-badge hero-badge-sm"><i class="pi pi-lock"></i> Безопасное хранение данных</div>
+    <div class="hero-badge hero-badge-sm"><i class="pi pi-check-circle"></i> {{ t().hero.badge2 }}</div>
+    <div class="hero-badge hero-badge-sm"><i class="pi pi-lock"></i> {{ t().hero.badge3 }}</div>
   </div>
-  <h1 class="hero-title">Один<br><em class="gradient-text">инструмент.</em><br>Для всего.</h1>
-  <p class="hero-subtitle">Kanban-доска, файловое хранилище и совместная работа в одном минималистичном пространстве.</p>
+  <h1 class="hero-title">{{ t().hero.title1 }}<br><em class="gradient-text">{{ t().hero.title2 }}</em><br>{{ t().hero.title3 }}</h1>
+  <p class="hero-subtitle">{{ t().hero.subtitle }}</p>
   <div class="hero-meta">
-    <span class="hero-meta-item"><i class="pi pi-th-large"></i> Infinity-life</span>
+    <span class="hero-meta-item"><i class="pi pi-th-large"></i> {{ t().hero.meta1 }}</span>
     <span class="hero-meta-dot">·</span>
-    <span class="hero-meta-item"><i class="pi pi-folder-open"></i> Файловое хранилище</span>
+    <span class="hero-meta-item"><i class="pi pi-folder-open"></i> {{ t().hero.meta2 }}</span>
     <span class="hero-meta-dot">·</span>
-    <span class="hero-meta-item"><i class="pi pi-user"></i> Профиль</span>
+    <span class="hero-meta-item"><i class="pi pi-user"></i> {{ t().hero.meta3 }}</span>
     <span class="hero-meta-dot">·</span>
-    <span class="hero-meta-item"><i class="pi pi-share-alt"></i> Пересылка файлов</span>
+    <span class="hero-meta-item"><i class="pi pi-share-alt"></i> {{ t().hero.meta4 }}</span>
   </div>
   <div class="cta-actions">
-    <a class="btn-hero-primary btn-hero-primary--gradient" routerLink="/registration"><i class="pi pi-user-plus"></i> Зарегистрироваться</a>
-    <a class="btn-hero-ghost" routerLink="/login"><i class="pi pi-sign-in"></i> Войти</a>
+    <a class="btn-hero-primary btn-hero-primary--gradient" routerLink="/registration"><i class="pi pi-user-plus"></i> {{ t().hero.ctaRegister }}</a>
+    <a class="btn-hero-ghost" routerLink="/login"><i class="pi pi-sign-in"></i> {{ t().hero.ctaLogin }}</a>
   </div>
 
-  
+
   <div class="hero-preview">
     <span class="hp-glow" aria-hidden="true"></span>
     <div class="hp-bento">
 
-      
+
       <div class="hp-tile hp-tile--kanban">
         <div class="hp-tile-head">
-          <span class="hp-tile-label"><i class="pi pi-th-large"></i> Infinity-life</span>
+          <span class="hp-tile-label"><i class="pi pi-th-large"></i> {{ t().bento.kanbanLabel }}</span>
           <span class="hp-pill">3 / 6</span>
         </div>
         <div class="hp-kanban">
           <div class="hp-col">
             <div class="hp-col-head">
-              <span class="hp-col-title">Готово</span>
+              <span class="hp-col-title">{{ t().bento.colDone }}</span>
               <span class="hp-col-count">2</span>
             </div>
             <div class="hp-task hp-task--done">
@@ -75,17 +80,17 @@
             </div>
             <div class="hp-task hp-task--done">
               <span class="hp-check hp-check--done"><i class="pi pi-check"></i></span>
-              <span class="hp-task-name">Дизайн макет</span>
+              <span class="hp-task-name">{{ t().bento.taskDesign }}</span>
             </div>
           </div>
           <div class="hp-col">
             <div class="hp-col-head">
-              <span class="hp-col-title">В процессе</span>
+              <span class="hp-col-title">{{ t().bento.colInProgress }}</span>
               <span class="hp-col-count">2</span>
             </div>
             <div class="hp-task">
               <span class="hp-check"></span>
-              <span class="hp-task-name">Отчёт</span>
+              <span class="hp-task-name">{{ t().bento.taskReport }}</span>
               <span class="hp-task-due"><i class="pi pi-calendar"></i> 20.01</span>
             </div>
             <div class="hp-task">
@@ -97,10 +102,10 @@
         </div>
       </div>
 
-      
+
       <div class="hp-tile hp-tile--storage">
         <div class="hp-tile-head">
-          <span class="hp-tile-label"><i class="pi pi-database"></i> Хранилище</span>
+          <span class="hp-tile-label"><i class="pi pi-database"></i> {{ t().bento.storageLabel }}</span>
         </div>
         <div class="hp-donut">
           <svg class="hp-donut-svg" viewBox="0 0 120 120" aria-hidden="true">
@@ -118,23 +123,23 @@
           </svg>
           <div class="hp-donut-center">
             <span class="hp-donut-num">62<em>%</em></span>
-            <span class="hp-donut-sub">155 / 250 ГБ</span>
+            <span class="hp-donut-sub">{{ t().bento.storageSize }}</span>
           </div>
         </div>
       </div>
 
-      
+
       <div class="hp-tile hp-tile--plan">
-        <span class="hp-plan-badge"><span class="hp-plan-dot"></span> Активен</span>
+        <span class="hp-plan-badge"><span class="hp-plan-dot"></span> {{ t().bento.planActive }}</span>
         <span class="hp-plan-name">Infinity <em class="gradient-text">Pulse</em></span>
-        <span class="hp-plan-meta">250 ГБ · Безлимит задач</span>
-        <span class="hp-plan-price">399 ₽<em>/ мес</em></span>
+        <span class="hp-plan-meta">{{ t().bento.planMeta }}</span>
+        <span class="hp-plan-price">399 ₽<em>{{ t().bento.planPeriod }}</em></span>
       </div>
 
-      
+
       <div class="hp-tile hp-tile--files">
         <div class="hp-tile-head">
-          <span class="hp-tile-label"><i class="pi pi-folder-open"></i> Недавние файлы</span>
+          <span class="hp-tile-label"><i class="pi pi-folder-open"></i> {{ t().bento.filesLabel }}</span>
           <span class="hp-pill"><i class="pi pi-arrow-right"></i></span>
         </div>
         <div class="hp-files-row">
@@ -153,7 +158,7 @@
         </div>
       </div>
 
-      
+
       <div class="hp-tile hp-tile--brand">
         <i class="pi pi-infinity hp-brand-icon"></i>
         <span class="hp-brand-text"><span class="gradient-text">Infinity</span></span>
@@ -163,11 +168,11 @@
     </div>
   </div>
 
-  
+
   <div class="trust-strip">
     <ul class="trust-list">
-      @for (t of trustItems; track t.label) {
-        <li class="trust-item"><i [class]="t.icon"></i><span>{{ t.label }}</span></li>
+      @for (item of trust(); track item.label) {
+        <li class="trust-item"><i [class]="item.icon"></i><span>{{ item.label }}</span></li>
       }
     </ul>
   </div>
@@ -177,34 +182,24 @@
 <section class="features" id="features">
   <div class="container">
     <div class="section-header reveal">
-      <div class="section-label">Возможности</div>
-      <h2 class="section-title">Всё что нужно <span class="gradient-text">для работы</span></h2>
-      <p class="section-sub">Никаких переключений между приложениями. Всё в одном месте — быстро, чисто, продуктивно.</p>
+      <div class="section-label">{{ t().featuresSection.label }}</div>
+      <h2 class="section-title">{{ t().featuresSection.title1 }}<span class="gradient-text">{{ t().featuresSection.titleEm }}</span></h2>
+      <p class="section-sub">{{ t().featuresSection.subtitle }}</p>
     </div>
 
-    
+
     <div class="stats-strip reveal">
-      <div class="stat-cell">
-        <div class="stat-num">2</div>
-        <div class="stat-label">Модуля в одном</div>
-      </div>
-      <div class="stat-cell stat-cell--accent">
-        <div class="stat-num">∞</div>
-        <div class="stat-label">Задач и файлов</div>
-      </div>
-      <div class="stat-cell">
-        <div class="stat-num">0</div>
-        <div class="stat-label">Лишних вкладок</div>
-      </div>
-      <div class="stat-cell">
-        <div class="stat-num">1</div>
-        <div class="stat-label">Рабочее пространство</div>
-      </div>
+      @for (s of stats(); track s.label) {
+        <div class="stat-cell" [class.stat-cell--accent]="s.num === '∞'">
+          <div class="stat-num">{{ s.num }}</div>
+          <div class="stat-label">{{ s.label }}</div>
+        </div>
+      }
     </div>
 
-    
+
     <div class="features-grid">
-      @for (f of features; let i = $index; track f.title) {
+      @for (f of features(); let i = $index; track f.title) {
         <div class="feat-card reveal"
           [class.reveal-delay-1]="i % 3 === 0"
           [class.reveal-delay-2]="i % 3 === 1"
@@ -225,36 +220,36 @@
   <div class="container">
     <div class="split-inner reveal">
       <div class="split-text">
-        <div class="section-label">Infinity-life</div>
-        <h2 class="section-title">Задачи <span class="gradient-text">под контролем</span></h2>
-        <p class="section-sub">Создавайте собственные колонки, добавляйте задачи и отмечайте выполненные. Гибкость без лишней сложности.</p>
+        <div class="section-label">{{ t().kanbanSection.label }}</div>
+        <h2 class="section-title">{{ t().kanbanSection.title1 }}<span class="gradient-text">{{ t().kanbanSection.titleEm }}</span></h2>
+        <p class="section-sub">{{ t().kanbanSection.subtitle }}</p>
         <ul class="split-list">
-          <li><i class="pi pi-check"></i> Drag & Drop между колонками</li>
-          <li><i class="pi pi-check"></i> Подзадачи с прогресс-баром</li>
-          <li><i class="pi pi-check"></i> Приоритеты задач</li>
-          <li><i class="pi pi-check"></i> Неограниченное количество колонок</li>
+          <li><i class="pi pi-check"></i> {{ t().kanbanSection.li1 }}</li>
+          <li><i class="pi pi-check"></i> {{ t().kanbanSection.li2 }}</li>
+          <li><i class="pi pi-check"></i> {{ t().kanbanSection.li3 }}</li>
+          <li><i class="pi pi-check"></i> {{ t().kanbanSection.li4 }}</li>
         </ul>
         <div class="split-actions">
-          <p-button label="Попробовать Kanban" icon="pi pi-th-large" iconPos="left" severity="secondary" [outlined]="true" routerLink="/login"/>
+          <p-button [label]="t().kanbanSection.btn" icon="pi pi-th-large" iconPos="left" severity="secondary" [outlined]="true" routerLink="/login"/>
         </div>
       </div>
 
-      
+
       <div class="split-visual sv-kanban-real">
-        
+
         <div class="svk-header">
           <span class="svk-logo">INFINITY</span>
           <div class="svk-tabs">
-            <span class="svk-tab svk-tab--active">Доска</span>
-            <span class="svk-tab">Список</span>
+            <span class="svk-tab svk-tab--active">{{ t().kanbanVisual.tabBoard }}</span>
+            <span class="svk-tab">{{ t().kanbanVisual.tabList }}</span>
           </div>
         </div>
-        
+
         <div class="svk-body">
-          
+
           <div class="svk-col">
             <div class="svk-col-header">
-              <span class="svk-col-title">Готово</span>
+              <span class="svk-col-title">{{ t().kanbanVisual.colDone }}</span>
               <span class="svk-col-count">1</span>
               <button class="svk-col-menu"><i class="pi pi-ellipsis-v"></i></button>
             </div>
@@ -264,12 +259,12 @@
                 <span class="svk-task-title svk-task-title--done">Backend</span>
               </div>
             </div>
-            <button class="svk-add-task"><i class="pi pi-plus"></i> Создать задачу</button>
+            <button class="svk-add-task"><i class="pi pi-plus"></i> {{ t().kanbanVisual.addTask }}</button>
           </div>
-          
+
           <div class="svk-col">
             <div class="svk-col-header">
-              <span class="svk-col-title">В ПРОЦЕССЕ</span>
+              <span class="svk-col-title">{{ t().kanbanVisual.colInProgress }}</span>
               <span class="svk-col-count">2</span>
               <button class="svk-col-menu"><i class="pi pi-ellipsis-v"></i></button>
             </div>
@@ -277,7 +272,7 @@
               <div class="svk-task">
                 <div class="svk-check"></div>
                 <div class="svk-task-body">
-                  <span class="svk-task-title">Отчёт</span>
+                  <span class="svk-task-title">{{ t().kanbanVisual.taskReport }}</span>
                   <span class="svk-task-due svk-task-due--soon"><i class="pi pi-calendar"></i> 20.01.2025</span>
                 </div>
               </div>
@@ -291,17 +286,17 @@
               <div class="svk-task">
                 <div class="svk-check"></div>
                 <div class="svk-task-body">
-                  <span class="svk-task-title">Дизайн макет</span>
+                  <span class="svk-task-title">{{ t().kanbanVisual.taskDesign }}</span>
                   <div class="svk-task-color-bar svk-task-color-bar--alt"></div>
                 </div>
               </div>
             </div>
-            <button class="svk-add-task"><i class="pi pi-plus"></i> Создать задачу</button>
+            <button class="svk-add-task"><i class="pi pi-plus"></i> {{ t().kanbanVisual.addTask }}</button>
           </div>
-          
+
           <div class="svk-col svk-col--new">
             <i class="pi pi-plus"></i>
-            <span>Создать колонку</span>
+            <span>{{ t().kanbanVisual.newCol }}</span>
           </div>
         </div>
       </div>
@@ -314,64 +309,64 @@
   <div class="container">
     <div class="split-inner split-reverse reveal">
       <div class="split-text">
-        <div class="section-label">Хранилище</div>
-        <h2 class="section-title">Все файлы <span class="gradient-text">рядом</span></h2>
-        <p class="section-sub">Папки, изображения, документы — загружайте и организуйте как в Google Drive, не выходя из рабочего пространства.</p>
+        <div class="section-label">{{ t().filesSection.label }}</div>
+        <h2 class="section-title">{{ t().filesSection.title1 }}<span class="gradient-text">{{ t().filesSection.titleEm }}</span></h2>
+        <p class="section-sub">{{ t().filesSection.subtitle }}</p>
         <ul class="split-list">
-          <li><i class="pi pi-check"></i> Папки и подпапки</li>
-          <li><i class="pi pi-check"></i> Превью изображений</li>
-          <li><i class="pi pi-check"></i> Пересылка по ссылке</li>
-          <li><i class="pi pi-check"></i> Скачивание ZIP-архивом</li>
+          <li><i class="pi pi-check"></i> {{ t().filesSection.li1 }}</li>
+          <li><i class="pi pi-check"></i> {{ t().filesSection.li2 }}</li>
+          <li><i class="pi pi-check"></i> {{ t().filesSection.li3 }}</li>
+          <li><i class="pi pi-check"></i> {{ t().filesSection.li4 }}</li>
         </ul>
         <div class="split-actions">
-          <p-button label="Открыть хранилище" icon="pi pi-folder-open" iconPos="left" severity="secondary" [outlined]="true" routerLink="/login"/>
+          <p-button [label]="t().filesSection.btn" icon="pi pi-folder-open" iconPos="left" severity="secondary" [outlined]="true" routerLink="/login"/>
         </div>
       </div>
 
-      
+
       <div class="split-visual sv-files-real">
-        
+
         <div class="svf-toolbar">
           <div class="svf-tb-row svf-tb-row--top">
             <div class="svf-tb-left">
-              <button class="svf-btn svf-btn--outlined"><i class="pi pi-cloud-upload"></i><span>Загрузить файл</span></button>
-              <button class="svf-btn"><i class="pi pi-folder-open"></i><span>Загрузить папку</span></button>
-              <button class="svf-btn"><i class="pi pi-folder-plus"></i><span>Создать папку</span></button>
+              <button class="svf-btn svf-btn--outlined"><i class="pi pi-cloud-upload"></i><span>{{ t().filesVisual.btnUploadFile }}</span></button>
+              <button class="svf-btn"><i class="pi pi-folder-open"></i><span>{{ t().filesVisual.btnUploadFolder }}</span></button>
+              <button class="svf-btn"><i class="pi pi-folder-plus"></i><span>{{ t().filesVisual.btnCreateFolder }}</span></button>
             </div>
             <div class="svf-tb-right">
               <button class="svf-icon-btn"><i class="pi pi-download"></i></button>
               <button class="svf-icon-btn"><i class="pi pi-trash"></i></button>
-              <button class="svf-btn svf-btn--outlined"><i class="pi pi-share-alt"></i><span>переслать</span></button>
+              <button class="svf-btn svf-btn--outlined"><i class="pi pi-share-alt"></i><span>{{ t().filesVisual.btnShare }}</span></button>
             </div>
           </div>
           <div class="svf-tb-row svf-tb-row--bottom">
-            <div class="svf-search"><i class="pi pi-search"></i><span>Поиск файлов...</span></div>
+            <div class="svf-search"><i class="pi pi-search"></i><span>{{ t().filesVisual.search }}</span></div>
             <div class="svf-tb-sep"></div>
             <div class="svf-filters">
-              <span class="svf-filter svf-filter--active"><i class="pi pi-list"></i><span>Все</span></span>
-              <span class="svf-filter"><i class="pi pi-image"></i><span>Фото</span></span>
-              <span class="svf-filter"><i class="pi pi-video"></i><span>Видео</span></span>
-              <span class="svf-filter"><i class="pi pi-volume-up"></i><span>Аудио</span></span>
-              <span class="svf-filter"><i class="pi pi-file"></i><span>Документы</span></span>
-              <span class="svf-filter"><i class="pi pi-box"></i><span>Архивы</span></span>
-              <span class="svf-filter"><i class="pi pi-ellipsis-h"></i><span>Прочее</span></span>
+              <span class="svf-filter svf-filter--active"><i class="pi pi-list"></i><span>{{ t().filesVisual.filterAll }}</span></span>
+              <span class="svf-filter"><i class="pi pi-image"></i><span>{{ t().filesVisual.filterPhoto }}</span></span>
+              <span class="svf-filter"><i class="pi pi-video"></i><span>{{ t().filesVisual.filterVideo }}</span></span>
+              <span class="svf-filter"><i class="pi pi-volume-up"></i><span>{{ t().filesVisual.filterAudio }}</span></span>
+              <span class="svf-filter"><i class="pi pi-file"></i><span>{{ t().filesVisual.filterDocs }}</span></span>
+              <span class="svf-filter"><i class="pi pi-box"></i><span>{{ t().filesVisual.filterArchives }}</span></span>
+              <span class="svf-filter"><i class="pi pi-ellipsis-h"></i><span>{{ t().filesVisual.filterOther }}</span></span>
             </div>
           </div>
         </div>
-        
+
         <div class="svf-body">
-          
+
           <div class="svf-folders">
             <div class="svf-folder">
-              <div class="svf-folder-info"><i class="pi pi-folder"></i><span>Лучшие раб...</span></div>
+              <div class="svf-folder-info"><i class="pi pi-folder"></i><span>{{ t().filesVisual.folderName }}</span></div>
               <i class="pi pi-ellipsis-v svf-folder-dots"></i>
             </div>
           </div>
-          
+
           <div class="svf-hr"></div>
-          
+
           <div class="svf-files">
-            
+
             <div class="svf-file-card">
               <div class="svf-file-top">
                 <span class="svf-file-name">Sitephone.mov</span>
@@ -381,7 +376,7 @@
                 <div class="svf-file-play"><i class="pi pi-play-circle"></i></div>
               </div>
             </div>
-            
+
             <div class="svf-file-card">
               <div class="svf-file-top">
                 <span class="svf-file-name">git.txt</span>
@@ -389,7 +384,7 @@
               </div>
               <div class="svf-file-preview svf-file-doc svf-file-txt"><i class="pi pi-file"></i></div>
             </div>
-            
+
             <div class="svf-file-card">
               <div class="svf-file-top">
                 <span class="svf-file-name">scarlxrd - Serxtxnin.m...</span>
@@ -399,7 +394,7 @@
                 <div class="svf-audio-bars"><span></span><span></span><span></span><span></span><span></span></div>
               </div>
             </div>
-            
+
             <div class="svf-file-card">
               <div class="svf-file-top">
                 <span class="svf-file-name">infinity-logo.jpg</span>
@@ -422,95 +417,95 @@
 <section class="pricing" id="pricing">
   <div class="container">
     <div class="section-header reveal pricing-header">
-      <div class="section-label">Тарифы</div>
-      <h2 class="section-title">Выбери свой путь <span class="gradient-text">в Infinity</span></h2>
-      <p class="section-sub">Простые планы. Никаких сюрпризов. Полная свобода.</p>
+      <div class="section-label">{{ t().pricing.label }}</div>
+      <h2 class="section-title">{{ t().pricing.title1 }}<span class="gradient-text">{{ t().pricing.titleEm }}</span></h2>
+      <p class="section-sub">{{ t().pricing.subtitle }}</p>
     </div>
     <div class="plans-grid">
 
-      
+
       <div class="plan-card reveal reveal-delay-1">
-        <div class="plan-name-row"><span class="plan-tier-badge plan-tier-badge--trial">7 дней бесплатно</span></div>
+        <div class="plan-name-row"><span class="plan-tier-badge plan-tier-badge--trial">{{ t().pricing.spark.badge }}</span></div>
         <div class="plan-header">
           <h3 class="plan-name">Infinity <em class="gradient-text">Spark</em></h3>
-          <p class="plan-slogan">Почувствуй силу Infinity — без обязательств</p>
+          <p class="plan-slogan">{{ t().pricing.spark.slogan }}</p>
           <div class="plan-price">
-            <span class="price-num">0</span><span class="price-currency">₽</span><span class="price-period">/ 7 дней</span>
+            <span class="price-num">0</span><span class="price-currency">₽</span><span class="price-period">{{ t().pricing.spark.period }}</span>
           </div>
         </div>
         <ul class="plan-features">
-          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>Полный доступ ко всем функциям</span></li>
-          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>5 ГБ облачного хранилища</span></li>
-          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>До 30 задач в Infinity-life</span></li>
-          <li class="feature-item feature-warn"><i class="pi pi-clock fi fi--warn"></i><span>После 7 дней — данные заморожены на 7 дней</span></li>
-          <li class="feature-item feature-danger"><i class="pi pi-trash fi fi--danger"></i><span>Затем данные удаляются без подписки</span></li>
+          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>{{ t().pricing.spark.f1 }}</span></li>
+          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>{{ t().pricing.spark.f2 }}</span></li>
+          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>{{ t().pricing.spark.f3 }}</span></li>
+          <li class="feature-item feature-warn"><i class="pi pi-clock fi fi--warn"></i><span>{{ t().pricing.spark.f4 }}</span></li>
+          <li class="feature-item feature-danger"><i class="pi pi-trash fi fi--danger"></i><span>{{ t().pricing.spark.f5 }}</span></li>
         </ul>
-        <a class="plan-btn" routerLink="/registration">Начать бесплатно <i class="pi pi-arrow-right"></i></a>
+        <a class="plan-btn" routerLink="/registration">{{ t().pricing.spark.btn }} <i class="pi pi-arrow-right"></i></a>
       </div>
 
-      
+
       <div class="plan-card plan-card--pulse reveal reveal-delay-2">
-        <div class="plan-name-row"><span class="plan-tier-badge plan-tier-badge--pulse">Ежемесячно</span></div>
+        <div class="plan-name-row"><span class="plan-tier-badge plan-tier-badge--pulse">{{ t().pricing.pulse.badge }}</span></div>
         <div class="plan-header">
           <h3 class="plan-name">Infinity <em class="gradient-text">Pulse</em></h3>
-          <p class="plan-slogan">Всё необходимое — здесь и сейчас</p>
+          <p class="plan-slogan">{{ t().pricing.pulse.slogan }}</p>
           <div class="plan-price">
-            <span class="price-num">399</span><span class="price-currency">₽</span><span class="price-period">/ мес</span>
+            <span class="price-num">399</span><span class="price-currency">₽</span><span class="price-period">{{ t().pricing.pulse.period }}</span>
           </div>
         </div>
         <ul class="plan-features">
-          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>250 ГБ облачного хранилища</span></li>
-          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>Безлимитные задачи и доски</span></li>
-          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>Все будущие обновления</span></li>
-          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>Приоритетная поддержка</span></li>
-          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>Отмена в любой момент</span></li>
+          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>{{ t().pricing.pulse.f1 }}</span></li>
+          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>{{ t().pricing.pulse.f2 }}</span></li>
+          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>{{ t().pricing.pulse.f3 }}</span></li>
+          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>{{ t().pricing.pulse.f4 }}</span></li>
+          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>{{ t().pricing.pulse.f5 }}</span></li>
         </ul>
-        <p class="plan-guarantee"><i class="pi pi-shield"></i> 14 дней на возврат средств</p>
-        <a class="plan-btn" routerLink="/registration">Подключить Pulse <i class="pi pi-arrow-right"></i></a>
+        <p class="plan-guarantee"><i class="pi pi-shield"></i> {{ t().pricing.pulse.guarantee }}</p>
+        <a class="plan-btn" routerLink="/registration">{{ t().pricing.pulse.btn }} <i class="pi pi-arrow-right"></i></a>
       </div>
 
-      
+
       <div class="plan-card plan-card--horizon reveal reveal-delay-3">
-        <div class="plan-popular-badge"><i class="pi pi-star-fill"></i> Лучший выбор</div>
-        <div class="plan-name-row"><span class="plan-tier-badge plan-tier-badge--horizon">Экономия 35%</span></div>
+        <div class="plan-popular-badge"><i class="pi pi-star-fill"></i> {{ t().pricing.horizon.popular }}</div>
+        <div class="plan-name-row"><span class="plan-tier-badge plan-tier-badge--horizon">{{ t().pricing.horizon.badge }}</span></div>
         <div class="plan-header">
           <h3 class="plan-name">Infinity <em class="gradient-text">Horizon</em></h3>
-          <p class="plan-slogan">Максимум возможностей — минимум затрат</p>
+          <p class="plan-slogan">{{ t().pricing.horizon.slogan }}</p>
           <div class="plan-price">
-            <span class="price-num">3599</span><span class="price-currency">₽</span><span class="price-period">/ год</span>
+            <span class="price-num">3599</span><span class="price-currency">₽</span><span class="price-period">{{ t().pricing.horizon.period }}</span>
           </div>
-          <p class="price-note">≈ 300 ₽/мес · экономия 1 188 ₽ vs Pulse</p>
+          <p class="price-note">{{ t().pricing.horizon.note }}</p>
         </div>
         <ul class="plan-features">
-          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>1 ТБ облачного хранилища</span></li>
-          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>Безлимитные задачи и доски</span></li>
-          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>Все будущие обновления</span></li>
-          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>Ранний доступ к новым функциям</span></li>
-          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>Приоритетная поддержка</span></li>
+          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>{{ t().pricing.horizon.f1 }}</span></li>
+          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>{{ t().pricing.horizon.f2 }}</span></li>
+          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>{{ t().pricing.horizon.f3 }}</span></li>
+          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>{{ t().pricing.horizon.f4 }}</span></li>
+          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>{{ t().pricing.horizon.f5 }}</span></li>
         </ul>
-        <p class="plan-guarantee"><i class="pi pi-shield"></i> 14 дней на возврат средств</p>
-        <a class="plan-btn plan-btn--primary" routerLink="/registration">Выбрать Horizon <i class="pi pi-arrow-right"></i></a>
+        <p class="plan-guarantee"><i class="pi pi-shield"></i> {{ t().pricing.horizon.guarantee }}</p>
+        <a class="plan-btn plan-btn--primary" routerLink="/registration">{{ t().pricing.horizon.btn }} <i class="pi pi-arrow-right"></i></a>
       </div>
 
-      
+
       <div class="plan-card plan-card--eternal reveal reveal-delay-1">
-        <div class="plan-name-row"><span class="plan-tier-badge plan-tier-badge--eternal">Навсегда</span></div>
+        <div class="plan-name-row"><span class="plan-tier-badge plan-tier-badge--eternal">{{ t().pricing.eternal.badge }}</span></div>
         <div class="plan-header">
           <h3 class="plan-name">Infinity <em class="gradient-text">Eternal</em></h3>
-          <p class="plan-slogan">Заплати один раз. Пользуйся вечно.</p>
+          <p class="plan-slogan">{{ t().pricing.eternal.slogan }}</p>
           <div class="plan-price">
-            <span class="price-num">4999</span><span class="price-currency">₽</span><span class="price-period">единоразово</span>
+            <span class="price-num">4999</span><span class="price-currency">₽</span><span class="price-period">{{ t().pricing.eternal.period }}</span>
           </div>
-          <p class="price-note">Никаких подписок и продлений — никогда</p>
+          <p class="price-note">{{ t().pricing.eternal.note }}</p>
         </div>
         <ul class="plan-features">
-          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>1 ТБ хранилища навсегда</span></li>
-          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>Все функции сейчас и в будущем</span></li>
-          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>Пожизненная приоритетная поддержка</span></li>
-          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>Ранний доступ ко всем обновлениям</span></li>
-          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>Инвестиция раз — Infinity работает всегда</span></li>
+          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>{{ t().pricing.eternal.f1 }}</span></li>
+          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>{{ t().pricing.eternal.f2 }}</span></li>
+          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>{{ t().pricing.eternal.f3 }}</span></li>
+          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>{{ t().pricing.eternal.f4 }}</span></li>
+          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>{{ t().pricing.eternal.f5 }}</span></li>
         </ul>
-        <a class="plan-btn plan-btn--eternal" routerLink="/registration">Стать вечным <i class="pi pi-arrow-right"></i></a>
+        <a class="plan-btn plan-btn--eternal" routerLink="/registration">{{ t().pricing.eternal.btn }} <i class="pi pi-arrow-right"></i></a>
       </div>
 
     </div>
@@ -523,12 +518,12 @@
 <section class="faq" id="faq">
   <div class="container">
     <div class="section-header reveal faq-header">
-      <div class="section-label">FAQ</div>
-      <h2 class="section-title">Частые <span class="gradient-text">вопросы</span></h2>
-      <p class="section-sub">Если не нашли ответ — напишите в поддержку, отвечаем в течение часа.</p>
+      <div class="section-label">{{ t().faqSection.label }}</div>
+      <h2 class="section-title">{{ t().faqSection.title1 }}<span class="gradient-text">{{ t().faqSection.titleEm }}</span></h2>
+      <p class="section-sub">{{ t().faqSection.subtitle }}</p>
     </div>
     <div class="faq-list">
-      @for (item of faqs; let i = $index; track item.q) {
+      @for (item of faqs(); let i = $index; track item.q) {
         <div class="faq-item reveal" [class.faq-item--open]="openFaq === i">
           <button class="faq-q" (click)="toggleFaq(i)" [attr.aria-expanded]="openFaq === i">
             <span>{{ item.q }}</span>
@@ -551,17 +546,17 @@
   </div>
   <div class="container">
     <div class="cta-inner reveal">
-      <div class="section-label">Начните сегодня</div>
-      <h2 class="section-title">Рабочее пространство <span class="gradient-text">без границ</span></h2>
-      <p class="section-sub">Бесплатно. Без кредитной карты. Всё в одном.</p>
+      <div class="section-label">{{ t().cta.label }}</div>
+      <h2 class="section-title">{{ t().cta.title1 }}<span class="gradient-text">{{ t().cta.titleEm }}</span></h2>
+      <p class="section-sub">{{ t().cta.subtitle }}</p>
       <div class="cta-actions">
-        <a class="btn-hero-primary btn-hero-primary--gradient" routerLink="/registration"><i class="pi pi-user-plus"></i> Зарегистрироваться</a>
-        <a class="btn-hero-ghost" routerLink="/login"><i class="pi pi-sign-in"></i> Войти</a>
+        <a class="btn-hero-primary btn-hero-primary--gradient" routerLink="/registration"><i class="pi pi-user-plus"></i> {{ t().cta.register }}</a>
+        <a class="btn-hero-ghost" routerLink="/login"><i class="pi pi-sign-in"></i> {{ t().cta.login }}</a>
       </div>
       <div class="cta-meta">
-        <span><i class="pi pi-check-circle"></i> 7 дней бесплатно</span>
-        <span><i class="pi pi-check-circle"></i> Без карты</span>
-        <span><i class="pi pi-check-circle"></i> Отмена в любой момент</span>
+        <span><i class="pi pi-check-circle"></i> {{ t().cta.meta1 }}</span>
+        <span><i class="pi pi-check-circle"></i> {{ t().cta.meta2 }}</span>
+        <span><i class="pi pi-check-circle"></i> {{ t().cta.meta3 }}</span>
       </div>
     </div>
   </div>
@@ -573,7 +568,7 @@
     <div class="footer-grid">
       <div class="footer-brand">
         <img class="logo" [src]="imagePath()" alt="Infinity">
-        <p class="footer-desc">All-in-one рабочее пространство — Kanban-доски и файловое хранилище в одном минималистичном интерфейсе.</p>
+        <p class="footer-desc">{{ t().footer.desc }}</p>
         <div class="footer-socials">
           <a href="https://t.me/Anton_Kast1lo" aria-label="Telegram" target="_blank" rel="noopener noreferrer" class="social-btn"><i class="pi pi-send"></i></a>
           <a href="https://github.com/Kast1lo" aria-label="GitHub" target="_blank" rel="noopener noreferrer" class="social-btn"><i class="pi pi-github"></i></a>
@@ -582,46 +577,46 @@
       </div>
 
       <div class="footer-col">
-        <h4 class="footer-col-title">Продукт</h4>
+        <h4 class="footer-col-title">{{ t().footer.col1Title }}</h4>
         <ul>
-          <li><a (click)="scrollTo('features')">Возможности</a></li>
-          <li><a (click)="scrollTo('kanban')">Kanban</a></li>
-          <li><a (click)="scrollTo('files')">Хранилище</a></li>
-          <li><a (click)="scrollTo('pricing')">Тарифы</a></li>
+          <li><a (click)="scrollTo('features')">{{ t().footer.col1l1 }}</a></li>
+          <li><a (click)="scrollTo('kanban')">{{ t().footer.col1l2 }}</a></li>
+          <li><a (click)="scrollTo('files')">{{ t().footer.col1l3 }}</a></li>
+          <li><a (click)="scrollTo('pricing')">{{ t().footer.col1l4 }}</a></li>
         </ul>
       </div>
 
       <div class="footer-col">
-        <h4 class="footer-col-title">Ресурсы</h4>
+        <h4 class="footer-col-title">{{ t().footer.col2Title }}</h4>
         <ul>
-          <li><a (click)="scrollTo('faq')">FAQ</a></li>
-          <li><a href="#">Документация</a></li>
-          <li><a href="#">Изменения</a></li>
-          <li><a href="#">Roadmap</a></li>
+          <li><a (click)="scrollTo('faq')">{{ t().footer.col2l1 }}</a></li>
+          <li><a href="#">{{ t().footer.col2l2 }}</a></li>
+          <li><a href="#">{{ t().footer.col2l3 }}</a></li>
+          <li><a href="#">{{ t().footer.col2l4 }}</a></li>
         </ul>
       </div>
 
       <div class="footer-col">
-        <h4 class="footer-col-title">Компания</h4>
+        <h4 class="footer-col-title">{{ t().footer.col3Title }}</h4>
         <ul>
-          <li><a href="#">О проекте</a></li>
-          <li><a href="#">Поддержка</a></li>
-          <li><a href="#">Условия</a></li>
-          <li><a href="#">Конфиденциальность</a></li>
+          <li><a href="#">{{ t().footer.col3l1 }}</a></li>
+          <li><a href="#">{{ t().footer.col3l2 }}</a></li>
+          <li><a href="#">{{ t().footer.col3l3 }}</a></li>
+          <li><a href="#">{{ t().footer.col3l4 }}</a></li>
         </ul>
       </div>
     </div>
 
     <div class="footer-bottom">
-      <span class="footer-copy">© 2025 Infinity. Все права защищены.</span>
+      <span class="footer-copy">{{ t().footer.copy }}</span>
       <div class="footer-bottom-links">
         <a href="#">Cookies</a>
         <span class="dot-sep">·</span>
-        <a href="#">Юридическая информация</a>
+        <a href="#">{{ t().footer.legal }}</a>
         <span class="dot-sep">·</span>
         <a href="mailto:hello@infinity-vault.com">hello&#64;infinity-vault.com</a>
       </div>
-      <div class="footer-status"><span class="status-dot"></span> Все системы работают</div>
+      <div class="footer-status"><span class="status-dot"></span> {{ t().footer.status }}</div>
     </div>
   </div>
 </footer>
