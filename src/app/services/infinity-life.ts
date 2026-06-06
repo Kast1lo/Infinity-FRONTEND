@@ -18,15 +18,26 @@ export class InfinityLife {
   private readonly baseUrl = environment.apiUrl;
 
   readonly columns = signal<any[]>([]);
+  readonly allTasks = signal<Task[]>([]);
   readonly isLoading = signal(false);
   readonly error = signal<string | null>(null);
 
   constructor() {}
 
-  loadBoard(): Observable<any[]> {
+  loadAllUserTasks(): Observable<Task[]> {
+    return this.http.get<Task[]>(`${this.baseUrl}/infinity-life/tasks`, { withCredentials: true }).pipe(
+      tap(tasks => this.allTasks.set(tasks)),
+      catchError(err => this.handleError(err, 'Не удалось загрузить задачи'))
+    );
+  }
+
+  loadBoard(projectId: string): Observable<any[]> {
     this.isLoading.set(true);
     this.error.set(null);
-    return this.http.get<any[]>(`${this.baseUrl}/infinity-life/columns`, { withCredentials: true }).pipe(
+    return this.http.get<any[]>(`${this.baseUrl}/infinity-life/columns`, {
+      params: { projectId },
+      withCredentials: true,
+    }).pipe(
       tap(columns => this.columns.set(columns)),
       catchError(err => this.handleError(err, 'Не удалось загрузить доску')),
       finalize(() => this.isLoading.set(false))

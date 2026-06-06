@@ -1,0 +1,617 @@
+:host {
+  --bg:        #0a0a0a;
+  --bg2:       #111111;
+  --bg3:       #1a1a1a;
+  --bg4:       #202020;
+  --border:    #222222;
+  --border2:   #2e2e2e;
+  --text:      #f0f0f0;
+  --text2:     #888888;
+  --text3:     #444444;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+
+  --tint-soft:    rgba(255,255,255,.025);
+  --tint:         rgba(255,255,255,.04);
+  --tint-1:       rgba(255,255,255,.06);
+  --tint-2:       rgba(255,255,255,.08);
+  --tint-3:       rgba(255,255,255,.14);
+  --scrollbar-thumb: rgba(255,255,255,.10);
+  --dot-color:    rgba(255,255,255,.035);
+}
+
+:host-context(.light-theme) {
+  --bg:        #f8f8f8;
+  --bg2:       #ffffff;
+  --bg3:       #f2f2f2;
+  --bg4:       #ebebeb;
+  --border:    #e0e0e0;
+  --border2:   #d0d0d0;
+  --text:      #111111;
+  --text2:     #555555;
+  --text3:     #aaaaaa;
+
+  --tint-soft:    rgba(0,0,0,.025);
+  --tint:         rgba(0,0,0,.04);
+  --tint-1:       rgba(0,0,0,.05);
+  --tint-2:       rgba(0,0,0,.06);
+  --tint-3:       rgba(0,0,0,.10);
+  --scrollbar-thumb: rgba(0,0,0,.18);
+  --dot-color:    rgba(0,0,0,.06);
+}
+
+// ─── Layout ───
+
+.projects-layout {
+  display: flex;
+  flex-direction: row;
+}
+
+.projects-main {
+  flex: 1;
+  min-width: 0;
+}
+
+// ─── Panel (общий каркас страницы — как .kanban-board / .card-list-files) ───
+
+.projects-panel {
+  display: flex;
+  flex-direction: column;
+  margin: 10px;
+  width: 98%;
+  height: calc(100vh - 40px);
+  border-radius: var(--radius-lg);
+  background: var(--bg2);
+  background-image: radial-gradient(circle, var(--dot-color) 1px, transparent 1px);
+  background-size: 28px 28px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.board-toolbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 22px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg2);
+  border-top-left-radius: var(--radius-lg);
+  border-top-right-radius: var(--radius-lg);
+  flex-shrink: 0;
+
+  .header-text {
+    .project-name {
+      font-family: 'Syne', sans-serif;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text);
+      margin: 0 0 4px 0;
+    }
+    p {
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text2);
+      font-size: 13px;
+      font-weight: 300;
+      line-height: 1.5;
+      margin: 0;
+      max-width: 560px;
+    }
+  }
+
+  .toolbar-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+}
+
+.panel-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 22px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+
+  &::-webkit-scrollbar { width: 5px; }
+  &::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 10px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+}
+
+// ─── Empty state ───
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 14px;
+  min-height: 60vh;
+  padding: 40px 20px;
+  color: var(--text2);
+
+  i { color: var(--text3); }
+
+  h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -.3px;
+    margin: 0;
+  }
+
+  p {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 300;
+    line-height: 1.6;
+    margin: 0;
+    max-width: 380px;
+  }
+}
+
+// ─── Grid + cards ───
+
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 18px;
+}
+
+.project-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform .15s ease, border-color .15s ease, background .15s ease;
+
+  &:hover {
+    background: var(--bg4);
+    border-color: var(--border2);
+    transform: translateY(-2px);
+
+    .project-card-actions { opacity: 1; }
+  }
+}
+
+.project-color-bar {
+  height: 4px;
+  width: 100%;
+}
+
+.project-card-body {
+  padding: 16px 18px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.project-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.project-card-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+  flex: 1;
+  word-break: break-word;
+}
+
+.project-card-actions {
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity .15s ease;
+}
+
+:host ::ng-deep .project-card-actions .p-button {
+  width: 26px !important;
+  height: 26px !important;
+  padding: 0 !important;
+  color: var(--text3) !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: var(--radius-sm) !important;
+  transition: color .15s, background .15s !important;
+
+  &:hover {
+    color: var(--text2) !important;
+    background: var(--tint-1) !important;
+  }
+
+  &[severity="danger"]:hover {
+    color: #e05555 !important;
+    background: rgba(224,85,85,.08) !important;
+  }
+
+  .p-button-icon { font-size: 12px !important; }
+}
+
+.project-card-desc {
+  font-family: 'DM Sans', sans-serif;
+  color: var(--text2);
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.project-card-stats {
+  display: flex;
+  gap: 14px;
+  margin-top: 4px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  color: var(--text2);
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  i { font-size: 11px; color: var(--text3); }
+}
+
+// ─── Основные кнопки-действия (tint-стиль, как в футерах диалогов) ───
+
+:host ::ng-deep .toolbar-actions .p-button,
+:host ::ng-deep .empty-state .p-button {
+  border-radius: var(--radius-sm) !important;
+  font-size: 13px !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  color: var(--text) !important;
+  background: var(--tint-2) !important;
+  border: 1px solid var(--tint-3) !important;
+  transition: background .2s, border-color .2s !important;
+
+  &:hover:not(:disabled) {
+    background: var(--tint-3) !important;
+    border-color: var(--tint-3) !important;
+  }
+
+  &:disabled { opacity: .3 !important; }
+
+  .p-button-icon { font-size: 12px !important; }
+}
+
+// ─── Dialog base ───
+
+:host ::ng-deep .p-dialog {
+  background: var(--bg2) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: 0 24px 64px rgba(0,0,0,.6) !important;
+
+  .p-dialog-header {
+    background: var(--bg2) !important;
+    border-bottom: 1px solid var(--border) !important;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0 !important;
+    padding: 16px 20px !important;
+
+    .p-dialog-title {
+      font-family: 'Syne', sans-serif !important;
+      font-size: 15px !important;
+      font-weight: 700 !important;
+      color: var(--text) !important;
+      letter-spacing: -.3px !important;
+    }
+
+    .p-dialog-header-icon {
+      color: var(--text3) !important;
+      &:hover { color: var(--text2) !important; background: var(--tint-1) !important; }
+    }
+  }
+
+  .p-dialog-content {
+    background: var(--bg2) !important;
+    padding: 20px !important;
+  }
+
+  .p-dialog-footer {
+    background: var(--bg2) !important;
+    border-top: 1px solid var(--border) !important;
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg) !important;
+    padding: 12px 20px !important;
+    display: flex !important;
+    justify-content: flex-end !important;
+    gap: 8px !important;
+  }
+}
+
+:host ::ng-deep .p-dialog-mask {
+  background: rgba(0,0,0,.7) !important;
+  backdrop-filter: blur(4px) !important;
+}
+
+// ─── Dialog inputs ───
+
+:host ::ng-deep .p-dialog .p-inputtext,
+:host ::ng-deep .p-dialog textarea {
+  background: var(--bg3) !important;
+  border: 1px solid var(--border2) !important;
+  border-radius: var(--radius-sm) !important;
+  color: var(--text) !important;
+  font-family: 'DM Sans', sans-serif !important;
+  font-size: 14px !important;
+  transition: border-color .2s !important;
+
+  &:focus { border-color: var(--text3) !important; box-shadow: none !important; }
+  &::placeholder { color: var(--text3) !important; }
+}
+
+// ─── Dialog footer buttons ───
+
+:host ::ng-deep .p-dialog-footer .p-button {
+  border-radius: var(--radius-sm) !important;
+  font-size: 13px !important;
+
+  &.p-button-text {
+    color: var(--text2) !important;
+    background: transparent !important;
+    border: none !important;
+
+    &:hover { color: var(--text) !important; background: var(--tint-1) !important; }
+  }
+
+  &:not(.p-button-text) {
+    color: var(--text) !important;
+    background: var(--tint-2) !important;
+    border: 1px solid var(--tint-3) !important;
+
+    &:hover:not(:disabled) { background: var(--tint-3) !important; }
+    &:disabled { opacity: .3 !important; }
+  }
+}
+
+// ─── Dialog form ───
+
+.create-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dialog-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  label {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text3);
+    letter-spacing: .5px;
+    text-transform: uppercase;
+  }
+}
+
+// ─── Color picker ───
+
+.color-picker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.color-dot {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform .15s, box-shadow .15s;
+  outline: none;
+  border: 2px solid transparent;
+  flex-shrink: 0;
+  line-height: 1;
+
+  &:hover:not(:disabled) { transform: scale(1.15); }
+  &--active { box-shadow: 0 0 0 2px #fff !important; transform: scale(1.1); }
+
+  &--empty {
+    border: 1.5px dashed var(--text3) !important;
+    background: transparent !important;
+    position: relative;
+
+    i {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 9px !important;
+      color: var(--text3) !important;
+      line-height: 1; margin: 0; padding: 0;
+    }
+  }
+
+  &:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+  }
+}
+
+// ─── AI block ───
+
+.ai-block {
+  background: var(--tint-soft);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ai-toggle, .ai-suboption {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+
+  label {
+    cursor: pointer;
+    user-select: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  i.pi-sparkles { color: #d4b84a; }
+}
+
+.ai-suboption {
+  padding-left: 28px;
+  font-size: 13px;
+}
+
+.ai-warning {
+  margin: 0;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  color: var(--text2);
+  padding-left: 28px;
+}
+
+:host ::ng-deep .ai-block p-checkbox,
+:host ::ng-deep .confirm-root p-checkbox {
+  flex-shrink: 0;
+
+  .p-checkbox { width: 16px !important; height: 16px !important; }
+
+  .p-checkbox-box {
+    width: 16px !important;
+    height: 16px !important;
+    border-radius: 4px !important;
+    border: 1.5px solid var(--text3) !important;
+    background: transparent !important;
+    transition: border-color .2s, background .2s !important;
+  }
+
+  &:hover .p-checkbox-box { border-color: var(--text2) !important; }
+
+  .p-checkbox.p-checkbox-checked .p-checkbox-box,
+  .p-checkbox[data-p-checked="true"] .p-checkbox-box {
+    background: var(--text3) !important;
+    border-color: var(--text2) !important;
+  }
+
+  .p-checkbox-icon {
+    color: var(--text) !important;
+    font-size: 10px !important;
+    stroke: var(--text) !important;
+  }
+}
+
+// ─── Confirm dialog ───
+
+::ng-deep .confirm-dialog.p-dialog {
+  border-radius: 14px !important;
+  overflow: hidden !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: 0 32px 80px rgba(0,0,0,.7) !important;
+
+  .p-dialog-header { display: none !important; }
+
+  .p-dialog-content {
+    padding: 0 !important;
+    background: var(--bg2) !important;
+    border-radius: 14px !important;
+  }
+}
+
+.confirm-root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 28px 24px;
+  gap: 16px;
+  text-align: center;
+}
+
+.confirm-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(224,85,85,.12);
+  border: 1px solid rgba(224,85,85,.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  i { font-size: 1.3rem !important; color: #e05555 !important; }
+}
+
+.confirm-body { display: flex; flex-direction: column; gap: 6px; }
+
+.confirm-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+  letter-spacing: -.3px;
+}
+
+.confirm-message {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: var(--text2);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  justify-content: flex-end;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  margin-top: 4px;
+}
+
+::ng-deep .confirm-actions .p-button {
+  border-radius: 8px !important;
+  font-family: 'DM Sans', sans-serif !important;
+  font-size: 13px !important;
+
+  &.p-button-text {
+    color: var(--text2) !important;
+    background: transparent !important;
+    border: none !important;
+
+    &:hover { color: var(--text) !important; background: rgba(128,128,128,.08) !important; }
+  }
+}
+
+::ng-deep .confirm-btn-danger {
+  background: rgba(224,85,85,.15) !important;
+  border: 1px solid rgba(224,85,85,.3) !important;
+  color: #e05555 !important;
+
+  &:hover { background: rgba(224,85,85,.25) !important; }
+}

@@ -348,6 +348,23 @@ export class FileSystem {
     );
   }
 
+  async publishShare(fileId: string): Promise<void> {
+    await firstValueFrom(
+      this.http.patch(
+        `${this.apiUrl}/file-system/share/${fileId}`,
+        { isShared: true },
+        { withCredentials: true }
+      )
+    );
+    this._files.update(files =>
+      files.map(f => (f.id === fileId ? { ...f, isShared: true } : f))
+    );
+    const selected = this._selectedItem();
+    if (selected && selected.id === fileId && 'mimeType' in selected) {
+      this._selectedItem.set({ ...selected, isShared: true } as FileItem);
+    }
+  }
+
   renameItem(id: string, type: 'file' | 'folder', name: string) {
     this._loading.set(true);
     this._error.set(null);

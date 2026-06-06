@@ -56,9 +56,7 @@ export class ProfileCard implements OnInit {
 
   avatarUrl = computed(() => this.profile()?.avatarUrl || '');
 
-  allTasks = computed(() =>
-    this.infinityLife.columns().flatMap((col: any) => col.tasks ?? [])
-  );
+  allTasks = this.infinityLife.allTasks;
 
   totalTasks     = computed(() => this.allTasks().length);
   completedTasks = computed(() => this.allTasks().filter((t: any) => t.isCompleted).length);
@@ -89,7 +87,7 @@ export class ProfileCard implements OnInit {
   }
 
   ngOnInit() {
-    this.infinityLife.loadBoard().subscribe();
+    this.infinityLife.loadAllUserTasks().subscribe();
     this.fs.loadFilesStats();
     this.planService.loadPlanInfo().subscribe();
   }

@@ -1,5 +1,20 @@
 <div class="kanban-board">
 
+  <div class="board-toolbar">
+    <div class="toolbar-lead">
+      <p-button class="back-btn" icon="pi pi-arrow-left" text
+        [pTooltip]="t().backToProjects" tooltipPosition="bottom"
+        (onClick)="goToProjects()"/>
+      @if (projectName()) {
+        <h1 class="project-name">{{ projectName() }}</h1>
+      }
+    </div>
+    <div class="toolbar-actions">
+      <p-button label="AI-генерация задач" icon="pi pi-sparkles" severity="secondary"
+        (onClick)="openAiDialog()"/>
+    </div>
+  </div>
+
   @if (columns().length === 0) {
     <div class="no-columns-info">
       <div class="info">
@@ -308,6 +323,36 @@
       <p-button [label]="t().deleteBtn" (onClick)="onConfirmAccept()" styleClass="confirm-btn-danger"/>
     </div>
   </div>
+</p-dialog>
+
+<p-dialog header="AI-генерация задач" [(visible)]="showAiDialog" [modal]="true"
+  [style]="{width: '600px'}" [dismissableMask]="!aiLoading()" [closable]="!aiLoading()">
+  <div class="ai-dialog">
+    <p class="ai-hint">
+      Опишите проект максимально подробно — GigaChat сгенерирует задачи и подзадачи
+      и добавит их в первую колонку доски.
+    </p>
+    <div class="dialog-field">
+      <label>Описание проекта</label>
+      <textarea pTextarea rows="6" [(ngModel)]="aiDescription"
+        placeholder="Например: запустить landing-page для нового SaaS-продукта за 2 недели, нужен дизайн, разработка фронта и бэка, интеграция с платёжной системой и аналитикой"
+        [disabled]="aiLoading()"
+        autoResize fluid></textarea>
+    </div>
+    <div class="ai-options">
+      <p-checkbox [binary]="true" [(ngModel)]="aiIncludeSubtasks"
+        [disabled]="aiLoading()" inputId="aiSubtasks"/>
+      <label for="aiSubtasks">Создавать подзадачи</label>
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <p-button label="Отмена" severity="secondary" text
+      [disabled]="aiLoading()" (onClick)="showAiDialog.set(false)"/>
+    <p-button label="Сгенерировать" icon="pi pi-sparkles"
+      [loading]="aiLoading()"
+      [disabled]="aiLoading() || aiDescription().trim().length < 10"
+      (onClick)="runAiGeneration()"/>
+  </ng-template>
 </p-dialog>
 
 <p-toast position="bottom-right" key="br"></p-toast>

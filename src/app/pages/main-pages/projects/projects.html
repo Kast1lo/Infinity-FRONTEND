@@ -1,0 +1,162 @@
+<div class="projects-layout">
+  <app-side-bar></app-side-bar>
+
+  <div class="projects-main">
+    <div class="projects-panel">
+
+      <div class="board-toolbar">
+        <div class="header-text">
+          <h1 class="project-name">Проекты</h1>
+          <p>Сгруппируйте свои задачи по проектам — каждый проект имеет собственную Kanban-доску.</p>
+        </div>
+        <div class="toolbar-actions">
+          <p-button label="Новый проект" icon="pi pi-plus" (onClick)="openCreateDialog()"/>
+        </div>
+      </div>
+
+      <div class="panel-body">
+        @if (projects().length === 0 && !isLoading()) {
+          <div class="empty-state">
+            <i class="pi pi-objects-column" style="font-size: 2rem"></i>
+            <h2>Пока нет проектов</h2>
+            <p>Создайте первый проект, чтобы начать работу с задачами.</p>
+            <p-button label="Создать первый проект" icon="pi pi-plus" (onClick)="openCreateDialog()"/>
+          </div>
+        } @else {
+          <div class="projects-grid">
+            @for (project of projects(); track project.id) {
+              <div class="project-card" (click)="openProject(project)">
+                @if (project.color) {
+                  <div class="project-color-bar" [style.background]="project.color"></div>
+                }
+                <div class="project-card-body">
+                  <div class="project-card-head">
+                    <h3 class="project-card-title">{{ project.name }}</h3>
+                    <div class="project-card-actions" (click)="$event.stopPropagation()">
+                      <p-button icon="pi pi-pencil" text size="small"
+                        (onClick)="openRenameDialog(project, $event)" pTooltip="Изменить"/>
+                      <p-button icon="pi pi-trash" text size="small" severity="danger"
+                        (onClick)="deleteProject(project, $event)" pTooltip="Удалить"/>
+                    </div>
+                  </div>
+                  @if (project.description) {
+                    <p class="project-card-desc">{{ project.description }}</p>
+                  }
+                  <div class="project-card-stats">
+                    <span><i class="pi pi-objects-column"></i> {{ project._count?.columns ?? 0 }} колонок</span>
+                    <span><i class="pi pi-check-square"></i> {{ project._count?.tasks ?? 0 }} задач</span>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<p-dialog header="Новый проект" [(visible)]="showCreateDialog" [modal]="true"
+  [style]="{width: '600px'}" [dismissableMask]="!creating()" [closable]="!creating()">
+  <div class="create-form">
+    <div class="dialog-field">
+      <label>Название</label>
+      <input pInputText [(ngModel)]="newName" placeholder="Запуск нового продукта"
+        [disabled]="creating()" autofocus fluid>
+    </div>
+
+    <div class="dialog-field">
+      <label>Описание</label>
+      <textarea pTextarea rows="4" [(ngModel)]="newDescription"
+        placeholder="Кратко опишите цель проекта. Если включите AI-генерацию — описание станет основой для задач"
+        [disabled]="creating()" autoResize fluid></textarea>
+    </div>
+
+    <div class="dialog-field">
+      <label>Цвет</label>
+      <div class="color-picker">
+        @for (c of colors; track c.value) {
+          <button class="color-dot"
+            [class.color-dot--active]="newColor() === c.value"
+            [style.background]="c.hex === 'transparent' ? 'transparent' : c.hex"
+            [class.color-dot--empty]="!c.value"
+            [disabled]="creating()"
+            (click)="newColor.set(c.value)">
+            @if (!c.value) { <i class="pi pi-times"></i> }
+          </button>
+        }
+      </div>
+    </div>
+
+    <div class="ai-block">
+      <div class="ai-toggle">
+        <p-checkbox [binary]="true" [(ngModel)]="useAiGeneration"
+          [disabled]="creating()" inputId="useAi"/>
+        <label for="useAi">
+          <i class="pi pi-sparkles"></i>
+          Сгенерировать задачи через GigaChat на основе описания
+        </label>
+      </div>
+      @if (useAiGeneration()) {
+        <div class="ai-suboption">
+          <p-checkbox [binary]="true" [(ngModel)]="aiIncludeSubtasks"
+            [disabled]="creating()" inputId="aiSub"/>
+          <label for="aiSub">Создавать подзадачи</label>
+        </div>
+        <p class="ai-warning">
+          Дневной лимит AI-генераций расходуется в момент создания проекта.
+        </p>
+      }
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <p-button label="Отмена" severity="secondary" text
+      [disabled]="creating()" (onClick)="showCreateDialog.set(false)"/>
+    <p-button label="Создать" icon="pi pi-check"
+      [loading]="creating()"
+      [disabled]="creating() || !newName().trim()"
+      (onClick)="createProject()"/>
+  </ng-template>
+</p-dialog>
+
+
+<p-dialog header="Редактирование проекта" [(visible)]="showRenameDialog" [modal]="true"
+  [style]="{width: '500px'}" [dismissableMask]="true">
+  <div class="create-form">
+    <div class="dialog-field">
+      <label>Название</label>
+      <input pInputText [(ngModel)]="renameName" autofocus fluid>
+    </div>
+    <div class="dialog-field">
+      <label>Описание</label>
+      <textarea pTextarea rows="3" [(ngModel)]="renameDescription" autoResize fluid></textarea>
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <p-button label="Отмена" severity="secondary" text (onClick)="showRenameDialog.set(false)"/>
+    <p-button label="Сохранить" icon="pi pi-check"
+      [disabled]="!renameName().trim()" (onClick)="saveRename()"/>
+  </ng-template>
+</p-dialog>
+
+
+<p-dialog [(visible)]="confirmVisible" [modal]="true" [closable]="false" [draggable]="false"
+  [resizable]="false" [style]="{ width: '380px' }" styleClass="confirm-dialog">
+  <ng-template pTemplate="header"><span></span></ng-template>
+  <div class="confirm-root">
+    <div class="confirm-icon"><i class="pi pi-exclamation-triangle"></i></div>
+    <div class="confirm-body">
+      <h3 class="confirm-title">{{ confirmTitle() }}</h3>
+      <p class="confirm-message">{{ confirmMessage() }}</p>
+    </div>
+    <div class="confirm-actions">
+      <p-button label="Отмена" [text]="true" severity="secondary" (onClick)="onConfirmReject()"/>
+      <p-button label="Удалить" (onClick)="onConfirmAccept()" styleClass="confirm-btn-danger"/>
+    </div>
+  </div>
+</p-dialog>
+
+<p-toast position="bottom-right" key="br"></p-toast>

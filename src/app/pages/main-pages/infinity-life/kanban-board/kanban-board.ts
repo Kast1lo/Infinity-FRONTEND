@@ -3,12 +3,16 @@ import {
   ChangeDetectorRef,
   Component,
   computed,
+  effect,
   inject,
+  input,
   OnInit,
   signal,
 } from '@angular/core';
+import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
 import { InfinityLife } from '../../../../services/infinity-life';
+import { ProjectService } from '../../../../services/project';
 import { MessageService, ConfirmationService, MenuItem } from 'primeng/api';
 import { CdkDragDrop, moveItemInArray, transferArrayItem, DragDropModule } from '@angular/cdk/drag-drop';
 import { Subtask, Task } from '../../../../interfaces/infinity-life/tasks.model';
@@ -28,6 +32,7 @@ import { SelectModule } from 'primeng/select';
 import { TagModule } from 'primeng/tag';
 import { TextareaModule } from 'primeng/textarea';
 import { Toast, ToastModule } from 'primeng/toast';
+import { TooltipModule } from 'primeng/tooltip';
 import { LangService } from '../../../../services/lang';
 
 @Component({
@@ -50,6 +55,7 @@ import { LangService } from '../../../../services/lang';
     TextareaModule,
     Toast,
     ToastModule,
+    TooltipModule,
   ],
   templateUrl: './kanban-board.html',
   styleUrl: './kanban-board.scss',
@@ -58,11 +64,20 @@ import { LangService } from '../../../../services/lang';
 })
 export class KanbanBoard implements OnInit {
   private tasksService = inject(InfinityLife);
+  private projectService = inject(ProjectService);
   private messageService = inject(MessageService);
   private cdr = inject(ChangeDetectorRef);
+  private router = inject(Router);
   readonly langService = inject(LangService);
 
+  readonly projectId   = input.required<string>();
+  readonly projectName = input<string>('');
+
   t = computed(() => this.langService.t().pages.kanban);
+
+  goToProjects() {
+    this.router.navigate(['/projects']);
+  }
 
   readonly today = new Date();
 
@@ -90,7 +105,13 @@ export class KanbanBoard implements OnInit {
   confirmMessage = signal('');
   private confirmCallback: (() => void) | null = null;
 
+  showAiDialog = signal(false);
+  aiDescription = signal('');
+  aiIncludeSubtasks = signal(true);
+  aiLoading = signal(false);
+
   newTask = signal<CreateTaskDto>({
+    projectId: '',
     title: '',
     notes: '',
     priority: 'MEDIUM',
@@ -124,7 +145,10 @@ export class KanbanBoard implements OnInit {
   columnMenuItems: MenuItem[] | undefined;
 
   constructor() {
-    this.loadBoard();
+    effect(() => {
+      const id = this.projectId();
+      if (id) this.loadBoard();
+    });
   }
 
   ngOnInit() {
@@ -170,7 +194,9 @@ export class KanbanBoard implements OnInit {
 
 
   loadBoard() {
-    this.tasksService.loadBoard().subscribe({
+    const id = this.projectId();
+    if (!id) return;
+    this.tasksService.loadBoard(id).subscribe({
       next: (columns) => {
         this.columns.set(columns.map(col => ({ ...col, tasks: [...(col.tasks || [])] })));
       },
@@ -208,7 +234,7 @@ export class KanbanBoard implements OnInit {
   createColumn() {
     const name = this.newColumnName().trim();
     if (!name) return;
-    this.tasksService.createColumn({ name }).subscribe({
+    this.tasksService.createColumn({ projectId: this.projectId(), name }).subscribe({
       next: () => {
         this.refreshBoard();
         this.showCreateColumnDialog.set(false);
@@ -222,7 +248,7 @@ export class KanbanBoard implements OnInit {
   createColumnAndClose(inplace: any) {
     const name = this.newColumnName().trim();
     if (!name) return;
-    this.tasksService.createColumn({ name }).subscribe({
+    this.tasksService.createColumn({ projectId: this.projectId(), name }).subscribe({
       next: () => {
         this.refreshBoard();
         this.newColumnName.set('');
@@ -278,7 +304,15 @@ export class KanbanBoard implements OnInit {
 
   openCreateTaskDialog(columnId: string) {
     this.currentColumnId.set(columnId);
-    this.newTask.set({ title: '', notes: '', priority: 'MEDIUM', columnId, dueDate: null, color: null });
+    this.newTask.set({
+      projectId: this.projectId(),
+      title:     '',
+      notes:     '',
+      priority:  'MEDIUM',
+      columnId,
+      dueDate:   null,
+      color:     null,
+    });
     this.newTaskDueDate.set(null);
     this.showCreateTaskDialog.set(true);
   }
@@ -295,7 +329,7 @@ export class KanbanBoard implements OnInit {
       this.toast(this.langService.t().pages.kanban.taskTitleRequired);
       return;
     }
-    const dto = { ...task, dueDate: this.dateToIso(this.newTaskDueDate()) };
+    const dto = { ...task, projectId: this.projectId(), dueDate: this.dateToIso(this.newTaskDueDate()) };
     this.tasksService.createTask(dto).subscribe({
       next: () => {
         this.toast(this.langService.t().pages.kanban.taskCreated, true);
@@ -484,6 +518,35 @@ export class KanbanBoard implements OnInit {
   getPrioritySeverity(p: string): 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast' | null {
     const map: Record<string, any> = { HIGH: 'danger', MEDIUM: 'warn', LOW: 'info' };
     return map[p] ?? 'secondary';
+  }
+
+  openAiDialog() {
+    this.aiDescription.set('');
+    this.aiIncludeSubtasks.set(true);
+    this.showAiDialog.set(true);
+  }
+
+  runAiGeneration() {
+    const description = this.aiDescription().trim();
+    if (description.length < 10) {
+      this.toast('Опишите проект подробнее (минимум 10 символов)');
+      return;
+    }
+    this.aiLoading.set(true);
+    this.projectService.generateTasksWithAi(this.projectId(), {
+      description,
+      includeSubtasks: this.aiIncludeSubtasks(),
+    })
+      .pipe(finalize(() => this.aiLoading.set(false)))
+      .subscribe({
+        next: (res) => {
+          const count = res.tasks?.length ?? 0;
+          this.toast(`Создано ${count} задач(и) через AI`, true);
+          this.showAiDialog.set(false);
+          this.loadBoard();
+        },
+        error: (err) => this.toast(err?.message ?? 'AI-генерация не удалась'),
+      });
   }
 
   private toast(detail: string, success = false) {

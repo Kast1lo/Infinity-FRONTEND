@@ -436,6 +436,7 @@ export const TRANSLATIONS = {
         shareFailed: 'Не удалось скопировать ссылку',
       },
       kanban: {
+        backToProjects: 'К проектам',
         noColumnsTitle: 'У вас пока нет колонок',
         noColumnsDesc: 'Создайте первую колонку, чтобы начать организовывать свои задачи',
         noColumnsBtn: 'Создать первую доску',
@@ -986,6 +987,7 @@ export const TRANSLATIONS = {
         shareFailed: 'Failed to copy link',
       },
       kanban: {
+        backToProjects: 'To projects',
         noColumnsTitle: 'No columns yet',
         noColumnsDesc: 'Create your first column to start organizing your tasks',
         noColumnsBtn: 'Create first board',

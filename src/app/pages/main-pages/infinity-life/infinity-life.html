@@ -1,6 +1,8 @@
 <div class="infinity-life">
     <app-side-bar></app-side-bar>
     <div class="tasks-system">
-        <app-kanban-board></app-kanban-board>
+        @if (projectId()) {
+            <app-kanban-board [projectId]="projectId()!" [projectName]="projectName()"></app-kanban-board>
+        }
     </div>
 </div>

@@ -1,0 +1,263 @@
+<div class="uk-page">
+
+  <div class="uk-hero">
+    <span class="uk-hero-label">Design System</span>
+    <h1 class="uk-hero-title">Infinity <em class="gradient-text">UI Kit</em></h1>
+    <p class="uk-hero-sub">Компоненты, цвета, иконки и типографика</p>
+  </div>
+
+  <!-- Colors -->
+  <section class="uk-section">
+    <div class="uk-section-head">
+      <span class="uk-section-label">Цвета</span>
+      <h2 class="uk-section-title">Палитра</h2>
+    </div>
+
+    <div class="uk-subsection-label">Zinc — основная шкала</div>
+    <div class="uk-swatches">
+      @for (c of [
+        {name:'50',hex:'#FBFBFC'},{name:'100',hex:'#F7F7F8'},{name:'200',hex:'#EAEBEB'},
+        {name:'300',hex:'#D7D8DA'},{name:'400',hex:'#AFB2B7'},{name:'500',hex:'#878C95'},
+        {name:'600',hex:'#646973'},{name:'700',hex:'#43464C'},{name:'800',hex:'#34363B'},
+        {name:'900',hex:'#26272B'},{name:'950',hex:'#17181A'}
+      ]; track c.name) {
+        <div class="uk-swatch">
+          <div class="uk-swatch-color" [style.background]="c.hex"></div>
+          <span class="uk-swatch-name">{{ c.name }}</span>
+          <span class="uk-swatch-hex">{{ c.hex }}</span>
+        </div>
+      }
+    </div>
+
+    <div class="uk-subsection-label uk-mt-md">Семантика</div>
+    <div class="uk-swatches">
+      @for (c of [
+        {name:'Danger',hex:'#EF4444'},{name:'Warning',hex:'#F59E0B'},
+        {name:'Success',hex:'#22C55E'},{name:'Info',hex:'#3B82F6'},
+        {name:'BG',hex:'#0a0a0a'},{name:'BG2',hex:'#111111'},
+        {name:'BG3',hex:'#1a1a1a'},{name:'Border',hex:'#222222'}
+      ]; track c.name) {
+        <div class="uk-swatch">
+          <div class="uk-swatch-color" [style.background]="c.hex"></div>
+          <span class="uk-swatch-name">{{ c.name }}</span>
+          <span class="uk-swatch-hex">{{ c.hex }}</span>
+        </div>
+      }
+    </div>
+  </section>
+
+  <div class="uk-divider"></div>
+
+  <!-- Typography -->
+  <section class="uk-section">
+    <div class="uk-section-head">
+      <span class="uk-section-label">Типографика</span>
+      <h2 class="uk-section-title">DM Sans / Inter</h2>
+    </div>
+    <div class="uk-typo-list">
+      <div class="uk-typo-row">
+        <span class="uk-typo-sample" style="font-size:36px;font-weight:800;font-family:'DM Sans'">Hero Title</span>
+        <span class="uk-typo-meta">DM Sans 800 · 36px</span>
+      </div>
+      <div class="uk-typo-row">
+        <span class="uk-typo-sample" style="font-size:28px;font-weight:700;font-family:'DM Sans'">Section Title</span>
+        <span class="uk-typo-meta">DM Sans 700 · 28px</span>
+      </div>
+      <div class="uk-typo-row">
+        <span class="uk-typo-sample" style="font-size:20px;font-weight:600">Heading</span>
+        <span class="uk-typo-meta">Inter 600 · 20px</span>
+      </div>
+      <div class="uk-typo-row">
+        <span class="uk-typo-sample" style="font-size:16px;font-weight:500">Body Large</span>
+        <span class="uk-typo-meta">Inter 500 · 16px</span>
+      </div>
+      <div class="uk-typo-row">
+        <span class="uk-typo-sample" style="font-size:14px;font-weight:400">Body — основной текст интерфейса</span>
+        <span class="uk-typo-meta">Inter 400 · 14px</span>
+      </div>
+      <div class="uk-typo-row">
+        <span class="uk-typo-sample" style="font-size:12px;color:var(--text2)">Caption — подписи и подсказки</span>
+        <span class="uk-typo-meta">Inter 400 · 12px · text2</span>
+      </div>
+      <div class="uk-typo-row">
+        <span class="uk-typo-sample gradient-text" style="font-size:28px;font-weight:700;font-family:'DM Sans'">Gradient Text</span>
+        <span class="uk-typo-meta">gradient-text utility</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="uk-divider"></div>
+
+  <!-- Buttons -->
+  <section class="uk-section">
+    <div class="uk-section-head">
+      <span class="uk-section-label">Кнопки</span>
+      <h2 class="uk-section-title">Buttons</h2>
+    </div>
+
+    <div class="uk-subsection-label">Primary</div>
+    <div class="uk-row">
+      <p-button label="Default" />
+      <p-button label="Secondary" severity="secondary" />
+      <p-button label="Outlined" variant="outlined" />
+      <p-button label="Text" variant="text" />
+      <p-button label="Danger" severity="danger" />
+      <p-button label="Warning" severity="warn" />
+      <p-button label="Success" severity="success" />
+    </div>
+
+    <div class="uk-subsection-label uk-mt-md">States</div>
+    <div class="uk-row">
+      <p-button label="С иконкой" icon="pi pi-arrow-right" iconPos="right" />
+      <p-button label="Загрузка" [loading]="true" />
+      <p-button label="Отключено" [disabled]="true" />
+      <p-button label="Outlined" variant="outlined" severity="secondary" />
+      <p-button label="Ghost" variant="text" severity="secondary" />
+    </div>
+
+    <div class="uk-subsection-label uk-mt-md">Hero CTA — из main-page</div>
+    <div class="uk-row">
+      <a class="btn-hero-primary btn-hero-primary--gradient">
+        <i class="pi pi-user-plus"></i> Начать бесплатно
+      </a>
+      <a class="btn-hero-ghost">
+        <i class="pi pi-sign-in"></i> Войти
+      </a>
+    </div>
+
+    <div class="uk-subsection-label uk-mt-md">Icon-only</div>
+    <div class="uk-row">
+      <p-button icon="pi pi-check" />
+      <p-button icon="pi pi-times" severity="secondary" />
+      <p-button icon="pi pi-trash" severity="danger" />
+      <p-button icon="pi pi-download" variant="outlined" />
+      <p-button icon="pi pi-pencil" variant="text" />
+      <p-button icon="pi pi-share-alt" variant="outlined" severity="secondary" />
+      <p-button icon="pi pi-cloud-upload" />
+    </div>
+  </section>
+
+  <div class="uk-divider"></div>
+
+  <!-- Inputs -->
+  <section class="uk-section">
+    <div class="uk-section-head">
+      <span class="uk-section-label">Поля ввода</span>
+      <h2 class="uk-section-title">Inputs</h2>
+    </div>
+
+    <div class="uk-subsection-label">Text Inputs</div>
+    <div class="uk-inputs-grid">
+      <div class="uk-input-wrap">
+        <i class="pi pi-user uk-input-icon"></i>
+        <input pInputText placeholder="Имя пользователя" />
+      </div>
+      <div class="uk-input-wrap">
+        <i class="pi pi-at uk-input-icon"></i>
+        <input pInputText type="email" placeholder="Email" />
+      </div>
+      <div class="uk-input-wrap">
+        <i class="pi pi-lock uk-input-icon"></i>
+        <input pInputText type="password" placeholder="Пароль" />
+      </div>
+      <div class="uk-input-wrap">
+        <i class="pi pi-search uk-input-icon"></i>
+        <input pInputText placeholder="Поиск файлов..." />
+      </div>
+      <div class="uk-input-wrap uk-input-wrap--error">
+        <i class="pi pi-exclamation-circle uk-input-icon"></i>
+        <input pInputText placeholder="Ошибка валидации" />
+      </div>
+      <div class="uk-input-wrap uk-input-wrap--filled">
+        <i class="pi pi-folder uk-input-icon"></i>
+        <input pInputText value="Мои проекты" />
+      </div>
+    </div>
+
+    <div class="uk-subsection-label uk-mt-md">OTP (6 цифр)</div>
+    <div class="uk-row">
+      @for (i of [0,1,2,3,4,5]; track i) {
+        <div class="uk-otp" [class.uk-otp--active]="i === 1" [class.uk-otp--filled]="i === 0">
+          {{ i === 0 ? '4' : i === 1 ? '' : '' }}
+          @if (i === 1) { <span class="uk-otp-cursor">|</span> }
+        </div>
+      }
+    </div>
+  </section>
+
+  <div class="uk-divider"></div>
+
+  <!-- Tags & Badges -->
+  <section class="uk-section">
+    <div class="uk-section-head">
+      <span class="uk-section-label">Метки</span>
+      <h2 class="uk-section-title">Tags & Badges</h2>
+    </div>
+    <div class="uk-row">
+      <p-tag value="⚡ Spark" />
+      <p-tag value="∞ Eternal" severity="info" />
+      <p-tag value="Высокий" severity="danger" />
+      <p-tag value="Средний" severity="warn" />
+      <p-tag value="Низкий" severity="success" />
+      <p-tag value="Инфо" severity="info" />
+    </div>
+    <div class="uk-row uk-mt-sm">
+      <span class="uk-badge uk-badge--plan">⚡ Spark</span>
+      <span class="uk-badge uk-badge--plan uk-badge--eternal">∞ Eternal</span>
+      <span class="uk-badge uk-badge--section">Файлы</span>
+      <span class="uk-badge uk-badge--section">Канбан</span>
+      <span class="uk-pill"><span class="uk-pill-dot"></span> Активно</span>
+    </div>
+  </section>
+
+  <div class="uk-divider"></div>
+
+  <!-- Avatars -->
+  <section class="uk-section">
+    <div class="uk-section-head">
+      <span class="uk-section-label">Аватары</span>
+      <h2 class="uk-section-title">Avatars</h2>
+    </div>
+    <div class="uk-row uk-row--align">
+      <div class="uk-avatar-cell">
+        <p-avatar label="АИ" size="xlarge" shape="circle" />
+        <span>xlarge</span>
+      </div>
+      <div class="uk-avatar-cell">
+        <p-avatar label="АИ" size="large" shape="circle" />
+        <span>large</span>
+      </div>
+      <div class="uk-avatar-cell">
+        <p-avatar label="АИ" shape="circle" />
+        <span>normal</span>
+      </div>
+      <div class="uk-avatar-cell">
+        <p-avatar icon="pi pi-user" size="xlarge" shape="circle" />
+        <span>icon</span>
+      </div>
+      <div class="uk-avatar-cell">
+        <p-avatar icon="pi pi-user" size="large" shape="circle" />
+        <span>icon lg</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="uk-divider"></div>
+
+  <!-- Icons -->
+  <section class="uk-section">
+    <div class="uk-section-head">
+      <span class="uk-section-label">Иконки</span>
+      <h2 class="uk-section-title">PrimeNG Icons</h2>
+    </div>
+    <div class="uk-icons">
+      @for (icon of icons; track icon) {
+        <div class="uk-icon-cell">
+          <i class="pi {{ icon }}"></i>
+          <span>{{ icon }}</span>
+        </div>
+      }
+    </div>
+  </section>
+
+</div>

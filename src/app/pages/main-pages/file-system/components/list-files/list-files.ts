@@ -939,6 +939,7 @@ export class ListFiles implements OnInit {
     const lf = this.langService.t().pages.listFiles;
     if (!item || !('name' in item)) { this.messageService.add({ severity: 'secondary', summary: lf.toastWarning, detail: lf.shareNoFile, life: 1000, key: 'br' }); return; }
     try {
+      await this.fileSystem.publishShare(item.id);
       await this.shareService.copyShareLink(item.name);
       this.messageService.add({ severity: 'secondary', summary: lf.toastSuccess, detail: `${lf.shareLinkCopied} "${item.name}" ${lf.shareLinkSuffix}`, life: 1000, key: 'br' });
     } catch {

@@ -86,7 +86,12 @@ export class ShareFile implements OnInit {
     this.http.get<any>(`${this.apiUrl}/file-system/share/${username}/${filename}`)
       .subscribe({
         next: (response) => {
-          this.fileData.set(response.success && response.data ? response.data : response);
+          const data = response?.success && response?.data ? response.data : null;
+          if (data && data.name) {
+            this.fileData.set(data);
+          } else {
+            this.errorKey.set('notFound');
+          }
           this.loading.set(false);
           this.cdr.markForCheck();
         },

@@ -47,6 +47,7 @@
 
 .kanban-board {
   display: flex;
+  flex-direction: column;
   margin: 10px;
   width: 98%;
   height: calc(100vh - 40px);
@@ -56,6 +57,101 @@
   background-size: 28px 28px;
   border: 1px solid var(--border);
   overflow-y: hidden;
+}
+
+.board-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 22px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg2);
+  border-top-left-radius: var(--radius-lg);
+  border-top-right-radius: var(--radius-lg);
+
+  .toolbar-lead {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .project-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text);
+    margin: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .toolbar-actions {
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+  }
+}
+
+// ─── Кнопка "Назад к проектам" ───
+
+:host ::ng-deep .back-btn .p-button {
+  width: 34px !important;
+  height: 34px !important;
+  padding: 0 !important;
+  flex-shrink: 0 !important;
+  color: var(--text2) !important;
+  background: var(--tint-1) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-sm) !important;
+  transition: color .2s, background .2s, border-color .2s !important;
+
+  &:hover {
+    color: var(--text) !important;
+    background: var(--tint-2) !important;
+    border-color: var(--border2) !important;
+  }
+
+  .p-button-icon { font-size: 13px !important; }
+}
+
+// ─── Кнопка AI-генерации (tint-стиль с акцентной иконкой) ───
+
+:host ::ng-deep .toolbar-actions .p-button {
+  border-radius: var(--radius-sm) !important;
+  font-size: 13px !important;
+  white-space: nowrap !important;
+  color: var(--text) !important;
+  background: var(--tint-2) !important;
+  border: 1px solid var(--tint-3) !important;
+  transition: background .2s, border-color .2s !important;
+
+  &:hover:not(:disabled) { background: var(--tint-3) !important; }
+
+  .p-button-icon { font-size: 12px !important; color: #d4b84a !important; }
+}
+
+.ai-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  .ai-hint {
+    color: var(--text2);
+    font-size: 14px;
+    margin: 0;
+  }
+
+  .ai-options {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text);
+
+    label { cursor: pointer; user-select: none; }
+  }
 }
 
 .no-columns-info {
@@ -89,6 +185,19 @@
     max-width: 320px;
     line-height: 1.6;
   }
+}
+
+:host ::ng-deep .no-columns-info .p-button {
+  border-radius: var(--radius-sm) !important;
+  font-size: 13px !important;
+  color: var(--text) !important;
+  background: var(--tint-2) !important;
+  border: 1px solid var(--tint-3) !important;
+  transition: background .2s, border-color .2s !important;
+
+  &:hover:not(:disabled) { background: var(--tint-3) !important; }
+
+  .p-button-icon { font-size: 12px !important; }
 }
 
 // ─── Columns ───

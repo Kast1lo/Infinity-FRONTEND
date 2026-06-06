@@ -1,3 +1,4 @@
 export interface CreateColumnDto {
-  name: string;
+  projectId: string;
+  name:      string;
 }

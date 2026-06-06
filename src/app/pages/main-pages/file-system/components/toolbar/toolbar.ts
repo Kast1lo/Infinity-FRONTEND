@@ -198,6 +198,7 @@ export class Toolbar implements OnInit {
       return;
     }
     try {
+      await this.fileSystem.publishShare(item.id);
       await this.shareService.copyShareLink(item.name);
       this.messageService.add({
         severity: 'secondary', summary: t.shareSuccessTitle,
