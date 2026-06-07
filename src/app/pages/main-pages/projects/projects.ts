@@ -9,8 +9,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { finalize, forkJoin, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { finalize } from 'rxjs';
 
 import { SideBar } from '../../../common-ui/side-bar/side-bar';
 import { ProjectService } from '../../../services/project';
@@ -117,43 +116,33 @@ export class Projects implements OnInit {
       return;
     }
 
+    const includeSubtasks = this.aiIncludeSubtasks();
+
     this.creating.set(true);
     this.projectService.createProject({
       name,
       description: description || undefined,
       color:       this.newColor() ?? undefined,
-    }).subscribe({
-      next: (project) => {
-        if (wantsAi) {
-          this.projectService.generateTasksWithAi(project.id, {
-            description,
-            includeSubtasks: this.aiIncludeSubtasks(),
-          })
-            .pipe(finalize(() => this.creating.set(false)))
-            .subscribe({
-              next: () => {
-                this.toast('Проект создан, задачи сгенерированы', true);
-                this.showCreateDialog.set(false);
-                this.router.navigate(['/projects', project.id]);
-              },
-              error: (err) => {
-                this.toast(`Проект создан, но AI вернул ошибку: ${err?.message ?? 'неизвестная ошибка'}`);
-                this.showCreateDialog.set(false);
-                this.router.navigate(['/projects', project.id]);
-              },
-            });
-        } else {
-          this.creating.set(false);
-          this.toast('Проект создан', true);
+    })
+      .pipe(finalize(() => this.creating.set(false)))
+      .subscribe({
+        next: (project) => {
           this.showCreateDialog.set(false);
-          this.loadProjects();
-        }
-      },
-      error: (err) => {
-        this.creating.set(false);
-        this.toast(err?.message ?? 'Не удалось создать проект');
-      },
-    });
+          if (wantsAi) {
+            // Генерация долгая — не держим диалог открытым. Переходим на доску
+            // и запускаем генерацию там (с неблокирующим оверлеем).
+            this.router.navigate(['/projects', project.id], {
+              state: { aiGenerate: { description, includeSubtasks } },
+            });
+          } else {
+            this.toast('Проект создан', true);
+            this.router.navigate(['/projects', project.id]);
+          }
+        },
+        error: (err) => {
+          this.toast(err?.message ?? 'Не удалось создать проект');
+        },
+      });
   }
 
   openProject(project: Project) {

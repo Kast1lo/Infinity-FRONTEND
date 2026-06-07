@@ -109,6 +109,7 @@ export class KanbanBoard implements OnInit {
   aiDescription = signal('');
   aiIncludeSubtasks = signal(true);
   aiLoading = signal(false);
+  aiGenerating = signal(false);
 
   newTask = signal<CreateTaskDto>({
     projectId: '',
@@ -158,6 +159,16 @@ export class KanbanBoard implements OnInit {
       { separator: true },
       { label: k.menuDeleteCol, icon: 'pi pi-trash' },
     ];
+
+    // Запрос AI-генерации, переданный со страницы создания проекта.
+    const aiReq = history.state?.aiGenerate as
+      | { description: string; includeSubtasks?: boolean }
+      | undefined;
+    if (aiReq?.description) {
+      // Очищаем state, чтобы перезагрузка страницы не запускала генерацию повторно.
+      history.replaceState({ ...history.state, aiGenerate: undefined }, '');
+      this.startAiGeneration(aiReq.description, aiReq.includeSubtasks ?? true);
+    }
   }
 
 
@@ -532,17 +543,24 @@ export class KanbanBoard implements OnInit {
       this.toast('Опишите проект подробнее (минимум 10 символов)');
       return;
     }
-    this.aiLoading.set(true);
+    this.startAiGeneration(description, this.aiIncludeSubtasks());
+  }
+
+  private startAiGeneration(description: string, includeSubtasks: boolean) {
+    if (this.aiGenerating()) return;
+    // Закрываем диалог сразу и показываем неблокирующий оверлей на доске,
+    // чтобы интерфейс не выглядел «зависшим» во время долгой генерации.
+    this.showAiDialog.set(false);
+    this.aiGenerating.set(true);
     this.projectService.generateTasksWithAi(this.projectId(), {
       description,
-      includeSubtasks: this.aiIncludeSubtasks(),
+      includeSubtasks,
     })
-      .pipe(finalize(() => this.aiLoading.set(false)))
+      .pipe(finalize(() => this.aiGenerating.set(false)))
       .subscribe({
         next: (res) => {
           const count = res.tasks?.length ?? 0;
           this.toast(`Создано ${count} задач(и) через AI`, true);
-          this.showAiDialog.set(false);
           this.loadBoard();
         },
         error: (err) => this.toast(err?.message ?? 'AI-генерация не удалась'),

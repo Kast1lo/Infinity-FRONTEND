@@ -1,5 +1,15 @@
 <div class="kanban-board">
 
+  @if (aiGenerating()) {
+    <div class="ai-generating-overlay">
+      <div class="ai-generating-box">
+        <i class="pi pi-spin pi-spinner"></i>
+        <h3>ИИ генерирует задачи…</h3>
+        <p>Это может занять до минуты. Можно подождать — доска обновится автоматически.</p>
+      </div>
+    </div>
+  }
+
   <div class="board-toolbar">
     <div class="toolbar-lead">
       <p-button class="back-btn" icon="pi pi-arrow-left" text
@@ -329,8 +339,8 @@
   [style]="{width: '600px'}" [dismissableMask]="!aiLoading()" [closable]="!aiLoading()">
   <div class="ai-dialog">
     <p class="ai-hint">
-      Опишите проект максимально подробно — GigaChat сгенерирует задачи и подзадачи
-      и добавит их в первую колонку доски.
+      Опишите проект максимально подробно — ИИ создаст колонки-этапы, распределит по ним
+      задачи и подзадачи, проставит приоритеты, сроки и цветовые метки.
     </p>
     <div class="dialog-field">
       <label>Описание проекта</label>
