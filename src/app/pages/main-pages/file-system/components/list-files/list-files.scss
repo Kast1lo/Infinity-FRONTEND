@@ -1178,3 +1178,75 @@
 
   .fs-crumbs { padding: 12px 12px 0; overflow-x: auto; }
 }
+
+// ─── Диалог публичной ссылки ───
+
+.share-content { display: flex; flex-direction: column; gap: 18px; padding-top: 4px; }
+
+.share-filename {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px;
+  background: var(--bg3); border: 1px solid var(--border); border-radius: 8px;
+  i { font-size: 16px !important; color: var(--brand-accent) !important; }
+  span { font-family: var(--brand-mono); font-size: 13px; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
+
+.share-field { display: flex; flex-direction: column; gap: 8px; }
+
+.share-label {
+  font-family: var(--brand-mono); font-size: 11px; font-weight: 600;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--text2);
+}
+
+.share-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+
+.share-chip {
+  padding: 7px 13px; border-radius: 100px;
+  border: 1px solid var(--border2); background: transparent;
+  color: var(--text2); font-family: var(--brand-mono); font-size: 12px;
+  cursor: pointer; transition: color .15s, border-color .15s, background .15s;
+  &:hover { color: var(--text); border-color: var(--text3); }
+  &--active { background: var(--brand-accent); border-color: var(--brand-accent); color: var(--brand-accent-ink); font-weight: 600; }
+}
+
+// ═══════════════ Share диалог (оболочка) ═══════════════
+
+::ng-deep .share-dialog.p-dialog {
+  background: var(--bg2) !important; border: 1px solid var(--border) !important;
+  border-radius: 16px !important; box-shadow: 0 24px 64px rgba(0,0,0,.6) !important;
+  overflow: hidden !important;
+
+  .p-dialog-header {
+    background: var(--bg2) !important; border-bottom: 1px solid var(--border) !important;
+    border-radius: 16px 16px 0 0 !important; padding: 16px 20px !important;
+
+    .p-dialog-title { font-family: var(--brand-display) !important; font-size: 15px !important; font-weight: 700 !important; color: var(--text) !important; letter-spacing: -.3px !important; }
+    .p-dialog-header-icon { color: var(--text3) !important; &:hover { color: var(--text2) !important; background: var(--bg3) !important; } }
+  }
+
+  .p-dialog-content { background: var(--bg2) !important; padding: 20px !important; }
+
+  .p-dialog-footer {
+    background: var(--bg2) !important; border-top: 1px solid var(--border) !important;
+    border-radius: 0 0 16px 16px !important; padding: 12px 20px !important;
+    display: flex !important; justify-content: space-between !important; gap: 8px !important;
+
+    .p-button {
+      border-radius: 8px !important; font-family: var(--brand-mono) !important; font-size: 13px !important;
+
+      &.p-button-text { color: var(--text2) !important; background: transparent !important; border: none !important; &:hover { color: #e05555 !important; background: color-mix(in srgb, #e05555 10%, transparent) !important; } }
+      &:not(.p-button-text) {
+        color: var(--brand-accent-ink) !important; background: var(--brand-accent) !important; border: 1px solid var(--brand-accent) !important; font-weight: 600 !important;
+        &:hover:not(:disabled) { background: var(--brand-accent-hover) !important; border-color: var(--brand-accent-hover) !important; }
+        &:disabled { opacity: .5 !important; }
+      }
+    }
+  }
+}
+
+::ng-deep .share-dialog .p-inputtext {
+  background: var(--bg3) !important; border: 1px solid var(--border2) !important;
+  border-radius: 8px !important; color: var(--text) !important; font-size: 14px !important;
+  &:focus { border-color: var(--brand-accent) !important; box-shadow: none !important; }
+  &::placeholder { color: var(--text3) !important; }
+}

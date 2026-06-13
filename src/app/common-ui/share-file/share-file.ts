@@ -52,6 +52,16 @@ export class ShareFile implements OnInit {
   loading    = signal(true);
   linkCopied = signal(false);
 
+  // Защита ссылки паролем / срок действия
+  requiresPassword = signal(false);
+  expired          = signal(false);
+  passwordValue    = signal('');
+  passwordError    = signal(false);
+  verifying        = signal(false);
+  private shareUsername = '';
+  private shareFilename = '';
+  private enteredPassword: string | null = null;
+
   isPlaying      = signal(false);
   isMuted        = signal(false);
   volume         = signal(1);
@@ -74,33 +84,61 @@ export class ShareFile implements OnInit {
   private audioRafId: any;
 
   ngOnInit() {
-    const username = this.route.snapshot.paramMap.get('username');
-    const filename  = this.route.snapshot.paramMap.get('filename');
+    this.shareUsername = this.route.snapshot.paramMap.get('username') ?? '';
+    this.shareFilename = this.route.snapshot.paramMap.get('filename') ?? '';
 
-    if (!username || !filename) {
+    if (!this.shareUsername || !this.shareFilename) {
       this.errorKey.set('invalidLink');
       this.loading.set(false);
       return;
     }
+    this.fetchShare();
+  }
 
-    this.http.get<any>(`${this.apiUrl}/file-system/share/${username}/${filename}`)
-      .subscribe({
-        next: (response) => {
-          const data = response?.success && response?.data ? response.data : null;
-          if (data && data.name) {
-            this.fileData.set(data);
-          } else {
-            this.errorKey.set('notFound');
-          }
-          this.loading.set(false);
-          this.cdr.markForCheck();
-        },
-        error: () => {
+  private fetchShare(password?: string) {
+    this.loading.set(true);
+    let url = `${this.apiUrl}/file-system/share/${this.shareUsername}/${this.shareFilename}`;
+    if (password) url += `?password=${encodeURIComponent(password)}`;
+
+    this.http.get<any>(url).subscribe({
+      next: (response) => {
+        if (response?.expired) {
+          this.expired.set(true);
+          this.requiresPassword.set(false);
+        } else if (response?.requiresPassword && !response?.success) {
+          if (password) this.passwordError.set(true); // отправляли пароль, но он неверный
+          this.requiresPassword.set(true);
+        } else if (response?.success && response?.data?.name) {
+          this.enteredPassword = password ?? null;
+          this.fileData.set(response.data);
+          this.requiresPassword.set(false);
+          this.expired.set(false);
+        } else {
           this.errorKey.set('notFound');
-          this.loading.set(false);
-          this.cdr.markForCheck();
-        },
-      });
+        }
+        this.loading.set(false);
+        this.verifying.set(false);
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.errorKey.set('notFound');
+        this.loading.set(false);
+        this.verifying.set(false);
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  onPasswordInput(event: Event) {
+    this.passwordValue.set((event.target as HTMLInputElement).value);
+    this.passwordError.set(false);
+  }
+
+  submitPassword() {
+    const pwd = this.passwordValue().trim();
+    if (!pwd || this.verifying()) return;
+    this.verifying.set(true);
+    this.fetchShare(pwd);
   }
 
 
@@ -207,7 +245,8 @@ export class ShareFile implements OnInit {
       const data = this.fileData();
       if (!data?.name) return;
       const username = this.route.snapshot.paramMap.get('username') || 'user';
-      const url = `${this.apiUrl}/file-system/share/download/${username}/${encodeURIComponent(data.name)}`;
+      const pwd = this.enteredPassword ? `?password=${encodeURIComponent(this.enteredPassword)}` : '';
+      const url = `${this.apiUrl}/file-system/share/download/${username}/${encodeURIComponent(data.name)}${pwd}`;
       const link = document.createElement('a');
       link.href = url; link.download = data.name;
       link.style.display = 'none';

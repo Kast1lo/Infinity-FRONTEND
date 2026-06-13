@@ -1,6 +1,7 @@
 import { computed, effect, Injectable, signal } from '@angular/core';
 import { FileItem } from '../interfaces/file-system-interfeces/file-item.model';
 import { FolderItem } from '../interfaces/file-system-interfeces/folder-item.model';
+import { SharedFileItem, ShareSettings } from '../interfaces/file-system-interfeces/shared-file.model';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { catchError, firstValueFrom, forkJoin, tap, throwError } from 'rxjs';
 import { environment } from '../../environments/environment';
@@ -31,12 +32,17 @@ export class FileSystem {
   private _trashFolders = signal<FolderItem[]>([]);
   private _trashLoading = signal<boolean>(false);
 
+  private _sharedFiles   = signal<SharedFileItem[]>([]);
+  private _sharedLoading = signal<boolean>(false);
+
   files        = computed(() => this._files());
   folders      = computed(() => this._folders());
   trashFiles   = computed(() => this._trashFiles());
   trashFolders = computed(() => this._trashFolders());
   trashLoading = computed(() => this._trashLoading());
   trashCount   = computed(() => this._trashFiles().length + this._trashFolders().length);
+  sharedFiles   = computed(() => this._sharedFiles());
+  sharedLoading = computed(() => this._sharedLoading());
   selectedItem = computed(() => this._selectedItem());
   loading      = computed(() => this._loading());
   error        = computed(() => this._error());
@@ -422,21 +428,53 @@ export class FileSystem {
     );
   }
 
-  async publishShare(fileId: string): Promise<void> {
-    await firstValueFrom(
-      this.http.patch(
-        `${this.apiUrl}/file-system/share/${fileId}`,
-        { isShared: true },
-        { withCredentials: true }
-      )
+  // Настроить публичную ссылку файла (вкл/выкл, срок, пароль)
+  async setShare(fileId: string, opts: ShareSettings): Promise<{ isShared: boolean; shareExpiresAt: string | null; hasPassword: boolean }> {
+    const body: any = { isShared: opts.isShared };
+    if (opts.isShared) {
+      if (opts.expiresInDays != null) body.expiresInDays = opts.expiresInDays;
+      if (opts.password !== undefined) body.password = opts.password; // string -> set, null -> remove
+    }
+    const res: any = await firstValueFrom(
+      this.http.patch(`${this.apiUrl}/file-system/share/${fileId}`, body, { withCredentials: true })
     );
+    const data = res?.data ?? {};
     this._files.update(files =>
-      files.map(f => (f.id === fileId ? { ...f, isShared: true } : f))
+      files.map(f => (f.id === fileId ? { ...f, isShared: opts.isShared } : f))
     );
     const selected = this._selectedItem();
     if (selected && selected.id === fileId && 'mimeType' in selected) {
-      this._selectedItem.set({ ...selected, isShared: true } as FileItem);
+      this._selectedItem.set({ ...selected, isShared: opts.isShared } as FileItem);
     }
+    return { isShared: data.isShared ?? opts.isShared, shareExpiresAt: data.shareExpiresAt ?? null, hasPassword: !!data.hasPassword };
+  }
+
+  loadSharedFiles() {
+    this._sharedLoading.set(true);
+    this.http.get<SharedFileItem[]>(`${this.apiUrl}/file-system/shared`, { withCredentials: true }).pipe(
+      catchError(err => this.handleError(err, 'Не удалось загрузить список ссылок'))
+    ).subscribe({
+      next: (files) => { this._sharedFiles.set(files ?? []); this._sharedLoading.set(false); },
+      error: () => { this._sharedLoading.set(false); },
+    });
+  }
+
+  // Отозвать ссылку (выключить публичный доступ)
+  revokeShare(fileId: string) {
+    return this.http.patch(
+      `${this.apiUrl}/file-system/share/${fileId}`, { isShared: false }, { withCredentials: true }
+    ).pipe(
+      catchError(err => this.handleError(err, 'Не удалось отозвать ссылку')),
+      tap(() => {
+        this._sharedFiles.update(files => files.filter(f => f.id !== fileId));
+        this._files.update(files => files.map(f => (f.id === fileId ? { ...f, isShared: false } : f)));
+      }),
+    );
+  }
+
+  // оставлено для обратной совместимости (быстрый шаринг без настроек)
+  async publishShare(fileId: string): Promise<void> {
+    await this.setShare(fileId, { isShared: true });
   }
 
   renameItem(id: string, type: 'file' | 'folder', name: string) {

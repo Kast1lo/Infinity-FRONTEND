@@ -1,0 +1,64 @@
+<div class="sh-root">
+  <app-side-bar></app-side-bar>
+
+  <main class="sh-main">
+    <div class="sh-shell">
+
+      <header class="sh-head">
+        <div class="sh-head-text">
+          <span class="sh-eyebrow">{{ t().eyebrow }}</span>
+          <h1 class="sh-title">{{ t().title }}</h1>
+          <p class="sh-subtitle">{{ t().subtitle }}</p>
+        </div>
+      </header>
+
+      <div class="sh-body">
+        @if (loading()) {
+          <div class="sh-spin"><p-progressSpinner strokeWidth="3"/></div>
+        } @else if (isEmpty()) {
+          <div class="sh-empty">
+            <div class="sh-empty-ic"><i class="pi pi-link"></i></div>
+            <h3 class="sh-empty-title">{{ t().empty }}</h3>
+            <p class="sh-empty-sub">{{ t().emptySub }}</p>
+          </div>
+        } @else {
+          <div class="sh-list">
+            @for (file of files(); track file.id) {
+              <article class="sh-card" [class.sh-card--expired]="file.isExpired">
+                <div class="sh-card-ic"><i [class]="'pi ' + getFileIcon(file.mimeType)"></i></div>
+
+                <div class="sh-card-info">
+                  <span class="sh-card-name" [title]="file.name">{{ file.name | decodeURIComponent }}</span>
+                  <div class="sh-card-meta">
+                    @if (file.isExpired) {
+                      <span class="sh-tag sh-tag--expired"><i class="pi pi-clock"></i> {{ t().expired }}</span>
+                    } @else if (file.shareExpiresAt) {
+                      <span class="sh-tag"><i class="pi pi-clock"></i> {{ t().expires }} {{ file.shareExpiresAt | date:'dd MMM yyyy' }}</span>
+                    } @else {
+                      <span class="sh-tag">{{ t().noExpiry }}</span>
+                    }
+                    @if (file.hasPassword) {
+                      <span class="sh-tag sh-tag--lock"><i class="pi pi-lock"></i> {{ t().protected }}</span>
+                    }
+                  </div>
+                </div>
+
+                <div class="sh-card-actions">
+                  <button class="sh-act sh-act--copy" (click)="copy(file)" [title]="t().copyLink">
+                    <i class="pi pi-copy"></i>
+                  </button>
+                  <button class="sh-act sh-act--revoke" (click)="revoke(file)" [title]="t().revoke">
+                    <i class="pi pi-times"></i>
+                  </button>
+                </div>
+              </article>
+            }
+          </div>
+        }
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<p-toast key="br" position="bottom-right"/>

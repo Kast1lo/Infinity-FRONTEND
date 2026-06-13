@@ -22,6 +22,35 @@
     </div>
   }
 
+  @else if (expired()) {
+    <div class="sf-state sf-state--error">
+      <div class="sf-error-icon"><i class="pi pi-clock"></i></div>
+      <h2 class="sf-error-title">{{ t().expiredTitle }}</h2>
+      <p class="sf-error-msg">{{ t().expiredMsg }}</p>
+      <a class="btn-hero-ghost" routerLink="/">
+        <i class="pi pi-arrow-left"></i> {{ t().errorBack }}
+      </a>
+    </div>
+  }
+
+  @else if (requiresPassword()) {
+    <div class="sf-state sf-pass">
+      <div class="sf-pass-icon"><i class="pi pi-lock"></i></div>
+      <h2 class="sf-pass-title">{{ t().passwordTitle }}</h2>
+      <p class="sf-pass-sub">{{ t().passwordPrompt }}</p>
+      <div class="sf-pass-form" [class.sf-pass-form--err]="passwordError()">
+        <input type="password" class="sf-pass-input" [value]="passwordValue()"
+          (input)="onPasswordInput($event)" (keyup.enter)="submitPassword()"
+          [placeholder]="t().passwordPlaceholder" autofocus/>
+        <button class="sf-pass-btn" (click)="submitPassword()"
+          [disabled]="verifying() || !passwordValue().trim()">
+          {{ t().passwordSubmit }}
+        </button>
+      </div>
+      @if (passwordError()) { <span class="sf-pass-err">{{ t().passwordWrong }}</span> }
+    </div>
+  }
+
   @else if (errorMsg()) {
     <div class="sf-state sf-state--error">
       <div class="sf-error-icon"><i class="pi pi-exclamation-circle"></i></div>

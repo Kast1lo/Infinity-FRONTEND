@@ -205,7 +205,7 @@ export class ListFiles implements OnInit {
         renameItem,
         { label: lf.menuMove, icon: PrimeIcons.ARROW_RIGHT_ARROW_LEFT, command: () => this.openMoveDialog(file) },
         deleteItem,
-        { label: lf.menuShare, icon: PrimeIcons.SEND, command: () => this.shareFile() },
+        { label: lf.menuShare, icon: PrimeIcons.SEND, command: () => this.openShareDialog(file) },
       ];
 
       if (this.isAudio(file)) {
@@ -1104,16 +1104,74 @@ export class ListFiles implements OnInit {
     menu.toggle(event);
   }
 
-  async shareFile() {
-    const item = this.selectedItem();
+  // ─── Диалог настройки публичной ссылки ───
+
+  shareDialogVisible = signal(false);
+  shareTarget   = signal<FileItem | null>(null);
+  shareExpiry   = signal<number | null>(7);   // дней; null — без срока
+  sharePassword = signal('');
+  shareSaving   = signal(false);
+
+  readonly shareExpiryOptions: { value: number | null; key: 'shareNoExpiry' | 'shareDay' | 'shareWeek' | 'shareMonth' }[] = [
+    { value: 7,    key: 'shareWeek' },
+    { value: 1,    key: 'shareDay' },
+    { value: 30,   key: 'shareMonth' },
+    { value: null, key: 'shareNoExpiry' },
+  ];
+
+  openShareDialog(file: FileItem) {
+    this.shareTarget.set(file);
+    this.shareExpiry.set(7);
+    this.sharePassword.set('');
+    this.shareDialogVisible.set(true);
+  }
+
+  closeShareDialog() {
+    this.shareDialogVisible.set(false);
+    this.shareTarget.set(null);
+    this.sharePassword.set('');
+  }
+
+  setShareExpiry(value: number | null) { this.shareExpiry.set(value); }
+
+  onSharePasswordInput(event: Event) {
+    this.sharePassword.set((event.target as HTMLInputElement).value);
+  }
+
+  async submitShare() {
+    const file = this.shareTarget();
+    if (!file || this.shareSaving()) return;
     const lf = this.langService.t().pages.listFiles;
-    if (!item || !('name' in item)) { this.messageService.add({ severity: 'secondary', summary: lf.toastWarning, detail: lf.shareNoFile, life: 1000, key: 'br' }); return; }
+    this.shareSaving.set(true);
     try {
-      await this.fileSystem.publishShare(item.id);
-      await this.shareService.copyShareLink(item.name);
-      this.messageService.add({ severity: 'secondary', summary: lf.toastSuccess, detail: `${lf.shareLinkCopied} "${item.name}" ${lf.shareLinkSuffix}`, life: 1000, key: 'br' });
+      await this.fileSystem.setShare(file.id, {
+        isShared: true,
+        expiresInDays: this.shareExpiry(),
+        password: this.sharePassword().trim() || null,
+      });
+      await this.shareService.copyShareLink(file.name);
+      this.messageService.add({ severity: 'secondary', summary: lf.toastDone, detail: lf.shareCopied, life: 1600, key: 'br' });
+      this.closeShareDialog();
     } catch {
-      this.messageService.add({ severity: 'secondary', summary: lf.toastError, detail: lf.shareFailed, life: 1000, key: 'br' });
+      this.messageService.add({ severity: 'secondary', summary: lf.toastError, detail: lf.shareFailed, life: 1600, key: 'br' });
+    } finally {
+      this.shareSaving.set(false);
+    }
+  }
+
+  async revokeShareFromDialog() {
+    const file = this.shareTarget();
+    if (!file || this.shareSaving()) return;
+    const lf = this.langService.t().pages.listFiles;
+    this.shareSaving.set(true);
+    try {
+      await this.fileSystem.setShare(file.id, { isShared: false });
+      this.messageService.add({ severity: 'secondary', summary: lf.toastDone, detail: lf.shareRevoked, life: 1600, key: 'br' });
+      this.closeShareDialog();
+    } catch {
+      this.messageService.add({ severity: 'secondary', summary: lf.toastError, detail: lf.shareFailed, life: 1600, key: 'br' });
+    } finally {
+      this.shareSaving.set(false);
     }
   }
 
