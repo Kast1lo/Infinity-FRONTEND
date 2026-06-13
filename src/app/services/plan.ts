@@ -73,7 +73,7 @@ export class PlanService {
   getStorageColor(percent: number): string {
     if (percent >= 90) return '#e05555';
     if (percent >= 70) return '#d4b84a';
-    return 'var(--text2)';
+    return 'var(--brand-accent)';
   }
 
   clear(): void {

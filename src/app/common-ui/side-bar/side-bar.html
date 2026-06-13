@@ -76,6 +76,26 @@
     </a>
   </div>
 
+  <!-- Хранилище -->
+  @if (storage(); as st) {
+    <a class="sb-storage" routerLink="/profile" [class.sb-storage--warn]="showUpsell()">
+      <div class="sb-storage-top">
+        <span class="sb-storage-plan">{{ planLabel() }}</span>
+        <span class="sb-storage-pct">{{ percent() }}%</span>
+      </div>
+      <div class="sb-storage-track">
+        <span class="sb-storage-fill" [style.width.%]="percent()" [style.background]="barColor()"></span>
+      </div>
+      <div class="sb-storage-text">{{ usedLabel() }} / {{ limitLabel() }}</div>
+      @if (showUpsell()) {
+        <div class="sb-storage-upsell">
+          <span class="sb-storage-warn">{{ t().storageAlmostFull }}</span>
+          <span class="sb-storage-cta"><i class="pi pi-arrow-up-right"></i> {{ t().storageUpgrade }}</span>
+        </div>
+      }
+    </a>
+  }
+
   <!-- Аккаунт -->
   <div class="sb-account">
     <a class="sb-account-id" routerLink="/profile" [attr.aria-label]="t().profile">

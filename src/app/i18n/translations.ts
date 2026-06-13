@@ -225,6 +225,8 @@ export const TRANSLATIONS = {
       settings: 'Настройки',
       logout: 'Выйти',
       langSwitch: 'Switch to English',
+      storageUpgrade: 'Улучшить план',
+      storageAlmostFull: 'Хранилище почти заполнено',
     },
     pages: {
       auth: {
@@ -898,6 +900,8 @@ export const TRANSLATIONS = {
       settings: 'Settings',
       logout: 'Log out',
       langSwitch: 'Switch to Russian',
+      storageUpgrade: 'Upgrade plan',
+      storageAlmostFull: 'Storage almost full',
     },
     pages: {
       auth: {
