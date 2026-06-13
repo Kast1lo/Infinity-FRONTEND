@@ -1,303 +1,164 @@
-<nav class="navbar" [class.scrolled]="navScrolled">
-  <div class="nav-brand">
-    <img class="logo" [src]="imagePath()" alt="Infinity">
-  </div>
-  <ul class="nav-links">
-    <li><a (click)="scrollTo('features')"><i class="pi pi-sparkles"></i><span>{{ t().nav.features }}</span></a></li>
-    <li><a (click)="scrollTo('kanban')"><i class="pi pi-th-large"></i><span>{{ t().nav.kanban }}</span></a></li>
-    <li><a (click)="scrollTo('files')"><i class="pi pi-folder"></i><span>{{ t().nav.files }}</span></a></li>
-    <li><a (click)="scrollTo('pricing')"><i class="pi pi-tag"></i><span>{{ t().nav.pricing }}</span></a></li>
-    <li><a (click)="scrollTo('faq')"><i class="pi pi-question-circle"></i><span>{{ t().nav.faq }}</span></a></li>
+<!-- ============ NAV ============ -->
+<nav class="nav" [class.nav--scrolled]="navScrolled">
+  <a class="nav__brand" routerLink="/">
+    <img class="nav__logo" [src]="imagePath()" alt="Infinity">
+  </a>
+
+  <ul class="nav__links">
+    <li><a (click)="scrollTo('features')"><span class="idx">01</span>{{ t().nav.features }}</a></li>
+    <li><a (click)="scrollTo('kanban')"><span class="idx">02</span>{{ t().nav.kanban }}</a></li>
+    <li><a (click)="scrollTo('files')"><span class="idx">03</span>{{ t().nav.files }}</a></li>
+    <li><a (click)="scrollTo('pricing')"><span class="idx">04</span>{{ t().nav.pricing }}</a></li>
+    <li><a (click)="scrollTo('faq')"><span class="idx">05</span>{{ t().nav.faq }}</a></li>
   </ul>
-  <div class="nav-cta">
-    <button class="theme-toggle" (click)="themeService.toggle()"
-      [pTooltip]="isDark() ? t().nav.themeLight : t().nav.themeDark" tooltipPosition="bottom"
-      aria-label="Toggle theme">
+
+  <div class="nav__cta">
+    <button class="ibtn" (click)="themeService.toggle()" aria-label="Toggle theme">
       <i [class]="isDark() ? 'pi pi-sun' : 'pi pi-moon'"></i>
     </button>
-    <button class="lang-toggle" (click)="langService.toggle()"
-      [pTooltip]="t().nav.langSwitch" tooltipPosition="bottom"
-      aria-label="Switch language">
+    <button class="ibtn ibtn--lang" (click)="langService.toggle()" aria-label="Switch language">
       {{ langService.lang() === 'ru' ? 'EN' : 'RU' }}
     </button>
-    <p-button [label]="t().nav.login" [text]="true" severity="secondary" size="small" routerLink="/login"/>
-    <p-button [label]="t().nav.register" [outlined]="true" severity="secondary" size="small" routerLink="/registration"/>
+    <a class="link-quiet nav__cta-desk" routerLink="/login">{{ t().nav.login }}</a>
+    <a class="btn-invert nav__cta-desk" routerLink="/registration">{{ t().nav.register }}<i class="pi pi-arrow-up-right"></i></a>
+
+    <button class="nav__burger" (click)="toggleMenu()" [class.nav__burger--open]="menuOpen"
+      [attr.aria-expanded]="menuOpen" aria-label="Меню">
+      <span></span><span></span>
+    </button>
   </div>
 </nav>
 
+<!-- ============ MOBILE MENU ============ -->
+<div class="mobnav" [class.mobnav--open]="menuOpen">
+  <ul class="mobnav__links">
+    <li><a (click)="scrollTo('features')"><span class="idx">01</span>{{ t().nav.features }}</a></li>
+    <li><a (click)="scrollTo('kanban')"><span class="idx">02</span>{{ t().nav.kanban }}</a></li>
+    <li><a (click)="scrollTo('files')"><span class="idx">03</span>{{ t().nav.files }}</a></li>
+    <li><a (click)="scrollTo('pricing')"><span class="idx">04</span>{{ t().nav.pricing }}</a></li>
+    <li><a (click)="scrollTo('faq')"><span class="idx">05</span>{{ t().nav.faq }}</a></li>
+  </ul>
 
-<section class="hero">
+  <div class="mobnav__actions">
+    <a class="link-underline" routerLink="/login" (click)="closeMenu()">{{ t().nav.login }} <i class="pi pi-arrow-right"></i></a>
+    <a class="btn-invert btn-invert--lg" routerLink="/registration" (click)="closeMenu()">{{ t().nav.register }}<i class="pi pi-arrow-up-right"></i></a>
+  </div>
+</div>
 
-  <div class="hero-orbs" aria-hidden="true">
-    <span class="orb orb--1"></span>
-    <span class="orb orb--2"></span>
+
+<!-- ============ HERO ============ -->
+<header class="hero">
+
+  <div class="hero__top">
+    <span class="kicker">{{ t().hero.badge1 }}</span>
+    <span class="kicker kicker--right">RU · EN · {{ t().hero.badge3 }}</span>
   </div>
 
-  <div class="hero-tags">
-    <div class="hero-badge hero-badge--gradient">
-      <span class="badge-dot"></span>
-      {{ t().hero.badge1 }}
-    </div>
-    <div class="hero-badge hero-badge-sm"><i class="pi pi-check-circle"></i> {{ t().hero.badge2 }}</div>
-    <div class="hero-badge hero-badge-sm"><i class="pi pi-lock"></i> {{ t().hero.badge3 }}</div>
-  </div>
-  <h1 class="hero-title">{{ t().hero.title1 }}@if (langService.lang() === 'ru') {<br>}@else { }<em class="gradient-text">{{ t().hero.title2 }}</em><br>{{ t().hero.title3 }}</h1>
-  <p class="hero-subtitle">{{ t().hero.subtitle }}</p>
-  <div class="hero-meta">
-    <span class="hero-meta-item"><i class="pi pi-th-large"></i> {{ t().hero.meta1 }}</span>
-    <span class="hero-meta-dot">·</span>
-    <span class="hero-meta-item"><i class="pi pi-folder-open"></i> {{ t().hero.meta2 }}</span>
-    <span class="hero-meta-dot">·</span>
-    <span class="hero-meta-item"><i class="pi pi-user"></i> {{ t().hero.meta3 }}</span>
-    <span class="hero-meta-dot">·</span>
-    <span class="hero-meta-item"><i class="pi pi-share-alt"></i> {{ t().hero.meta4 }}</span>
-  </div>
-  <div class="cta-actions">
-    <a class="btn-hero-primary btn-hero-primary--gradient" routerLink="/registration"><i class="pi pi-user-plus"></i> {{ t().hero.ctaRegister }}</a>
-    <a class="btn-hero-ghost" routerLink="/login"><i class="pi pi-sign-in"></i> {{ t().hero.ctaLogin }}</a>
-  </div>
+  <h1 class="hero__title reveal">
+    {{ t().hero.title1 }} <em>{{ t().hero.title2 }}</em><br>
+    {{ t().hero.title3 }}
+  </h1>
 
+  <div class="hero__grid">
+    <p class="hero__lede reveal" [style.--reveal-i]="1">{{ t().hero.subtitle }}</p>
 
-  <div class="hero-preview">
-    <span class="hp-glow" aria-hidden="true"></span>
-    <div class="hp-bento">
-
-
-      <div class="hp-tile hp-tile--kanban">
-        <div class="hp-tile-head">
-          <span class="hp-tile-label"><i class="pi pi-th-large"></i> {{ t().bento.kanbanLabel }}</span>
-          <span class="hp-pill">3 / 6</span>
-        </div>
-        <div class="hp-kanban">
-          <div class="hp-col">
-            <div class="hp-col-head">
-              <span class="hp-col-title">{{ t().bento.colDone }}</span>
-              <span class="hp-col-count">2</span>
-            </div>
-            <div class="hp-task hp-task--done">
-              <span class="hp-check hp-check--done"><i class="pi pi-check"></i></span>
-              <span class="hp-task-name">Backend</span>
-            </div>
-            <div class="hp-task hp-task--done">
-              <span class="hp-check hp-check--done"><i class="pi pi-check"></i></span>
-              <span class="hp-task-name">{{ t().bento.taskDesign }}</span>
-            </div>
-          </div>
-          <div class="hp-col">
-            <div class="hp-col-head">
-              <span class="hp-col-title">{{ t().bento.colInProgress }}</span>
-              <span class="hp-col-count">2</span>
-            </div>
-            <div class="hp-task">
-              <span class="hp-check"></span>
-              <span class="hp-task-name">{{ t().bento.taskReport }}</span>
-              <span class="hp-task-due"><i class="pi pi-calendar"></i> 20.01</span>
-            </div>
-            <div class="hp-task">
-              <span class="hp-check"></span>
-              <span class="hp-task-name">Frontend</span>
-              <span class="hp-task-color"></span>
-            </div>
-          </div>
-        </div>
+    <div class="hero__aside reveal" [style.--reveal-i]="2">
+      <div class="hero__actions">
+        <a class="btn-invert btn-invert--lg" routerLink="/registration">
+          {{ t().hero.ctaRegister }}<i class="pi pi-arrow-up-right"></i>
+        </a>
+        <a class="link-underline" routerLink="/login">{{ t().hero.ctaLogin }}</a>
       </div>
-
-
-      <div class="hp-tile hp-tile--storage">
-        <div class="hp-tile-head">
-          <span class="hp-tile-label"><i class="pi pi-database"></i> {{ t().bento.storageLabel }}</span>
-        </div>
-        <div class="hp-donut">
-          <svg class="hp-donut-svg" viewBox="0 0 120 120" aria-hidden="true">
-            <defs>
-              <linearGradient id="hpDonutGrad" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stop-color="var(--grad-stop-1)"/>
-                <stop offset="50%" stop-color="var(--grad-stop-2)"/>
-                <stop offset="100%" stop-color="var(--grad-stop-3)"/>
-              </linearGradient>
-            </defs>
-            <circle class="hp-donut-track" cx="60" cy="60" r="48" fill="none" stroke-width="10"/>
-            <circle class="hp-donut-fill"  cx="60" cy="60" r="48" fill="none" stroke-width="10"
-              stroke-linecap="round" stroke-dasharray="187 302"
-              transform="rotate(-90 60 60)" stroke="url(#hpDonutGrad)"/>
-          </svg>
-          <div class="hp-donut-center">
-            <span class="hp-donut-num">62<em>%</em></span>
-            <span class="hp-donut-sub">{{ t().bento.storageSize }}</span>
-          </div>
-        </div>
-      </div>
-
-
-      <div class="hp-tile hp-tile--plan">
-        <span class="hp-plan-badge"><span class="hp-plan-dot"></span> {{ t().bento.planActive }}</span>
-        <span class="hp-plan-name">Infinity <em class="gradient-text">Pulse</em></span>
-        <span class="hp-plan-meta">{{ t().bento.planMeta }}</span>
-        <span class="hp-plan-price">{{ t().bento.planPrice }}<em>{{ t().bento.planPeriod }}</em></span>
-      </div>
-
-
-      <div class="hp-tile hp-tile--files">
-        <div class="hp-tile-head">
-          <span class="hp-tile-label"><i class="pi pi-folder-open"></i> {{ t().bento.filesLabel }}</span>
-          <span class="hp-pill"><i class="pi pi-arrow-right"></i></span>
-        </div>
-        <div class="hp-files-row">
-          <div class="hp-file hp-file--video">
-            <span class="hp-play"><i class="pi pi-play-circle"></i></span>
-            <span class="hp-file-tag">MOV</span>
-          </div>
-          <div class="hp-file hp-file--audio">
-            <div class="hp-bars"><span></span><span></span><span></span><span></span><span></span></div>
-            <span class="hp-file-tag">MP3</span>
-          </div>
-          <div class="hp-file hp-file--doc">
-            <i class="pi pi-file"></i>
-            <span class="hp-file-tag">TXT</span>
-          </div>
-        </div>
-      </div>
-
-
-      <div class="hp-tile hp-tile--brand">
-        <i class="pi pi-infinity hp-brand-icon"></i>
-        <span class="hp-brand-text"><span class="gradient-text">Infinity</span></span>
-        <span class="hp-brand-sub">Vault</span>
-      </div>
-
+      <ul class="hero__meta">
+        <li><span class="hero__metaidx">01</span>{{ t().hero.meta1 }}</li>
+        <li><span class="hero__metaidx">02</span>{{ t().hero.meta2 }}</li>
+        <li><span class="hero__metaidx">03</span>{{ t().hero.meta3 }}</li>
+        <li><span class="hero__metaidx">04</span>{{ t().hero.meta4 }}</li>
+      </ul>
     </div>
   </div>
+</header>
 
 
-  <div class="trust-strip">
-    <ul class="trust-list">
-      @for (item of trust(); track $index) {
-        <li class="trust-item"><i [class]="item.icon"></i><span>{{ item.label }}</span></li>
+<!-- ============ MARQUEE ============ -->
+<div class="marquee" aria-hidden="true">
+  <div class="marquee__track">
+    @for (item of trust(); track $index) {
+      <span class="marquee__item"><i [class]="item.icon"></i>{{ item.label }}</span>
+      <span class="marquee__sep">/</span>
+    }
+    @for (item of trust(); track $index) {
+      <span class="marquee__item"><i [class]="item.icon"></i>{{ item.label }}</span>
+      <span class="marquee__sep">/</span>
+    }
+  </div>
+</div>
+
+
+<!-- ============ 01 — FEATURES ============ -->
+<section class="section" id="features" data-idx="01">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-idx">01</span>
+      <div class="sec-head__main">
+        <span class="kicker">{{ t().featuresSection.label }}</span>
+        <h2 class="sec-title">{{ t().featuresSection.title1 }}<em>{{ t().featuresSection.titleEm }}</em></h2>
+      </div>
+      <p class="sec-sub">{{ t().featuresSection.subtitle }}</p>
+    </div>
+
+    <ul class="feat-list">
+      @for (f of features(); let i = $index; track $index) {
+        <li class="feat reveal" [style.--reveal-i]="i">
+          <span class="feat__idx">{{ '0' + (i + 1) }}</span>
+          <div class="feat__icon"><i [class]="f.icon"></i></div>
+          <h3 class="feat__title">{{ f.title }}</h3>
+          <p class="feat__desc">{{ f.desc }}</p>
+          <i class="feat__arrow pi pi-arrow-up-right"></i>
+        </li>
       }
     </ul>
   </div>
 </section>
 
 
-<section class="features" id="features">
-  <div class="container">
-    <div class="section-header reveal">
-      <div class="section-label">{{ t().featuresSection.label }}</div>
-      <h2 class="section-title">{{ t().featuresSection.title1 }}<span class="gradient-text">{{ t().featuresSection.titleEm }}</span></h2>
-      <p class="section-sub">{{ t().featuresSection.subtitle }}</p>
+<!-- ============ 02 — KANBAN ============ -->
+<section class="section section--split" id="kanban" data-idx="02">
+  <div class="wrap split">
+    <div class="split__text reveal">
+      <span class="sec-idx">02</span>
+      <span class="kicker">{{ t().kanbanSection.label }}</span>
+      <h2 class="sec-title">{{ t().kanbanSection.title1 }}<em>{{ t().kanbanSection.titleEm }}</em></h2>
+      <p class="sec-sub">{{ t().kanbanSection.subtitle }}</p>
+      <ul class="ticks">
+        <li><span class="tick">+</span>{{ t().kanbanSection.li1 }}</li>
+        <li><span class="tick">+</span>{{ t().kanbanSection.li2 }}</li>
+        <li><span class="tick">+</span>{{ t().kanbanSection.li3 }}</li>
+        <li><span class="tick">+</span>{{ t().kanbanSection.li4 }}</li>
+      </ul>
+      <a class="link-underline" routerLink="/login">{{ t().kanbanSection.btn }} <i class="pi pi-arrow-right"></i></a>
     </div>
 
-
-    <div class="stats-strip reveal">
-      @for (s of stats(); track $index) {
-        <div class="stat-cell" [class.stat-cell--accent]="s.num === '∞'">
-          <div class="stat-num">{{ s.num }}</div>
-          <div class="stat-label">{{ s.label }}</div>
+    <!-- wireframe board -->
+    <div class="split__visual reveal" [style.--reveal-i]="1">
+      <div class="wf wf--board">
+        <div class="wf__bar">
+          <span class="wf__dot"></span><span class="wf__dot"></span><span class="wf__dot"></span>
+          <span class="wf__tab">{{ t().kanbanVisual.tabBoard }}</span>
+          <span class="wf__tab wf__tab--off">{{ t().kanbanVisual.tabList }}</span>
         </div>
-      }
-    </div>
-
-
-    <div class="features-grid">
-      @for (f of features(); let i = $index; track $index) {
-        <div class="feat-card reveal"
-          [class.reveal-delay-1]="i % 3 === 0"
-          [class.reveal-delay-2]="i % 3 === 1"
-          [class.reveal-delay-3]="i % 3 === 2">
-          <div class="feat-icon"><i [class]="f.icon"></i></div>
-          <h3>{{ f.title }}</h3>
-          <p>{{ f.desc }}</p>
-        </div>
-      }
-    </div>
-  </div>
-</section>
-
-<div class="container"><div class="divider reveal"></div></div>
-
-
-<section class="split" id="kanban">
-  <div class="container">
-    <div class="split-inner reveal">
-      <div class="split-text">
-        <div class="section-label">{{ t().kanbanSection.label }}</div>
-        <h2 class="section-title">{{ t().kanbanSection.title1 }}<span class="gradient-text">{{ t().kanbanSection.titleEm }}</span></h2>
-        <p class="section-sub">{{ t().kanbanSection.subtitle }}</p>
-        <ul class="split-list">
-          <li><i class="pi pi-check"></i> {{ t().kanbanSection.li1 }}</li>
-          <li><i class="pi pi-check"></i> {{ t().kanbanSection.li2 }}</li>
-          <li><i class="pi pi-check"></i> {{ t().kanbanSection.li3 }}</li>
-          <li><i class="pi pi-check"></i> {{ t().kanbanSection.li4 }}</li>
-        </ul>
-        <div class="split-actions">
-          <p-button [label]="t().kanbanSection.btn" icon="pi pi-th-large" iconPos="left" severity="secondary" [outlined]="true" routerLink="/login"/>
-        </div>
-      </div>
-
-
-      <div class="split-visual sv-kanban-real">
-
-        <div class="svk-header">
-          <span class="svk-logo">INFINITY</span>
-          <div class="svk-tabs">
-            <span class="svk-tab svk-tab--active">{{ t().kanbanVisual.tabBoard }}</span>
-            <span class="svk-tab">{{ t().kanbanVisual.tabList }}</span>
+        <div class="wf__cols">
+          <div class="wf__col">
+            <span class="wf__coltitle">{{ t().kanbanVisual.colDone }} <em>01</em></span>
+            <div class="wf__card wf__card--done"><span class="box box--on"></span>Backend</div>
           </div>
-        </div>
-
-        <div class="svk-body">
-
-          <div class="svk-col">
-            <div class="svk-col-header">
-              <span class="svk-col-title">{{ t().kanbanVisual.colDone }}</span>
-              <span class="svk-col-count">1</span>
-              <button class="svk-col-menu"><i class="pi pi-ellipsis-v"></i></button>
-            </div>
-            <div class="svk-tasks">
-              <div class="svk-task svk-task--done">
-                <div class="svk-check svk-check--done"><i class="pi pi-check"></i></div>
-                <span class="svk-task-title svk-task-title--done">Backend</span>
-              </div>
-            </div>
-            <button class="svk-add-task"><i class="pi pi-plus"></i> {{ t().kanbanVisual.addTask }}</button>
+          <div class="wf__col">
+            <span class="wf__coltitle">{{ t().kanbanVisual.colInProgress }} <em>03</em></span>
+            <div class="wf__card"><span class="box"></span>{{ t().kanbanVisual.taskReport }}<em class="wf__due">20.01</em></div>
+            <div class="wf__card"><span class="box"></span>Frontend</div>
+            <div class="wf__card"><span class="box"></span>{{ t().kanbanVisual.taskDesign }}</div>
           </div>
-
-          <div class="svk-col">
-            <div class="svk-col-header">
-              <span class="svk-col-title">{{ t().kanbanVisual.colInProgress }}</span>
-              <span class="svk-col-count">2</span>
-              <button class="svk-col-menu"><i class="pi pi-ellipsis-v"></i></button>
-            </div>
-            <div class="svk-tasks">
-              <div class="svk-task">
-                <div class="svk-check"></div>
-                <div class="svk-task-body">
-                  <span class="svk-task-title">{{ t().kanbanVisual.taskReport }}</span>
-                  <span class="svk-task-due svk-task-due--soon"><i class="pi pi-calendar"></i> 20.01.2025</span>
-                </div>
-              </div>
-              <div class="svk-task">
-                <div class="svk-check"></div>
-                <div class="svk-task-body">
-                  <span class="svk-task-title">Frontend</span>
-                  <div class="svk-task-color-bar"></div>
-                </div>
-              </div>
-              <div class="svk-task">
-                <div class="svk-check"></div>
-                <div class="svk-task-body">
-                  <span class="svk-task-title">{{ t().kanbanVisual.taskDesign }}</span>
-                  <div class="svk-task-color-bar svk-task-color-bar--alt"></div>
-                </div>
-              </div>
-            </div>
-            <button class="svk-add-task"><i class="pi pi-plus"></i> {{ t().kanbanVisual.addTask }}</button>
-          </div>
-
-          <div class="svk-col svk-col--new">
-            <i class="pi pi-plus"></i>
-            <span>{{ t().kanbanVisual.newCol }}</span>
-          </div>
+          <div class="wf__col wf__col--add"><span>＋ {{ t().kanbanVisual.newCol }}</span></div>
         </div>
       </div>
     </div>
@@ -305,318 +166,221 @@
 </section>
 
 
-<section class="split" id="files">
-  <div class="container">
-    <div class="split-inner split-reverse reveal">
-      <div class="split-text">
-        <div class="section-label">{{ t().filesSection.label }}</div>
-        <h2 class="section-title">{{ t().filesSection.title1 }}<span class="gradient-text">{{ t().filesSection.titleEm }}</span></h2>
-        <p class="section-sub">{{ t().filesSection.subtitle }}</p>
-        <ul class="split-list">
-          <li><i class="pi pi-check"></i> {{ t().filesSection.li1 }}</li>
-          <li><i class="pi pi-check"></i> {{ t().filesSection.li2 }}</li>
-          <li><i class="pi pi-check"></i> {{ t().filesSection.li3 }}</li>
-          <li><i class="pi pi-check"></i> {{ t().filesSection.li4 }}</li>
-        </ul>
-        <div class="split-actions">
-          <p-button [label]="t().filesSection.btn" icon="pi pi-folder-open" iconPos="left" severity="secondary" [outlined]="true" routerLink="/login"/>
+<!-- ============ 03 — FILES ============ -->
+<section class="section section--split" id="files" data-idx="03">
+  <div class="wrap split split--rev">
+    <div class="split__text reveal">
+      <span class="sec-idx">03</span>
+      <span class="kicker">{{ t().filesSection.label }}</span>
+      <h2 class="sec-title">{{ t().filesSection.title1 }}<em>{{ t().filesSection.titleEm }}</em></h2>
+      <p class="sec-sub">{{ t().filesSection.subtitle }}</p>
+      <ul class="ticks">
+        <li><span class="tick">+</span>{{ t().filesSection.li1 }}</li>
+        <li><span class="tick">+</span>{{ t().filesSection.li2 }}</li>
+        <li><span class="tick">+</span>{{ t().filesSection.li3 }}</li>
+        <li><span class="tick">+</span>{{ t().filesSection.li4 }}</li>
+      </ul>
+      <a class="link-underline" routerLink="/login">{{ t().filesSection.btn }} <i class="pi pi-arrow-right"></i></a>
+    </div>
+
+    <!-- wireframe files -->
+    <div class="split__visual reveal" [style.--reveal-i]="1">
+      <div class="wf wf--files">
+        <div class="wf__bar">
+          <span class="wf__chip wf__chip--on"><i class="pi pi-list"></i>{{ t().filesVisual.filterAll }}</span>
+          <span class="wf__chip"><i class="pi pi-image"></i>{{ t().filesVisual.filterPhoto }}</span>
+          <span class="wf__chip"><i class="pi pi-video"></i>{{ t().filesVisual.filterVideo }}</span>
+          <span class="wf__chip"><i class="pi pi-volume-up"></i>{{ t().filesVisual.filterAudio }}</span>
         </div>
-      </div>
-
-
-      <div class="split-visual sv-files-real">
-
-        <div class="svf-toolbar">
-          <div class="svf-tb-row svf-tb-row--top">
-            <div class="svf-tb-left">
-              <button class="svf-btn svf-btn--outlined"><i class="pi pi-cloud-upload"></i><span>{{ t().filesVisual.btnUploadFile }}</span></button>
-              <button class="svf-btn"><i class="pi pi-folder-open"></i><span>{{ t().filesVisual.btnUploadFolder }}</span></button>
-              <button class="svf-btn"><i class="pi pi-folder-plus"></i><span>{{ t().filesVisual.btnCreateFolder }}</span></button>
-            </div>
-            <div class="svf-tb-right">
-              <button class="svf-icon-btn"><i class="pi pi-download"></i></button>
-              <button class="svf-icon-btn"><i class="pi pi-trash"></i></button>
-              <button class="svf-btn svf-btn--outlined"><i class="pi pi-share-alt"></i><span>{{ t().filesVisual.btnShare }}</span></button>
-            </div>
-          </div>
-          <div class="svf-tb-row svf-tb-row--bottom">
-            <div class="svf-search"><i class="pi pi-search"></i><span>{{ t().filesVisual.search }}</span></div>
-            <div class="svf-tb-sep"></div>
-            <div class="svf-filters">
-              <span class="svf-filter svf-filter--active"><i class="pi pi-list"></i><span>{{ t().filesVisual.filterAll }}</span></span>
-              <span class="svf-filter"><i class="pi pi-image"></i><span>{{ t().filesVisual.filterPhoto }}</span></span>
-              <span class="svf-filter"><i class="pi pi-video"></i><span>{{ t().filesVisual.filterVideo }}</span></span>
-              <span class="svf-filter"><i class="pi pi-volume-up"></i><span>{{ t().filesVisual.filterAudio }}</span></span>
-              <span class="svf-filter"><i class="pi pi-file"></i><span>{{ t().filesVisual.filterDocs }}</span></span>
-              <span class="svf-filter"><i class="pi pi-box"></i><span>{{ t().filesVisual.filterArchives }}</span></span>
-              <span class="svf-filter"><i class="pi pi-ellipsis-h"></i><span>{{ t().filesVisual.filterOther }}</span></span>
-            </div>
-          </div>
-        </div>
-
-        <div class="svf-body">
-
-          <div class="svf-folders">
-            <div class="svf-folder">
-              <div class="svf-folder-info"><i class="pi pi-folder"></i><span>{{ t().filesVisual.folderName }}</span></div>
-              <i class="pi pi-ellipsis-v svf-folder-dots"></i>
-            </div>
-          </div>
-
-          <div class="svf-hr"></div>
-
-          <div class="svf-files">
-
-            <div class="svf-file-card">
-              <div class="svf-file-top">
-                <span class="svf-file-name">Sitephone.mov</span>
-                <i class="pi pi-ellipsis-v svf-file-dots"></i>
-              </div>
-              <div class="svf-file-preview svf-file-video">
-                <div class="svf-file-play"><i class="pi pi-play-circle"></i></div>
-              </div>
-            </div>
-
-            <div class="svf-file-card">
-              <div class="svf-file-top">
-                <span class="svf-file-name">git.txt</span>
-                <i class="pi pi-ellipsis-v svf-file-dots"></i>
-              </div>
-              <div class="svf-file-preview svf-file-doc svf-file-txt"><i class="pi pi-file"></i></div>
-            </div>
-
-            <div class="svf-file-card">
-              <div class="svf-file-top">
-                <span class="svf-file-name">scarlxrd - Serxtxnin.m...</span>
-                <i class="pi pi-ellipsis-v svf-file-dots"></i>
-              </div>
-              <div class="svf-file-preview svf-file-audio">
-                <div class="svf-audio-bars"><span></span><span></span><span></span><span></span><span></span></div>
-              </div>
-            </div>
-
-            <div class="svf-file-card">
-              <div class="svf-file-top">
-                <span class="svf-file-name">infinity-logo.jpg</span>
-                <i class="pi pi-ellipsis-v svf-file-dots"></i>
-              </div>
-              <div class="svf-file-preview svf-file-logo">
-                <span class="svf-logo-text"><i class="pi pi-infinity"></i>NFINITY</span>
-              </div>
-            </div>
-          </div>
+        <div class="wf__files">
+          <div class="wf__file"><i class="pi pi-folder"></i><span>{{ t().filesVisual.folderName }}</span></div>
+          <div class="wf__file"><i class="pi pi-play-circle"></i><span>Sitephone.mov</span></div>
+          <div class="wf__file"><i class="pi pi-file"></i><span>git.txt</span></div>
+          <div class="wf__file"><i class="pi pi-volume-up"></i><span>serxtxnin.mp3</span></div>
+          <div class="wf__file"><i class="pi pi-image"></i><span>infinity-logo.jpg</span></div>
+          <div class="wf__file wf__file--up"><i class="pi pi-cloud-upload"></i><span>{{ t().filesVisual.btnUploadFile }}</span></div>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<div class="container"><div class="divider reveal"></div></div>
 
-
-<section class="pricing" id="pricing">
-  <div class="container">
-    <div class="section-header reveal pricing-header">
-      <div class="section-label">{{ t().pricing.label }}</div>
-      <h2 class="section-title">{{ t().pricing.title1 }}<span class="gradient-text">{{ t().pricing.titleEm }}</span></h2>
-      <p class="section-sub">{{ t().pricing.subtitle }}</p>
+<!-- ============ 04 — PRICING ============ -->
+<section class="section" id="pricing" data-idx="04">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-idx">04</span>
+      <div class="sec-head__main">
+        <span class="kicker">{{ t().pricing.label }}</span>
+        <h2 class="sec-title">{{ t().pricing.title1 }}<em>{{ t().pricing.titleEm }}</em></h2>
+      </div>
+      <p class="sec-sub">{{ t().pricing.subtitle }}</p>
     </div>
-    <div class="plans-grid">
 
-
-      <div class="plan-card reveal reveal-delay-1">
-        <div class="plan-name-row"><span class="plan-tier-badge plan-tier-badge--trial">{{ t().pricing.spark.badge }}</span></div>
-        <div class="plan-header">
-          <h3 class="plan-name">Infinity <em class="gradient-text">Spark</em></h3>
-          <p class="plan-slogan">{{ t().pricing.spark.slogan }}</p>
-          <div class="plan-price">
-            <span class="price-num">{{ t().pricing.spark.priceNum }}</span><span class="price-currency">{{ t().pricing.spark.priceCurrency }}</span><span class="price-period">{{ t().pricing.spark.period }}</span>
-          </div>
-        </div>
-        <ul class="plan-features">
-          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>{{ t().pricing.spark.f1 }}</span></li>
-          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>{{ t().pricing.spark.f2 }}</span></li>
-          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>{{ t().pricing.spark.f3 }}</span></li>
-          <li class="feature-item feature-warn"><i class="pi pi-clock fi fi--warn"></i><span>{{ t().pricing.spark.f4 }}</span></li>
-          <li class="feature-item feature-danger"><i class="pi pi-trash fi fi--danger"></i><span>{{ t().pricing.spark.f5 }}</span></li>
+    <div class="plans">
+      <!-- Spark -->
+      <article class="plan reveal">
+        <header class="plan__head">
+          <span class="plan__tag">{{ t().pricing.spark.badge }}</span>
+          <h3 class="plan__name">Infinity <em>Spark</em></h3>
+          <p class="plan__slogan">{{ t().pricing.spark.slogan }}</p>
+        </header>
+        <div class="plan__price"><span class="plan__num">{{ t().pricing.spark.priceNum }}</span><span class="plan__cur">{{ t().pricing.spark.priceCurrency }}</span><span class="plan__per">{{ t().pricing.spark.period }}</span></div>
+        <ul class="plan__feats">
+          <li>{{ t().pricing.spark.f1 }}</li>
+          <li>{{ t().pricing.spark.f2 }}</li>
+          <li>{{ t().pricing.spark.f3 }}</li>
+          <li class="muted">{{ t().pricing.spark.f4 }}</li>
+          <li class="muted">{{ t().pricing.spark.f5 }}</li>
         </ul>
-        <a class="plan-btn" routerLink="/registration">{{ t().pricing.spark.btn }} <i class="pi pi-arrow-right"></i></a>
-      </div>
+        <a class="plan__btn" routerLink="/registration">{{ t().pricing.spark.btn }} <i class="pi pi-arrow-right"></i></a>
+      </article>
 
-
-      <div class="plan-card plan-card--pulse reveal reveal-delay-2">
-        <div class="plan-name-row"><span class="plan-tier-badge plan-tier-badge--pulse">{{ t().pricing.pulse.badge }}</span></div>
-        <div class="plan-header">
-          <h3 class="plan-name">Infinity <em class="gradient-text">Pulse</em></h3>
-          <p class="plan-slogan">{{ t().pricing.pulse.slogan }}</p>
-          <div class="plan-price">
-            <span class="price-num">{{ t().pricing.pulse.priceNum }}</span><span class="price-currency">{{ t().pricing.pulse.priceCurrency }}</span><span class="price-period">{{ t().pricing.pulse.period }}</span>
-          </div>
-        </div>
-        <ul class="plan-features">
-          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>{{ t().pricing.pulse.f1 }}</span></li>
-          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>{{ t().pricing.pulse.f2 }}</span></li>
-          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>{{ t().pricing.pulse.f3 }}</span></li>
-          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>{{ t().pricing.pulse.f4 }}</span></li>
-          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>{{ t().pricing.pulse.f5 }}</span></li>
+      <!-- Pulse -->
+      <article class="plan reveal">
+        <header class="plan__head">
+          <span class="plan__tag">{{ t().pricing.pulse.badge }}</span>
+          <h3 class="plan__name">Infinity <em>Pulse</em></h3>
+          <p class="plan__slogan">{{ t().pricing.pulse.slogan }}</p>
+        </header>
+        <div class="plan__price"><span class="plan__num">{{ t().pricing.pulse.priceNum }}</span><span class="plan__cur">{{ t().pricing.pulse.priceCurrency }}</span><span class="plan__per">{{ t().pricing.pulse.period }}</span></div>
+        <ul class="plan__feats">
+          <li>{{ t().pricing.pulse.f1 }}</li>
+          <li>{{ t().pricing.pulse.f2 }}</li>
+          <li>{{ t().pricing.pulse.f3 }}</li>
+          <li>{{ t().pricing.pulse.f4 }}</li>
+          <li>{{ t().pricing.pulse.f5 }}</li>
         </ul>
-        <p class="plan-guarantee"><i class="pi pi-shield"></i> {{ t().pricing.pulse.guarantee }}</p>
-        <a class="plan-btn" routerLink="/registration">{{ t().pricing.pulse.btn }} <i class="pi pi-arrow-right"></i></a>
-      </div>
+        <a class="plan__btn" routerLink="/registration">{{ t().pricing.pulse.btn }} <i class="pi pi-arrow-right"></i></a>
+      </article>
 
-
-      <div class="plan-card plan-card--horizon reveal reveal-delay-3">
-        <div class="plan-popular-badge"><i class="pi pi-star-fill"></i> {{ t().pricing.horizon.popular }}</div>
-        <div class="plan-name-row"><span class="plan-tier-badge plan-tier-badge--horizon">{{ t().pricing.horizon.badge }}</span></div>
-        <div class="plan-header">
-          <h3 class="plan-name">Infinity <em class="gradient-text">Horizon</em></h3>
-          <p class="plan-slogan">{{ t().pricing.horizon.slogan }}</p>
-          <div class="plan-price">
-            <span class="price-num">{{ t().pricing.horizon.priceNum }}</span><span class="price-currency">{{ t().pricing.horizon.priceCurrency }}</span><span class="price-period">{{ t().pricing.horizon.period }}</span>
-          </div>
-          <p class="price-note">{{ t().pricing.horizon.note }}</p>
-        </div>
-        <ul class="plan-features">
-          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>{{ t().pricing.horizon.f1 }}</span></li>
-          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>{{ t().pricing.horizon.f2 }}</span></li>
-          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>{{ t().pricing.horizon.f3 }}</span></li>
-          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>{{ t().pricing.horizon.f4 }}</span></li>
-          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>{{ t().pricing.horizon.f5 }}</span></li>
+      <!-- Horizon — recommended (inverted) -->
+      <article class="plan plan--feature reveal">
+        <span class="plan__ribbon">{{ t().pricing.horizon.popular }}</span>
+        <header class="plan__head">
+          <span class="plan__tag">{{ t().pricing.horizon.badge }}</span>
+          <h3 class="plan__name">Infinity <em>Horizon</em></h3>
+          <p class="plan__slogan">{{ t().pricing.horizon.slogan }}</p>
+        </header>
+        <div class="plan__price"><span class="plan__num">{{ t().pricing.horizon.priceNum }}</span><span class="plan__cur">{{ t().pricing.horizon.priceCurrency }}</span><span class="plan__per">{{ t().pricing.horizon.period }}</span></div>
+        <p class="plan__note">{{ t().pricing.horizon.note }}</p>
+        <ul class="plan__feats">
+          <li>{{ t().pricing.horizon.f1 }}</li>
+          <li>{{ t().pricing.horizon.f2 }}</li>
+          <li>{{ t().pricing.horizon.f3 }}</li>
+          <li>{{ t().pricing.horizon.f4 }}</li>
+          <li>{{ t().pricing.horizon.f5 }}</li>
         </ul>
-        <p class="plan-guarantee"><i class="pi pi-shield"></i> {{ t().pricing.horizon.guarantee }}</p>
-        <a class="plan-btn plan-btn--primary" routerLink="/registration">{{ t().pricing.horizon.btn }} <i class="pi pi-arrow-right"></i></a>
-      </div>
+        <a class="plan__btn plan__btn--solid" routerLink="/registration">{{ t().pricing.horizon.btn }} <i class="pi pi-arrow-right"></i></a>
+      </article>
 
-
-      <div class="plan-card plan-card--eternal reveal reveal-delay-1">
-        <div class="plan-name-row"><span class="plan-tier-badge plan-tier-badge--eternal">{{ t().pricing.eternal.badge }}</span></div>
-        <div class="plan-header">
-          <h3 class="plan-name">Infinity <em class="gradient-text">Eternal</em></h3>
-          <p class="plan-slogan">{{ t().pricing.eternal.slogan }}</p>
-          <div class="plan-price">
-            <span class="price-num">{{ t().pricing.eternal.priceNum }}</span><span class="price-currency">{{ t().pricing.eternal.priceCurrency }}</span><span class="price-period">{{ t().pricing.eternal.period }}</span>
-          </div>
-          <p class="price-note">{{ t().pricing.eternal.note }}</p>
-        </div>
-        <ul class="plan-features">
-          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>{{ t().pricing.eternal.f1 }}</span></li>
-          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>{{ t().pricing.eternal.f2 }}</span></li>
-          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>{{ t().pricing.eternal.f3 }}</span></li>
-          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>{{ t().pricing.eternal.f4 }}</span></li>
-          <li class="feature-item"><i class="pi pi-check fi fi--ok"></i><span>{{ t().pricing.eternal.f5 }}</span></li>
+      <!-- Eternal -->
+      <article class="plan reveal">
+        <header class="plan__head">
+          <span class="plan__tag">{{ t().pricing.eternal.badge }}</span>
+          <h3 class="plan__name">Infinity <em>Eternal</em></h3>
+          <p class="plan__slogan">{{ t().pricing.eternal.slogan }}</p>
+        </header>
+        <div class="plan__price"><span class="plan__num">{{ t().pricing.eternal.priceNum }}</span><span class="plan__cur">{{ t().pricing.eternal.priceCurrency }}</span><span class="plan__per">{{ t().pricing.eternal.period }}</span></div>
+        <p class="plan__note">{{ t().pricing.eternal.note }}</p>
+        <ul class="plan__feats">
+          <li>{{ t().pricing.eternal.f1 }}</li>
+          <li>{{ t().pricing.eternal.f2 }}</li>
+          <li>{{ t().pricing.eternal.f3 }}</li>
+          <li>{{ t().pricing.eternal.f4 }}</li>
+          <li>{{ t().pricing.eternal.f5 }}</li>
         </ul>
-        <a class="plan-btn plan-btn--eternal" routerLink="/registration">{{ t().pricing.eternal.btn }} <i class="pi pi-arrow-right"></i></a>
-      </div>
-
+        <a class="plan__btn" routerLink="/registration">{{ t().pricing.eternal.btn }} <i class="pi pi-arrow-right"></i></a>
+      </article>
     </div>
   </div>
 </section>
 
-<div class="container"><div class="divider reveal"></div></div>
 
-
-<section class="faq" id="faq">
-  <div class="container">
-    <div class="section-header reveal faq-header">
-      <div class="section-label">{{ t().faqSection.label }}</div>
-      <h2 class="section-title">{{ t().faqSection.title1 }}<span class="gradient-text">{{ t().faqSection.titleEm }}</span></h2>
-      <p class="section-sub">{{ t().faqSection.subtitle }}</p>
+<!-- ============ 05 — FAQ ============ -->
+<section class="section" id="faq" data-idx="05">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-idx">05</span>
+      <div class="sec-head__main">
+        <span class="kicker">{{ t().faqSection.label }}</span>
+        <h2 class="sec-title">{{ t().faqSection.title1 }}<em>{{ t().faqSection.titleEm }}</em></h2>
+      </div>
+      <p class="sec-sub">{{ t().faqSection.subtitle }}</p>
     </div>
-    <div class="faq-list">
+
+    <div class="faq">
       @for (item of faqs(); let i = $index; track $index) {
-        <div class="faq-item reveal" [class.faq-item--open]="openFaq === i">
-          <button class="faq-q" (click)="toggleFaq(i)" [attr.aria-expanded]="openFaq === i">
-            <span>{{ item.q }}</span>
-            <i class="pi pi-plus faq-icon"></i>
+        <div class="faq__row reveal" [class.faq__row--open]="openFaq === i" [style.--reveal-i]="i">
+          <button class="faq__q" (click)="toggleFaq(i)" [attr.aria-expanded]="openFaq === i">
+            <span class="faq__qidx">{{ '0' + (i + 1) }}</span>
+            <span class="faq__qtext">{{ item.q }}</span>
+            <i class="faq__sign pi pi-plus"></i>
           </button>
-          <div class="faq-a"><p>{{ item.a }}</p></div>
+          <div class="faq__a"><p>{{ item.a }}</p></div>
         </div>
       }
     </div>
   </div>
 </section>
 
-<div class="container"><div class="divider reveal"></div></div>
 
-
-<section class="cta-section">
-  <div class="cta-orbs" aria-hidden="true">
-    <span class="orb orb--1"></span>
-    <span class="orb orb--2"></span>
-  </div>
-  <div class="container">
-    <div class="cta-inner reveal">
-      <div class="section-label">{{ t().cta.label }}</div>
-      <h2 class="section-title">{{ t().cta.title1 }}<span class="gradient-text">{{ t().cta.titleEm }}</span></h2>
-      <p class="section-sub">{{ t().cta.subtitle }}</p>
-      <div class="cta-actions">
-        <a class="btn-hero-primary btn-hero-primary--gradient" routerLink="/registration"><i class="pi pi-user-plus"></i> {{ t().cta.register }}</a>
-        <a class="btn-hero-ghost" routerLink="/login"><i class="pi pi-sign-in"></i> {{ t().cta.login }}</a>
-      </div>
-      <div class="cta-meta">
-        <span><i class="pi pi-check-circle"></i> {{ t().cta.meta1 }}</span>
-        <span><i class="pi pi-check-circle"></i> {{ t().cta.meta2 }}</span>
-        <span><i class="pi pi-check-circle"></i> {{ t().cta.meta3 }}</span>
-      </div>
+<!-- ============ CTA (inversion block) ============ -->
+<section class="cta">
+  <div class="wrap cta__inner reveal">
+    <span class="kicker">{{ t().cta.label }}</span>
+    <h2 class="cta__title">{{ t().cta.title1 }}<em>{{ t().cta.titleEm }}</em></h2>
+    <p class="cta__sub">{{ t().cta.subtitle }}</p>
+    <div class="cta__actions">
+      <a class="btn-invert btn-invert--lg btn-invert--flip" routerLink="/registration">{{ t().cta.register }}<i class="pi pi-arrow-up-right"></i></a>
+      <a class="link-underline link-underline--flip" routerLink="/login">{{ t().cta.login }}</a>
     </div>
+    <ul class="cta__meta">
+      <li>{{ t().cta.meta1 }}</li>
+      <li>{{ t().cta.meta2 }}</li>
+      <li>{{ t().cta.meta3 }}</li>
+    </ul>
   </div>
 </section>
 
 
-<footer class="footer">
-  <div class="container">
-    <div class="footer-grid">
-      <div class="footer-brand">
-        <img class="logo" [src]="imagePath()" alt="Infinity">
-        <p class="footer-desc">{{ t().footer.desc }}</p>
-        <div class="footer-socials">
-          <a href="https://t.me/Anton_Kast1lo" aria-label="Telegram" target="_blank" rel="noopener noreferrer" class="social-btn"><i class="pi pi-send"></i></a>
-          <a href="https://github.com/Kast1lo" aria-label="GitHub" target="_blank" rel="noopener noreferrer" class="social-btn"><i class="pi pi-github"></i></a>
-          <a href="mailto:infinity.corpa@gmail.com" aria-label="Email" class="social-btn"><i class="pi pi-envelope"></i></a>
+<!-- ============ FOOTER ============ -->
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot__grid">
+      <div class="foot__brand">
+        <img class="nav__logo" [src]="imagePath()" alt="Infinity">
+        <p class="foot__desc">{{ t().footer.desc }}</p>
+        <div class="foot__socials">
+          <a href="https://t.me/Anton_Kast1lo" target="_blank" rel="noopener noreferrer" aria-label="Telegram"><i class="pi pi-send"></i></a>
+          <a href="https://github.com/Kast1lo" target="_blank" rel="noopener noreferrer" aria-label="GitHub"><i class="pi pi-github"></i></a>
+          <a href="mailto:infinity.corpa@gmail.com" aria-label="Email"><i class="pi pi-envelope"></i></a>
         </div>
       </div>
 
-      <div class="footer-col">
-        <h4 class="footer-col-title">{{ t().footer.col1Title }}</h4>
-        <ul>
-          <li><a (click)="scrollTo('features')">{{ t().footer.col1l1 }}</a></li>
-          <li><a (click)="scrollTo('kanban')">{{ t().footer.col1l2 }}</a></li>
-          <li><a (click)="scrollTo('files')">{{ t().footer.col1l3 }}</a></li>
-          <li><a (click)="scrollTo('pricing')">{{ t().footer.col1l4 }}</a></li>
-        </ul>
+      <div class="foot__col">
+        <span class="foot__h">{{ t().footer.col1Title }}</span>
+        <a (click)="scrollTo('features')">{{ t().footer.col1l1 }}</a>
+        <a (click)="scrollTo('kanban')">{{ t().footer.col1l2 }}</a>
+        <a (click)="scrollTo('files')">{{ t().footer.col1l3 }}</a>
+        <a (click)="scrollTo('pricing')">{{ t().footer.col1l4 }}</a>
       </div>
 
-      <div class="footer-col">
-        <h4 class="footer-col-title">{{ t().footer.col2Title }}</h4>
-        <ul>
-          <li><a (click)="scrollTo('faq')">{{ t().footer.col2l1 }}</a></li>
-          <li><a href="#">{{ t().footer.col2l2 }}</a></li>
-          <li><a href="#">{{ t().footer.col2l3 }}</a></li>
-          <li><a href="#">{{ t().footer.col2l4 }}</a></li>
-        </ul>
+      <div class="foot__col">
+        <span class="foot__h">{{ t().footer.col2Title }}</span>
+        <a (click)="scrollTo('faq')">{{ t().footer.col2l1 }}</a>
+        <a routerLink="/login">{{ t().nav.login }}</a>
+        <a routerLink="/registration">{{ t().nav.register }}</a>
+        <a href="mailto:infinity.corpa@gmail.com">{{ t().footer.support }}</a>
       </div>
 
-      <div class="footer-col">
-        <h4 class="footer-col-title">{{ t().footer.col3Title }}</h4>
-        <ul>
-          <li><a href="#">{{ t().footer.col3l1 }}</a></li>
-          <li><a href="#">{{ t().footer.col3l2 }}</a></li>
-          <li><a href="#">{{ t().footer.col3l3 }}</a></li>
-          <li><a href="#">{{ t().footer.col3l4 }}</a></li>
-        </ul>
-      </div>
     </div>
 
-    <div class="footer-bottom">
-      <span class="footer-copy">{{ t().footer.copy }}</span>
-      <div class="footer-bottom-links">
-        <a href="#">Cookies</a>
-        <span class="dot-sep">·</span>
-        <a href="#">{{ t().footer.legal }}</a>
-        <span class="dot-sep">·</span>
-        <a href="mailto:hello@infinity-vault.com">hello&#64;infinity-vault.com</a>
-      </div>
-      <div class="footer-status"><span class="status-dot"></span> {{ t().footer.status }}</div>
+    <div class="foot__bottom">
+      <span>{{ t().footer.copy }}</span>
+      <span class="foot__status"><span class="dot dot--live"></span>{{ t().footer.status }}</span>
+      <a href="mailto:hello@infinity-vault.com">hello&#64;infinity-vault.com</a>
     </div>
   </div>
 </footer>

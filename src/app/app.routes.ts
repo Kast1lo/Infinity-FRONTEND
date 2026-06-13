@@ -7,6 +7,7 @@ import { EditProfile } from './pages/main-pages/edit-profile/edit-profile';
 import { InfinityLife } from './pages/main-pages/infinity-life/infinity-life';
 import { Projects } from './pages/main-pages/projects/projects';
 import { FileSystem } from './pages/main-pages/file-system/file-system';
+import { Trash } from './pages/main-pages/trash/trash';
 import { ProfileCard } from './pages/main-pages/profile/profile-card/profile-card';
 import { ShareFile } from './common-ui/share-file/share-file';
 import { MainPage } from './common-ui/main-page/main-page';
@@ -58,6 +59,11 @@ export const routes: Routes = [
     {
         path: 'file-system',
         component: FileSystem,
+        canActivate:[authGuard],
+    },
+    {
+        path: 'trash',
+        component: Trash,
         canActivate:[authGuard],
     },
     {

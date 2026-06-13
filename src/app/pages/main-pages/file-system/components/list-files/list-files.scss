@@ -2,6 +2,7 @@
   --bg:       #0a0a0a;
   --bg2:      #111111;
   --bg3:      #1a1a1a;
+  --bg4:      #202020;
   --border:   #222222;
   --border2:  #333333;
   --text:     #f0f0f0;
@@ -11,12 +12,18 @@
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
+
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 
 :host-context(.light-theme) {
   --bg:       #f8f8f8;
   --bg2:      #ffffff;
   --bg3:      #f2f2f2;
+  --bg4:      #ebebeb;
   --border:   #e0e0e0;
   --border2:  #d0d0d0;
   --text:     #111111;
@@ -24,253 +31,577 @@
   --text3:    #aaaaaa;
 }
 
-// ─── Основной контейнер ───
-
-.card-list-files {
-  height: calc(100vh - 120px);
-  margin: 15px;
-  border-radius: var(--radius-lg);
-  background-color: var(--bg2);
-  border: 1px solid var(--border);
-  overflow: hidden;
-  position: relative;
-
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-image: radial-gradient(circle, var(--dot-color, rgba(255,255,255,.04)) 1px, transparent 1px);
-    background-size: 28px 28px;
-    pointer-events: none;
-    z-index: 0;
-    border-radius: inherit;
-  }
-}
-
 ::ng-deep .p-scrollpanel-bar { display: none !important; }
 
-.progress-spin {
+// ═══════════════ Доска (рабочая область) ═══════════════
+
+.fs-board {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+// ─── Рамка выделения (lasso) ───
+
+.fs-marquee {
+  position: fixed;
+  z-index: 30;
+  pointer-events: none;
+  border: 1px solid var(--brand-accent);
+  background: color-mix(in srgb, var(--brand-accent) 16%, transparent);
+  border-radius: 2px;
+}
+
+// ─── Панель множественного выделения ───
+
+.fs-selbar {
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 8px 8px 14px;
+  border-radius: 100px;
+  background: var(--bg2);
+  border: 1px solid var(--brand-accent);
+  box-shadow: 0 16px 40px rgba(0,0,0,.35), 0 0 0 4px color-mix(in srgb, var(--brand-accent) 12%, transparent);
+  font-family: var(--brand-mono);
+  animation: fs-selbar-rise .25s cubic-bezier(.22, 1, .36, 1) both;
+}
+
+@keyframes fs-selbar-rise {
+  from { opacity: 0; transform: translate(-50%, 12px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}
+
+.fs-selbar-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 11px;
+  background: var(--brand-accent);
+  color: var(--brand-accent-ink);
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.fs-selbar-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: .02em;
+}
+
+.fs-selbar-dot { color: var(--text3); }
+
+.fs-selbar-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text2);
+  i { font-size: 11px !important; color: var(--brand-accent) !important; }
+}
+
+.fs-selbar-clear {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  margin-left: 4px;
+  border-radius: 100px;
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--text2);
+  font-family: var(--brand-mono);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color .15s, border-color .15s, background .15s;
+
+  i { font-size: 10px !important; color: inherit !important; }
+  &:hover { color: var(--brand-accent); border-color: var(--brand-accent); background: color-mix(in srgb, var(--brand-accent) 8%, transparent); }
+}
+
+.fs-spin {
   display: flex;
   height: 100%;
   justify-content: center;
   align-items: center;
 }
 
-// ─── Папки ───
+// ─── Breadcrumbs ───
 
-.folder-grid {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px;
-  padding: 20px 20px 0;
-  width: 100%;
-
-  &:empty { padding: 0; }
+.fs-crumbs {
+  padding: 18px 20px 0;
+  position: relative;
+  z-index: 1;
 }
 
-.folder { display: flex; }
-
-::ng-deep .folder-grid .p-card {
+::ng-deep .fs-crumb-bar {
   background: transparent !important;
-  box-shadow: none !important;
-  padding: 0 !important;
+  border: none !important;
+  padding: 4px 0 !important;
 
-  .p-card-body, .p-card-content { padding: 0 !important; }
-}
+  .p-breadcrumb-list { gap: 0; flex-wrap: nowrap; }
 
-.folder-card {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  width: 190px;
-  padding: 10px 14px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-  background: var(--bg3);
-  cursor: pointer;
-  user-select: none;
-  transition: background .2s, border-color .2s;
+  .p-breadcrumb-item-link {
+    display: flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+    padding: 5px 8px !important;
+    border-radius: var(--radius-sm) !important;
+    font-family: var(--brand-mono) !important;
+    font-size: 13px !important;
+    font-weight: 400 !important;
+    color: var(--text2) !important;
+    transition: color .15s, background .15s !important;
+    text-decoration: none !important;
 
-  &:hover { background: var(--bg4); border-color: var(--border2); }
-  &.selected { border-color: var(--border2); background: var(--bg4); }
+    .p-icon, i { font-size: 13px !important; color: var(--text2) !important; }
 
-  &.drop-target {
-    border-color: rgba(74,158,255,.55);
-    background: rgba(74,158,255,.10);
-    box-shadow: 0 0 0 2px rgba(74,158,255,.2);
+    &:hover {
+      color: var(--text) !important;
+      background: var(--bg4) !important;
+      .p-icon, i { color: var(--text) !important; }
+    }
+  }
 
-    i { color: rgba(74,158,255,.9) !important; }
+  li:last-child .p-breadcrumb-item-link {
+    color: var(--text) !important;
+    font-weight: 500 !important;
+    cursor: default !important;
+    pointer-events: none;
+    &:hover { background: transparent !important; }
+  }
+
+  .p-breadcrumb-separator {
+    color: var(--text3) !important;
+    margin: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    .p-icon { font-size: 10px !important; color: var(--text3) !important; }
   }
 }
 
-.info-folder {
+// ─── Секции (ПАПКИ / ФАЙЛЫ) ───
+
+.fs-section {
+  padding: 0 20px;
+  margin-top: 20px;
+  position: relative;
+  z-index: 1;
+
+  &:last-child { padding-bottom: 22px; }
+}
+
+.fs-sec-head {
   display: flex;
   align-items: center;
-  gap: 9px;
-  min-width: 0;
+  gap: 10px;
+  margin-bottom: 12px;
+}
 
-  i { font-size: 1.1rem !important; color: var(--text2) !important; flex-shrink: 0; margin-top: 0 !important; }
+.fs-sec-label {
+  font-family: var(--brand-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--text2);
+}
+
+.fs-sec-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 18px;
+  padding: 0 6px;
+  border: 1px solid var(--border2);
+  border-radius: 5px;
+  font-family: var(--brand-mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--brand-accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.fs-sec-rule {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+// ─── Папки ───
+
+.fs-folders {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.folder-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 200px;
+  max-width: 100%;
+  padding: 11px 10px 11px 14px;
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  user-select: none;
+  transition: background .2s, border-color .2s, transform .15s;
+
+  &:hover { background: var(--bg4); border-color: var(--brand-accent); }
+
+  &.selected {
+    border-color: var(--text3);
+    background: var(--bg4);
+    box-shadow: 0 0 0 1px var(--text3);
+  }
+
+  &.drop-target {
+    border-color: var(--brand-accent);
+    background: color-mix(in srgb, var(--brand-accent) 12%, var(--bg3));
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--brand-accent) 30%, transparent);
+    transform: scale(1.02);
+    .folder-ic { color: var(--brand-accent) !important; }
+  }
+}
+
+.folder-ic {
+  font-size: 1.05rem !important;
+  color: var(--text2) !important;
+  flex-shrink: 0;
 }
 
 .folder-name {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--brand-mono);
   font-size: 13px;
-  font-weight: 400;
   color: var(--text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-hr {
-  border: 0 !important;
-  border-top: 1px solid var(--border) !important;
-  width: calc(100% - 40px) !important;
-  margin: 20px auto 0 !important;
+// ─── Кнопка меню (общая для папок и файлов) ───
+
+.card-menu-btn {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text3);
+  cursor: pointer;
+  transition: color .15s, background .15s, border-color .15s;
+
+  i { font-size: 12px !important; color: inherit !important; }
+
+  &:hover {
+    color: var(--text);
+    background: rgba(128, 128, 128, .12);
+    border-color: var(--border2);
+  }
 }
 
 // ─── Файлы ───
 
-.file-grid {
-  padding: 20px;
+.fs-files {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(192px, 1fr));
   gap: 12px;
-  position: relative;
-  z-index: 1;
   align-items: start;
 }
 
-::ng-deep .file-grid .p-card {
-  background-color: var(--bg3) !important;
-  border: 1px solid var(--border) !important;
-  border-radius: var(--radius-md) !important;
-  box-shadow: none !important;
-  cursor: pointer;
-  transition: border-color .2s, background .2s !important;
-
-  .p-card-body, .p-card-content { padding: 12px !important; }
-
-  &:hover { background-color: var(--bg4) !important; border-color: var(--border2) !important; }
-}
-
 .file-card {
-  display: flex; flex-direction: column; gap: 10px; position: relative;
-  transition: opacity .15s;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  cursor: grab;
+  transition: border-color .2s, background .2s, transform .15s, opacity .15s, box-shadow .2s;
+
+  &:hover { background: var(--bg4); border-color: var(--brand-accent); transform: translateY(-2px); }
+  &:active { cursor: grabbing; }
+
+  &.selected {
+    border-color: var(--brand-accent);
+    box-shadow: 0 0 0 1px var(--brand-accent);
+  }
 
   &.dragging { opacity: .4; }
 }
 
-::ng-deep .file-grid .p-card[draggable="true"] { cursor: grab; }
-::ng-deep .file-grid .p-card[draggable="true"]:active { cursor: grabbing; }
+// ─── Превью (верх карточки) ───
 
-::ng-deep .file-grid .p-card.selected-card {
-  border-color: var(--border2) !important;
-  background-color: var(--bg4) !important;
+.file-preview {
+  position: relative;
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+
+  i {
+    font-size: 3.4rem !important;
+    color: var(--text3) !important;
+    transition: color .2s, transform .2s;
+  }
+
+  &:not(.file-preview--icon) { cursor: pointer; }
 }
 
-.file-info { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+.preview-hint {
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-family: var(--brand-mono);
+  font-size: 11px;
+  color: var(--text2);
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity .2s, transform .2s;
+  pointer-events: none;
+}
+
+// документы / pdf / zip
+.file-preview--doc {
+  &:hover i { transform: translateY(-8px); }
+  &:hover .preview-hint { opacity: 1; transform: none; }
+}
+.file-preview--pdf {
+  i { color: rgba(231, 76, 60, .55) !important; }
+  &:hover i { color: rgba(231, 76, 60, .9) !important; }
+}
+.file-preview--zip {
+  i { color: rgba(243, 156, 18, .55) !important; }
+  &:hover i { color: rgba(243, 156, 18, .9) !important; }
+}
+
+// видео
+.file-preview--video {
+  background: #000;
+
+  &:hover .video-play { background: rgba(0, 0, 0, .12); }
+  &:hover .video-play i { transform: scale(1.08); background: rgba(255, 255, 255, .2); }
+}
+
+.video-thumb-frame {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  pointer-events: none;
+}
+
+.video-play {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, .28);
+  transition: background .2s;
+
+  i {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .12);
+    border: 1px solid rgba(255, 255, 255, .25);
+    backdrop-filter: blur(8px);
+    color: #fff !important;
+    font-size: .95rem !important;
+    margin-left: 3px;
+    transition: transform .2s, background .2s;
+  }
+}
+
+// аудио
+.file-preview--audio {
+  background: var(--bg2);
+
+  &:hover .audio-bars span {
+    background: var(--text2);
+    animation: audioBar .8s ease-in-out infinite alternate;
+
+    &:nth-child(1) { animation-delay: 0s; }
+    &:nth-child(2) { animation-delay: .15s; }
+    &:nth-child(3) { animation-delay: .3s; }
+    &:nth-child(4) { animation-delay: .45s; }
+    &:nth-child(5) { animation-delay: .6s; }
+  }
+
+  &:hover .preview-hint { opacity: 1; transform: none; }
+}
+
+.audio-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 5px;
+  height: 48px;
+
+  span {
+    display: block;
+    width: 5px;
+    border-radius: 3px;
+    background: var(--text3);
+    transition: background .25s;
+
+    &:nth-child(1) { height: 20px; }
+    &:nth-child(2) { height: 34px; }
+    &:nth-child(3) { height: 48px; }
+    &:nth-child(4) { height: 28px; }
+    &:nth-child(5) { height: 14px; }
+  }
+}
+
+@keyframes audioBar {
+  from { height: 6px; }
+  to   { height: 30px; }
+}
+
+// ─── Подвал карточки (тип + имя + меню) ───
+
+.file-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 10px 10px 12px;
+}
+
+.file-foot-ic {
+  font-size: 13px !important;
+  color: var(--text3) !important;
+  flex-shrink: 0;
+}
 
 .file-name {
-  font-weight: 400;
-  font-size: 13px;
+  flex: 1;
+  min-width: 0;
+  font-family: var(--brand-mono);
+  font-size: 12.5px;
   color: var(--text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-bottom: 0;
-  flex: 1;
-  min-width: 0;
 }
 
-.menu-container { flex-shrink: 0; }
+// ─── Drag & drop overlay ───
 
-// ─── Превью ───
+.fs-drop {
+  position: absolute;
+  inset: 0;
+  z-index: 100;
+  background: rgba(10, 10, 10, .85);
+  border: 2px dashed rgba(255, 255, 255, .3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  animation: dropFadeIn .15s ease;
+}
 
-.preview {
-  height: 180px;
+@keyframes dropFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.fs-drop-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+
+  i { font-size: 3rem !important; color: rgba(255, 255, 255, .5); }
+  span {
+    font-family: var(--brand-display);
+    font-size: 16px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, .5);
+  }
+}
+
+// ─── Пустое состояние ───
+
+.fs-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 320px;
+  gap: 14px;
+  text-align: center;
+  padding: 40px;
+  position: relative;
+  z-index: 1;
+}
+
+.fs-empty-ic {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
   background: var(--bg3);
   border: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
-  border-radius: var(--radius-sm);
-  transition: background .2s;
 
-  i { font-size: 5rem !important; color: var(--text3) !important; }
-  &:hover { background: var(--bg4); }
+  i { font-size: 1.8rem !important; color: var(--text3) !important; }
 }
 
-.preview-img {
-  width: 100%; height: 100%;
-  object-fit: cover; object-position: center;
-  display: block; cursor: pointer;
-  border-radius: var(--radius-sm);
+.fs-empty-title {
+  font-family: var(--brand-display);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text2);
+  margin: 0;
 }
 
-// ─── Кнопки ───
-
-::ng-deep {
-  .p-button.p-button-text.p-button-outlined {
-    color: var(--text3) !important;
-    border-color: transparent !important;
-    width: 28px !important; height: 28px !important; padding: 0 !important;
-
-    &:hover {
-      color: var(--text2) !important;
-      background: var(--bg4) !important;
-      border-radius: var(--radius-sm) !important;
-    }
-  }
-
-  .folder-grid > .p-button:not(.p-button-text) {
-    background: transparent !important;
-    border: 1px solid var(--border2) !important;
-    color: var(--text2) !important;
-    font-size: 13px !important; padding: 7px 14px !important;
-    border-radius: var(--radius-sm) !important; transition: all .2s !important;
-
-    &:hover { background: var(--bg4) !important; color: var(--text) !important; }
-  }
+.fs-empty-sub {
+  font-family: var(--brand-mono);
+  font-size: 13px;
+  color: var(--text3);
+  margin: 0;
 }
 
-// ─── Breadcrumbs ───
-
-.fs-breadcrumbs { padding: 20px 20px 0; position: relative; z-index: 1; }
-
-::ng-deep .fs-breadcrumb-bar {
-  background: transparent !important; border: none !important; padding: 4px 0 !important;
-
-  .p-breadcrumb-list { gap: 0; flex-wrap: nowrap; }
-
-  .p-breadcrumb-item-link {
-    display: flex !important; align-items: center !important; gap: 5px !important;
-    padding: 5px 8px !important; border-radius: var(--radius-sm) !important;
-    font-family: 'DM Sans', sans-serif !important; font-size: 13px !important;
-    font-weight: 400 !important; color: var(--text2) !important;
-    transition: color .15s, background .15s !important; text-decoration: none !important;
-
-    .p-icon, i { font-size: 13px !important; color: var(--text2) !important; }
-
-    &:hover { color: var(--text) !important; background: var(--bg4) !important; .p-icon, i { color: var(--text) !important; } }
-  }
-
-  li:last-child .p-breadcrumb-item-link {
-    color: var(--text) !important; font-weight: 500 !important;
-    cursor: default !important; pointer-events: none;
-    &:hover { background: transparent !important; }
-  }
-
-  .p-breadcrumb-separator {
-    color: var(--text3) !important; margin: 0 !important;
-    display: flex !important; align-items: center !important;
-    .p-icon { font-size: 10px !important; color: var(--text3) !important; }
-  }
-}
-
-// ─── Превью изображений ───
+// ═══════════════ Превью изображений (диалог) ═══════════════
 
 ::ng-deep .image-preview-dialog.p-dialog {
   border-radius: 14px !important; overflow: hidden !important;
@@ -290,7 +621,7 @@ hr {
 }
 
 .img-preview-title {
-  font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text);
+  font-family: var(--brand-mono); font-size: 14px; color: var(--text);
   font-weight: 500; overflow: hidden; text-overflow: ellipsis;
   white-space: nowrap; max-width: 700px;
 }
@@ -305,90 +636,7 @@ hr {
   object-fit: contain; display: block;
 }
 
-// ─── Аудио карточка ───
-
-.preview-audio {
-  cursor: pointer;
-  flex-direction: column !important;
-  gap: 0;
-  transition: background .25s;
-  position: relative;
-  overflow: hidden;
-
-  &:hover {
-    background: var(--bg4) !important;
-
-    .audio-card-bars span { background: var(--text2); transform: scaleY(1.1); }
-    .audio-card-hint { opacity: 1; transform: translateY(0); bottom: 22px; }
-    .audio-card-inner { transform: translateY(-8px); }
-  }
-}
-
-.audio-card-inner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  width: 100%;
-  height: 100%;
-  transition: transform .25s;
-}
-
-.audio-card-bars {
-  display: flex;
-  align-items: flex-end;
-  gap: 5px;
-  height: 48px;
-  transition: gap .25s;
-
-  span {
-    display: block;
-    width: 5px;
-    border-radius: 3px;
-    background: var(--text3);
-    transition: background .25s, transform .25s;
-
-    &:nth-child(1) { height: 20px; }
-    &:nth-child(2) { height: 34px; }
-    &:nth-child(3) { height: 48px; }
-    &:nth-child(4) { height: 28px; }
-    &:nth-child(5) { height: 14px; }
-  }
-
-  &--active span {
-    background: var(--text2);
-    animation: audioBar .8s ease-in-out infinite alternate;
-
-    &:nth-child(1) { animation-delay: 0s; }
-    &:nth-child(2) { animation-delay: .15s; }
-    &:nth-child(3) { animation-delay: .3s; }
-    &:nth-child(4) { animation-delay: .45s; }
-    &:nth-child(5) { animation-delay: .6s; }
-  }
-}
-
-@keyframes audioBar {
-  from { height: 4px; }
-  to   { height: 20px; }
-}
-
-.audio-card-hint {
-  position: absolute;
-  bottom: -20px;
-  left: 0;
-  right: 0;
-  text-align: center;
-  font-size: 11px;
-  font-family: 'DM Sans', sans-serif;
-  color: var(--text2);
-  opacity: 0;
-  transform: translateY(6px);
-  transition: opacity .25s, transform .25s, bottom .25s;
-  pointer-events: none;
-}
-
-// ─── Аудио плеер диалог ───
+// ═══════════════ Аудио плеер (диалог) ═══════════════
 
 ::ng-deep .audio-dialog.p-dialog {
   border-radius: 20px !important;
@@ -476,7 +724,7 @@ hr {
 }
 
 .ap-title {
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--brand-mono);
   font-size: 14px;
   font-weight: 500;
   color: var(--text);
@@ -538,7 +786,7 @@ hr {
   display: flex;
   justify-content: space-between;
   width: 100%;
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--brand-mono);
   font-size: 11px;
   color: var(--text3);
   margin-top: -8px;
@@ -609,48 +857,11 @@ hr {
     cursor: pointer;
     box-shadow: 0 0 0 2px rgba(128,128,128,.15);
   }
+
+  &:focus-visible { box-shadow: 0 0 0 3px rgba(128,128,128,.35); }
 }
 
-// ─── Видео ───
-
-.preview-video {
-  cursor: pointer;
-
-  &:hover .video-thumb { border-color: rgba(255,255,255,.2); }
-  &:hover .video-play-overlay { background: rgba(0,0,0,.15); }
-  &:hover .video-play-btn { background: rgba(255,255,255,.2); border-color: rgba(255,255,255,.4); transform: scale(1.08); }
-}
-
-.video-thumb {
-  width: 100%; height: 100%;
-  border-radius: 8px; overflow: hidden;
-  position: relative; background: #000;
-  display: flex; align-items: center; justify-content: center;
-}
-
-.video-thumb-frame {
-  width: 100%; height: 100%;
-  object-fit: cover; object-position: center;
-  display: block; pointer-events: none; min-height: 160px;
-}
-
-.video-play-overlay {
-  position: absolute; inset: 0;
-  display: flex; align-items: center; justify-content: center;
-  background: rgba(0,0,0,.3); transition: background .2s;
-}
-
-.video-play-btn {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 52px; height: 52px; border-radius: 50%;
-  background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2);
-  backdrop-filter: blur(12px); box-shadow: 0 4px 24px rgba(0,0,0,.35);
-  transition: background .2s, transform .2s, border-color .2s;
-
-  i { font-size: 1rem !important; color: rgba(255,255,255,.9) !important; margin-left: 3px; }
-}
-
-// ─── Видео диалог ───
+// ═══════════════ Видео плеер (диалог) ═══════════════
 
 ::ng-deep .video-dialog.p-dialog {
   border-radius: 14px !important; overflow: hidden !important;
@@ -679,7 +890,7 @@ hr {
   transition: background .2s, transform .15s;
 
   i { font-size: 1.3rem !important; color: #fff !important; }
-  &:hover { background: rgba(0,0,0,.75); transform: scale(1.06); }
+  &:hover { background: var(--brand-accent); border-color: var(--brand-accent); transform: scale(1.06); i { color: var(--brand-accent-ink) !important; } }
 }
 
 .vp-controls {
@@ -701,8 +912,8 @@ hr {
 }
 
 .vp-progress-bg { position: absolute; inset: 7px 0; background: rgba(255,255,255,.15); border-radius: 100px; transition: background .2s; }
-.vp-progress-fill { position: absolute; left: 0; top: 7px; bottom: 7px; background: rgba(255,255,255,.85); border-radius: 100px; pointer-events: none; will-change: width; }
-.vp-progress-thumb { position: absolute; top: 50%; margin-top: -7px; width: 14px; height: 14px; border-radius: 50%; background: #fff; transform: translateX(-50%) scale(0); transition: transform .15s, opacity .15s; opacity: 0; pointer-events: none; box-shadow: 0 0 6px rgba(0,0,0,.5); }
+.vp-progress-fill { position: absolute; left: 0; top: 7px; bottom: 7px; background: var(--brand-accent); border-radius: 100px; pointer-events: none; will-change: width; }
+.vp-progress-thumb { position: absolute; top: 50%; margin-top: -7px; width: 14px; height: 14px; border-radius: 50%; background: var(--brand-accent); transform: translateX(-50%) scale(0); transition: transform .15s, opacity .15s; opacity: 0; pointer-events: none; box-shadow: 0 0 6px rgba(0,0,0,.5); }
 
 .vp-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .vp-bar-left, .vp-bar-right { display: flex; align-items: center; gap: 2px; }
@@ -715,7 +926,7 @@ hr {
   color: rgba(255,255,255,.7); transition: background .15s, color .15s; flex-shrink: 0;
 
   i { font-size: 14px !important; color: inherit !important; }
-  &:hover { background: rgba(255,255,255,.1); color: #fff; }
+  &:hover { background: rgba(255,255,255,.1); color: var(--brand-accent); }
 }
 
 .vp-divider { width: 1px; height: 18px; background: rgba(255,255,255,.12); margin: 0 4px; flex-shrink: 0; }
@@ -724,62 +935,22 @@ hr {
 
 .vp-volume {
   -webkit-appearance: none; width: 100%; height: 3px;
-  border-radius: 100px; background: rgba(255,255,255,.2); outline: none; cursor: pointer;
+  border-radius: 100px; outline: none; cursor: pointer;
+  background: linear-gradient(to right,
+    var(--brand-accent) 0%,
+    var(--brand-accent) var(--volume-pct, 100%),
+    rgba(255,255,255,.22) var(--volume-pct, 100%),
+    rgba(255,255,255,.22) 100%);
 
-  &::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: #fff; cursor: pointer; box-shadow: 0 0 4px rgba(0,0,0,.4); }
+  &::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: var(--brand-accent); cursor: pointer; box-shadow: 0 0 4px rgba(0,0,0,.4); }
+  &::-moz-range-thumb { width: 12px; height: 12px; border: none; border-radius: 50%; background: var(--brand-accent); cursor: pointer; box-shadow: 0 0 4px rgba(0,0,0,.4); }
+  &:focus-visible { box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-accent) 45%, transparent); }
 }
 
-.vp-time { font-family: 'DM Sans', sans-serif; font-size: 12px; color: rgba(255,255,255,.6); white-space: nowrap; margin-left: 6px; font-variant-numeric: tabular-nums; }
-.vp-title { font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 400; color: rgba(255,255,255,.7); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 300px; display: inline-block; }
+.vp-time { font-family: var(--brand-mono); font-size: 12px; color: rgba(255,255,255,.6); white-space: nowrap; margin-left: 6px; font-variant-numeric: tabular-nums; }
+.vp-title { font-family: var(--brand-mono); font-size: 13px; font-weight: 400; color: rgba(255,255,255,.7); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 300px; display: inline-block; }
 
-// ─── Drag & drop overlay ───
-
-.drop-overlay {
-  position: absolute; inset: 0; z-index: 100;
-  background: rgba(10,10,10,.85);
-  border-radius: var(--radius-lg);
-  border: 2px dashed rgba(255,255,255,.3);
-  display: flex; align-items: center; justify-content: center;
-  pointer-events: none; animation: dropFadeIn .15s ease;
-}
-
-@keyframes dropFadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-.drop-overlay-inner {
-  display: flex; flex-direction: column; align-items: center; gap: 16px;
-
-  i { font-size: 3rem !important; color: rgba(255,255,255,.5); }
-  span { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 600; color: rgba(255,255,255,.5); letter-spacing: -.3px; }
-}
-
-// ─── Документ / PDF / ZIP превью ───
-
-.preview-doc {
-  cursor: pointer; flex-direction: column !important; gap: 0;
-  transition: background .25s; position: relative; overflow: hidden;
-
-  i { font-size: 3.8rem !important; color: var(--text3) !important; transition: color .25s, transform .25s; transform: translateY(0); }
-
-  .doc-open-hint {
-    position: absolute; bottom: -20px; left: 0; right: 0;
-    text-align: center; font-size: 11px; font-family: 'DM Sans', sans-serif;
-    color: var(--text2); opacity: 0; transform: translateY(6px);
-    transition: opacity .25s, transform .25s, bottom .25s; pointer-events: none;
-  }
-
-  &:hover {
-    background: var(--bg4) !important;
-    i { transform: translateY(-10px); }
-    .doc-open-hint { opacity: 1; transform: translateY(0); bottom: 22px; }
-  }
-}
-
-.preview-pdf { i { color: rgba(231,76,60,.45) !important; } &:hover i { color: rgba(231,76,60,.8) !important; } }
-.preview-zip { i { color: rgba(243,156,18,.45) !important; } &:hover i { color: rgba(243,156,18,.8) !important; } }
-
-.doc-open-hint { font-size: 11px; color: var(--text3); font-family: 'DM Sans', sans-serif; }
-
-// ─── Диалог просмотра документов ───
+// ═══════════════ Документы / PDF / ZIP (диалог) ═══════════════
 
 ::ng-deep .doc-dialog.p-dialog {
   border-radius: 14px !important; overflow: hidden !important;
@@ -796,7 +967,7 @@ hr {
 
 .doc-header-left { display: flex; align-items: center; gap: 10px; i { font-size: 16px !important; color: var(--text2); } }
 
-.doc-title { font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 700px; }
+.doc-title { font-family: var(--brand-mono); font-size: 14px; color: var(--text); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 700px; }
 
 .doc-content { flex: 1; overflow-y: auto; overflow-x: hidden; background: #fff; scrollbar-width: thin; }
 .pdf-content { background: #525659 !important; }
@@ -830,9 +1001,9 @@ hr {
 .zip-entry-left { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1; }
 .zip-icon-folder { font-size: 14px !important; color: var(--text2) !important; flex-shrink: 0; }
 .zip-icon-file   { font-size: 14px !important; color: var(--text3) !important; flex-shrink: 0; }
-.zip-entry-name { font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.zip-entry-name { font-family: var(--brand-mono); font-size: 13px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .zip-entry-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-.zip-entry-size { font-family: 'DM Sans', sans-serif; font-size: 11px; color: var(--text3); white-space: nowrap; }
+.zip-entry-size { font-family: var(--brand-mono); font-size: 11px; color: var(--text3); white-space: nowrap; }
 
 .zip-download-btn {
   width: 26px; height: 26px; padding: 0; background: transparent;
@@ -844,7 +1015,7 @@ hr {
   &:hover { background: var(--bg4); border-color: var(--text3); i { color: var(--text) !important; } }
 }
 
-.sheet-tab { display: inline-block; padding: 4px 12px; background: #e8e8e8; border: 1px solid #ccc; border-bottom: none; font-size: 12px; font-family: 'DM Sans', sans-serif; cursor: pointer; color: #333; }
+.sheet-tab { display: inline-block; padding: 4px 12px; background: #e8e8e8; border: 1px solid #ccc; border-bottom: none; font-size: 12px; font-family: var(--brand-mono); cursor: pointer; color: #333; }
 
 .doc-ppt-msg, .doc-error {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -854,7 +1025,7 @@ hr {
   p { font-size: 14px; line-height: 1.5; margin: 0; }
 }
 
-// ─── Диалог переименования ───
+// ═══════════════ Диалог переименования ═══════════════
 
 ::ng-deep .rename-dialog.p-dialog {
   background: var(--bg2) !important; border: 1px solid var(--border) !important;
@@ -864,7 +1035,7 @@ hr {
     background: var(--bg2) !important; border-bottom: 1px solid var(--border) !important;
     border-radius: 16px 16px 0 0 !important; padding: 16px 20px !important;
 
-    .p-dialog-title { font-family: 'Syne', sans-serif !important; font-size: 15px !important; font-weight: 700 !important; color: var(--text) !important; letter-spacing: -.3px !important; }
+    .p-dialog-title { font-family: var(--brand-display) !important; font-size: 15px !important; font-weight: 700 !important; color: var(--text) !important; letter-spacing: -.3px !important; }
     .p-dialog-header-icon { color: var(--text3) !important; &:hover { color: var(--text2) !important; background: var(--bg3) !important; } }
   }
 
@@ -887,7 +1058,7 @@ hr {
 .rename-field {
   display: flex; flex-direction: column; gap: 6px;
 
-  label { font-size: 11px; font-weight: 600; color: var(--text3); font-family: 'DM Sans', sans-serif; letter-spacing: .5px; text-transform: uppercase; }
+  label { font-size: 11px; font-weight: 600; color: var(--text3); font-family: var(--brand-mono); letter-spacing: .5px; text-transform: uppercase; }
 
   .p-inputtext {
     background: var(--bg3) !important; border: 1px solid var(--border2) !important;
@@ -898,7 +1069,7 @@ hr {
   }
 }
 
-// ─── Confirm диалог ───
+// ═══════════════ Confirm диалог ═══════════════
 
 ::ng-deep .confirm-dialog.p-dialog {
   border-radius: 14px !important; overflow: hidden !important;
@@ -920,13 +1091,13 @@ hr {
 }
 
 .confirm-body { display: flex; flex-direction: column; gap: 6px; }
-.confirm-title { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; color: var(--text); margin: 0; letter-spacing: -.3px; }
-.confirm-message { font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text2); margin: 0; line-height: 1.5; }
+.confirm-title { font-family: var(--brand-display); font-size: 15px; font-weight: 700; color: var(--text); margin: 0; letter-spacing: -.3px; }
+.confirm-message { font-family: var(--brand-mono); font-size: 13px; color: var(--text2); margin: 0; line-height: 1.5; }
 
 .confirm-actions { display: flex; gap: 8px; justify-content: flex-end; padding-top: 8px; border-top: 1px solid var(--border); margin-top: 4px; }
 
 ::ng-deep .confirm-actions .p-button {
-  border-radius: 8px !important; font-family: 'DM Sans', sans-serif !important; font-size: 13px !important;
+  border-radius: 8px !important; font-family: var(--brand-mono) !important; font-size: 13px !important;
 
   &.p-button-text { color: var(--text2) !important; background: transparent !important; border: none !important; &:hover { color: var(--text) !important; background: var(--bg3) !important; } }
 }
@@ -936,7 +1107,7 @@ hr {
   &:hover { background: var(--bg4) !important; }
 }
 
-// ─── Диалог перемещения ───
+// ═══════════════ Диалог перемещения ═══════════════
 
 ::ng-deep .move-dialog.p-dialog {
   background: var(--bg2) !important; border: 1px solid var(--border) !important;
@@ -946,7 +1117,7 @@ hr {
     background: var(--bg2) !important; border-bottom: 1px solid var(--border) !important;
     border-radius: 16px 16px 0 0 !important; padding: 16px 20px !important;
 
-    .p-dialog-title { font-family: 'Syne', sans-serif !important; font-size: 15px !important; font-weight: 700 !important; color: var(--text) !important; letter-spacing: -.3px !important; }
+    .p-dialog-title { font-family: var(--brand-display) !important; font-size: 15px !important; font-weight: 700 !important; color: var(--text) !important; letter-spacing: -.3px !important; }
     .p-dialog-header-icon { color: var(--text3) !important; &:hover { color: var(--text2) !important; background: var(--bg3) !important; } }
   }
 
@@ -973,7 +1144,7 @@ hr {
   background: var(--bg3); border: 1px solid var(--border); border-radius: 8px;
 
   i { font-size: 14px !important; color: var(--text2) !important; flex-shrink: 0; }
-  span { font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  span { font-family: var(--brand-mono); font-size: 13px; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 }
 
 .move-tree { display: flex; flex-direction: column; gap: 2px; max-height: 300px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
@@ -983,7 +1154,7 @@ hr {
   border-radius: 8px; cursor: pointer; transition: background .15s; border: 1px solid transparent;
 
   i { font-size: 13px !important; color: var(--text2) !important; flex-shrink: 0; }
-  span { font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text2); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  span { font-family: var(--brand-mono); font-size: 13px; color: var(--text2); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
   &:hover { background: var(--bg3); span { color: var(--text); } }
   &--active { background: var(--bg3) !important; border-color: var(--border2) !important; span { color: var(--text) !important; } i { color: var(--text) !important; } }
@@ -991,42 +1162,19 @@ hr {
 }
 
 .move-check { font-size: 11px !important; color: var(--text) !important; flex-shrink: 0; }
-.move-current-label { font-size: 10px !important; color: var(--text3) !important; font-family: 'DM Sans', sans-serif; flex-shrink: 0; }
+.move-current-label { font-size: 10px !important; color: var(--text3) !important; font-family: var(--brand-mono); flex-shrink: 0; }
 
-// ─── Пустое состояние ───
+// ═══════════════ Адаптив (≤768px) ═══════════════
 
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  gap: 12px;
-  text-align: center;
-  padding: 40px;
-  position: relative;
-  z-index: 1;
+@media (max-width: 768px) {
+  .fs-section { padding: 0 12px; }
 
-  i {
-    font-size: 3rem !important;
-    color: var(--text3) !important;
-    margin-bottom: 4px;
+  .fs-files {
+    grid-template-columns: repeat(auto-fill, minmax(144px, 1fr));
+    gap: 10px;
   }
-}
 
-.empty-title {
-  font-family: 'Syne', sans-serif;
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--text3);
-  letter-spacing: -.3px;
-  margin: 0;
-}
+  .fs-folders .folder-card { width: 100%; }
 
-.empty-sub {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 13px;
-  color: var(--text3);
-  font-weight: 300;
-  margin: 0;
+  .fs-crumbs { padding: 12px 12px 0; overflow-x: auto; }
 }

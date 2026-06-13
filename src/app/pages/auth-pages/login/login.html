@@ -1,82 +1,251 @@
+<div class="auth">
 
-<div class="page-actions">
-  <button class="page-btn" routerLink="/">
-    <i class="pi pi-arrow-left"></i>
-  </button>
-  <button class="page-btn" (click)="themeService.toggle()">
-    <i [class]="isDark() ? 'pi pi-sun' : 'pi pi-moon'"></i>
-  </button>
-</div>
+  <div class="page-actions">
+    <button type="button" class="page-btn"
+      (click)="screen() !== 'login' ? backToLogin() : null"
+      [routerLink]="screen() === 'login' ? '/' : null"
+      aria-label="Назад">
+      <i class="pi pi-arrow-left" aria-hidden="true"></i>
+    </button>
+    <button type="button" class="page-btn" (click)="themeService.toggle()" aria-label="Сменить тему">
+      <i [class]="isDark() ? 'pi pi-sun' : 'pi pi-moon'" aria-hidden="true"></i>
+    </button>
+  </div>
 
-<div class="form-container">
-  <form (submit)="onSubmit($event)" novalidate>
-    <div class="form-card">
+  <!-- ───── Бренд-панель ───── -->
+  <aside class="auth__brand" aria-hidden="true">
+    <span class="auth__ghost">∞</span>
 
-      <img class="logotype" [src]="imagePath()" alt="infinity">
-
-      <div class="inputs-form">
-
-        <div class="field-wrap">
-          <div class="input-field" [class.input-field--error]="showUsernameError()">
-            <i class="pi pi-user field-icon"></i>
-            <input pInputText [placeholder]="t().usernamePlaceholder" [formField]="loginForm.username"/>
-          </div>
-          @if (showUsernameError()) {
-            <span class="field-error">{{ usernameError() }}</span>
-          }
-        </div>
-
-        <div class="field-wrap">
-          <div class="input-field" [class.input-field--error]="showPasswordError()">
-            <i class="pi pi-lock field-icon"></i>
-            <p-password
-              [placeholder]="t().passwordPlaceholder"
-              [toggleMask]="true"
-              [feedback]="false"
-              [formField]="$any(loginForm.passwordHash)"
-            />
-          </div>
-          @if (showPasswordError()) {
-            <span class="field-error">{{ passwordError() }}</span>
-          }
-        </div>
-
+    <div class="auth__brand-inner">
+      <div class="auth__brand-content">
+        <img class="auth__brand-logo" src="infinity.svg" alt="Infinity">
+        <h2 class="auth__brand-title">{{ t().panelTitle }}</h2>
+        <p class="auth__brand-text">{{ t().panelText }}</p>
       </div>
 
-      @if (errorMessage()) {
-        <div class="error-msg">{{ errorMessage() }}</div>
-      }
-
-      <div class="btn-submit">
-        <p-button
-          type="submit"
-          [label]="t().submitBtn"
-          [loading]="isSubmitting()"
-          [disabled]="isSubmitting()"
-        />
+      <div class="auth__brand-foot">
+        <span>RU · EN</span>
+        <span>infinity-vault.com</span>
       </div>
-
-
-      <div class="auth-divider">
-        <span class="auth-divider-line"></span>
-        <span class="auth-divider-text">{{ t().dividerOr }}</span>
-        <span class="auth-divider-line"></span>
-      </div>
-
-
-      <a class="btn-google" [href]="googleAuthUrl">
-        <svg class="btn-google-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
-          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-        </svg>
-        <span>{{ t().googleBtn }}</span>
-      </a>
-
-      <p class="notreg">{{ t().noAccount }}</p>
-      <p-button class="go-login" routerLink="/registration" [label]="t().registerBtn"/>
-
     </div>
-  </form>
+  </aside>
+
+  <!-- ───── Форма ───── -->
+  <main class="auth__main">
+
+    @if (screen() === 'login') {
+      <form class="auth__form" (submit)="onSubmit($event)" novalidate>
+
+        <div class="auth__head">
+          <img class="auth__logo" [src]="imagePath()" alt="Infinity">
+          <h1 class="auth__title">{{ t().title }}</h1>
+          <p class="auth__subtitle">{{ t().subtitle }}</p>
+        </div>
+
+        <div class="inputs-form">
+
+          <div class="field-wrap">
+            <label for="login-username" class="sr-only">{{ t().usernamePlaceholder }}</label>
+            <div class="input-field" [class.input-field--error]="showUsernameError()">
+              <i class="pi pi-user field-icon" aria-hidden="true"></i>
+              <input id="login-username" autocomplete="username" pInputText [placeholder]="t().usernamePlaceholder" [formField]="loginForm.username"/>
+            </div>
+            @if (showUsernameError()) {
+              <span class="field-error">{{ usernameError() }}</span>
+            }
+          </div>
+
+          <div class="field-wrap">
+            <label for="login-password" class="sr-only">{{ t().passwordPlaceholder }}</label>
+            <div class="input-field" [class.input-field--error]="showPasswordError()">
+              <i class="pi pi-lock field-icon" aria-hidden="true"></i>
+              <p-password
+                inputId="login-password"
+                autocomplete="current-password"
+                [placeholder]="t().passwordPlaceholder"
+                [toggleMask]="true"
+                [feedback]="false"
+                [formField]="$any(loginForm.passwordHash)"
+              />
+            </div>
+            @if (showPasswordError()) {
+              <span class="field-error">{{ passwordError() }}</span>
+            }
+          </div>
+
+        </div>
+
+        <div class="login-row">
+          <label class="remember">
+            <input type="checkbox" class="remember-input" [checked]="rememberMe()" (change)="toggleRemember()"/>
+            <span class="remember-box" aria-hidden="true"><i class="pi pi-check"></i></span>
+            <span class="remember-label">{{ t().rememberMe }}</span>
+          </label>
+          <button type="button" class="forgot-link" (click)="openForgot()">{{ t().forgotLink }}</button>
+        </div>
+
+        @if (errorMessage()) {
+          <div class="error-msg">{{ errorMessage() }}</div>
+        }
+
+        <div class="btn-submit">
+          <p-button
+            type="submit"
+            [label]="t().submitBtn"
+            [loading]="isSubmitting()"
+            [disabled]="isSubmitting()"
+          />
+        </div>
+
+        <div class="auth-divider">
+          <span class="auth-divider-line"></span>
+          <span class="auth-divider-text">{{ t().dividerOr }}</span>
+          <span class="auth-divider-line"></span>
+        </div>
+
+        <a class="btn-google" [href]="googleAuthUrl">
+          <svg class="btn-google-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+          </svg>
+          <span>{{ t().googleBtn }}</span>
+        </a>
+
+        <p class="notreg">
+          {{ t().noAccount }}
+          <a class="notreg__link" routerLink="/registration">{{ t().registerBtn }}</a>
+        </p>
+
+      </form>
+    }
+
+    @if (screen() === 'forgot') {
+      <form class="auth__form" (submit)="submitForgot($event)" novalidate>
+
+        <div class="auth__head">
+          <img class="auth__logo" [src]="imagePath()" alt="Infinity">
+          <h1 class="auth__title">{{ t().forgotTitle }}</h1>
+          <p class="auth__subtitle">{{ t().forgotSubtitle }}</p>
+        </div>
+
+        <div class="inputs-form">
+          <div class="field-wrap">
+            <label for="forgot-email" class="sr-only">{{ t().forgotEmailPlaceholder }}</label>
+            <div class="input-field" [class.input-field--error]="showForgotEmailError()">
+              <i class="pi pi-at field-icon" aria-hidden="true"></i>
+              <input id="forgot-email" type="email" autocomplete="email" pInputText [placeholder]="t().forgotEmailPlaceholder" [formField]="forgotForm.email"/>
+            </div>
+            @if (showForgotEmailError()) {
+              <span class="field-error">{{ forgotEmailError() }}</span>
+            }
+          </div>
+        </div>
+
+        @if (errorMessage()) {
+          <div class="error-msg">{{ errorMessage() }}</div>
+        }
+
+        <div class="btn-submit">
+          <p-button
+            type="submit"
+            [label]="t().forgotSubmit"
+            [loading]="isSendingCode()"
+            [disabled]="isSendingCode()"
+          />
+        </div>
+
+        <p class="notreg">
+          <a class="notreg__link" (click)="backToLogin()">{{ t().backToLogin }}</a>
+        </p>
+
+      </form>
+    }
+
+    @if (screen() === 'reset') {
+      <form class="auth__form" (submit)="submitReset($event)" novalidate>
+
+        <div class="verify-header">
+          <div class="verify-icon"><i class="pi pi-lock"></i></div>
+          <h2 class="auth__title">{{ t().resetTitle }}</h2>
+          <p class="verify-subtitle">
+            {{ t().resetSubtitle }}<br>
+            <strong>{{ pendingEmail() }}</strong>
+          </p>
+        </div>
+
+        <div class="code-inputs" role="group" [attr.aria-label]="t().resetTitle">
+          @for (digit of codeDigits(); track $index) {
+            <input
+              [id]="'reset-code-' + $index"
+              class="code-input"
+              [class.code-input--error]="!!codeError()"
+              [class.code-input--filled]="digit !== ''"
+              type="text"
+              inputmode="numeric"
+              autocomplete="one-time-code"
+              maxlength="1"
+              [attr.aria-label]="'Цифра ' + ($index + 1) + ' из 6'"
+              [value]="digit"
+              (input)="onCodeInput($event, $index)"
+              (keydown)="onCodeKeydown($event, $index)"
+              (paste)="onCodePaste($event)"
+              [disabled]="isResetting()"
+            />
+          }
+        </div>
+
+        @if (codeError()) {
+          <div class="error-msg">{{ codeError() }}</div>
+        }
+
+        <div class="inputs-form">
+          <div class="field-wrap">
+            <label for="reset-password" class="sr-only">{{ t().resetPasswordPlaceholder }}</label>
+            <div class="input-field" [class.input-field--error]="showResetPasswordError()">
+              <i class="pi pi-lock field-icon" aria-hidden="true"></i>
+              <p-password
+                inputId="reset-password"
+                autocomplete="new-password"
+                [placeholder]="t().resetPasswordPlaceholder"
+                [toggleMask]="true"
+                [feedback]="false"
+                [formField]="$any(resetForm.passwordHash)"
+              />
+            </div>
+            @if (showResetPasswordError()) {
+              <span class="field-error">{{ resetPasswordError() }}</span>
+            }
+          </div>
+        </div>
+
+        <div class="btn-submit">
+          <p-button
+            type="submit"
+            [label]="t().resetSubmit"
+            [loading]="isResetting()"
+            [disabled]="isResetting() || !codeComplete()"
+          />
+        </div>
+
+        <div class="resend-wrap">
+          @if (resendCooldown() > 0) {
+            <span class="resend-timer">{{ t().resendTimerPrefix }} {{ resendCooldown() }} {{ t().resendTimerSuffix }}</span>
+          } @else {
+            <button type="button" class="resend-btn" (click)="resendResetCode()" [disabled]="isResending()">
+              {{ isResending() ? t().resending : t().resendBtn }}
+            </button>
+          }
+        </div>
+
+        <p class="notreg">
+          <a class="notreg__link" (click)="backToLogin()">{{ t().backToLogin }}</a>
+        </p>
+
+      </form>
+    }
+
+  </main>
+
 </div>

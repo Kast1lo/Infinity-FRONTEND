@@ -1,107 +1,111 @@
-<div class="card-toolbar">
-  <div class="toolbar">
-    <p-toolbar>
-      <ng-template #start>
-        <input
-          #folderInput
-          type="file"
-          style="display:none"
-          webkitdirectory
-          multiple
-          (change)="onFolderSelected($event)"
-        />
-        <p-fileUpload
-          mode="basic"
-          name="file"
-          chooseIcon="pi pi-cloud-upload"
-          [chooseLabel]="t().uploadFileBtn"
-          severity="secondary"
-          [multiple]="true"
-          [auto]="true"
-          [customUpload]="true"
-          (uploadHandler)="onFilesSelected($event)"
-        />
-        <p-button
-          icon="pi pi-folder-open"
-          text
-          severity="secondary"
-          [label]="t().uploadFolderBtn"
-          [loading]="folderUploading()"
-          [disabled]="folderUploading()"
-          (onClick)="triggerFolderUpload()"
-        />
-        <hr class="toolbar-divider">
-        <p-button
-          icon="pi pi-folder-plus"
-          text
-          severity="secondary"
-          [label]="t().createFolderBtn"
-          (onClick)="openDialog()"
-        />
-        <hr class="toolbar-divider">
-        <div class="search-wrap">
-          <i class="pi pi-search search-icon"></i>
-          <input
-            class="search-input"
-            type="text"
-            [placeholder]="t().searchPlaceholder"
-            [value]="searchQuery()"
-            (input)="onSearchInput($event)"
-          />
-          @if (searchQuery()) {
-            <button class="search-clear" (click)="clearSearch()">
-              <i class="pi pi-times"></i>
-            </button>
-          }
-        </div>
+<div class="fs-bar">
 
-        <hr class="toolbar-divider">
+  <!-- скрытый input для загрузки папки -->
+  <input
+    #folderInput
+    type="file"
+    style="display:none"
+    webkitdirectory
+    multiple
+    (change)="onFolderSelected($event)"
+  />
 
-        <div class="filter-tabs">
-          @for (f of filters(); track f.value) {
-            <button
-              class="filter-tab"
-              [class.filter-tab--active]="activeFilter() === f.value"
-              (click)="setFilter(f.value)"
-            >
-              <i [class]="'pi ' + f.icon"></i>
-              <span>{{ f.label }}</span>
-            </button>
-          }
-        </div>
+  <!-- Ряд 1: действия + действия над выбранным -->
+  <div class="fs-bar-row fs-bar-row--top">
+    <div class="fs-actions">
+      <p-fileUpload
+        mode="basic"
+        name="file"
+        chooseIcon="pi pi-cloud-upload"
+        [chooseLabel]="t().uploadFileBtn"
+        severity="secondary"
+        [multiple]="true"
+        [auto]="true"
+        [customUpload]="true"
+        (uploadHandler)="onFilesSelected($event)"
+      />
+      <p-button
+        icon="pi pi-folder-open"
+        text
+        severity="secondary"
+        [label]="t().uploadFolderBtn"
+        [loading]="folderUploading()"
+        [disabled]="folderUploading()"
+        (onClick)="triggerFolderUpload()"
+      />
+      <p-button
+        icon="pi pi-folder-plus"
+        text
+        severity="secondary"
+        [label]="t().createFolderBtn"
+        (onClick)="openDialog()"
+      />
+    </div>
 
-      </ng-template>
+    <div class="fs-sel" [class.fs-sel--on]="!!selectedItem()">
+      <button
+        class="fs-sel-btn"
+        [disabled]="!selectedItem()"
+        [pTooltip]="t().downloadTooltip"
+        tooltipPosition="bottom"
+        (click)="downloadSelected()"
+        aria-label="Скачать"
+      >
+        <i class="pi pi-download"></i>
+      </button>
+      <button
+        class="fs-sel-btn"
+        [disabled]="!selectedItem()"
+        [pTooltip]="t().deleteTooltip"
+        tooltipPosition="bottom"
+        (click)="deleteSelected()"
+        aria-label="Удалить"
+      >
+        <i class="pi pi-trash"></i>
+      </button>
+      <button
+        class="fs-sel-btn fs-sel-btn--share"
+        [disabled]="!selectedItem() || !('downloadUrl' in selectedItem()!)"
+        [pTooltip]="t().shareTooltip"
+        tooltipPosition="bottom"
+        (click)="shareSelected()"
+      >
+        <i class="pi pi-share-alt"></i>
+        <span>{{ t().shareLabel }}</span>
+      </button>
+    </div>
+  </div>
 
-      <ng-template #end>
-        <div class="buttons-selected">
-          <p-button
-            icon="pi pi-download"
-            variant="outlined"
-            [disabled]="!selectedItem()"
-            [pTooltip]="t().downloadTooltip"
-            tooltipPosition="bottom"
-            (click)="downloadSelected()"
-          />
-          <p-button
-            icon="pi pi-trash"
-            variant="outlined"
-            [disabled]="!selectedItem()"
-            [pTooltip]="t().deleteTooltip"
-            tooltipPosition="bottom"
-            (onClick)="deleteSelected()"
-          />
-          <p-button
-            icon="pi pi-share-alt"
-            variant="outlined"
-            [label]="t().shareLabel"
-            [disabled]="!selectedItem() || !('downloadUrl' in selectedItem()!)"
-            [pTooltip]="t().shareTooltip"
-            tooltipPosition="bottom"
-            (onClick)="shareSelected()"
-          />
-        </div>
-      </ng-template>
-    </p-toolbar>
+  <!-- Ряд 2: фильтры + поиск -->
+  <div class="fs-bar-row fs-bar-row--bottom">
+    <div class="fs-filters">
+      @for (f of filters(); track f.value) {
+        <button
+          class="fs-filter"
+          [class.fs-filter--active]="activeFilter() === f.value"
+          (click)="setFilter(f.value)"
+        >
+          <i [class]="'pi ' + f.icon"></i>
+          <span>{{ f.label }}</span>
+        </button>
+      }
+    </div>
+
+    <div class="fs-search">
+      <i class="pi pi-search fs-search-ic"></i>
+      <input
+        class="fs-search-input"
+        type="text"
+        [placeholder]="t().searchPlaceholder"
+        [value]="searchQuery()"
+        (input)="onSearchInput($event)"
+      />
+      @if (searchQuery()) {
+        <button class="fs-search-clear" (click)="clearSearch()" aria-label="Очистить">
+          <i class="pi pi-times"></i>
+        </button>
+      }
+    </div>
   </div>
 </div>
 

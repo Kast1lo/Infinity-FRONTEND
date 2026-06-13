@@ -1,8 +1,24 @@
-.infinity-life{
-    display: flex;
-    flex-direction:row;
+.infinity-life {
+  display: flex;
+  flex-direction: row;
+  height: 100vh;
 }
-.tasks-system{
-    width: 100%;
-    overflow: hidden;
+
+.tasks-system {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .infinity-life,
+  .tasks-system {
+    height: 100dvh;
+  }
+
+  .tasks-system {
+    padding-bottom: 60px;
+    overflow: visible;
+  }
 }

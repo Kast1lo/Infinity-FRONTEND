@@ -27,8 +27,16 @@ export class FileSystem {
   readonly searchQuery  = signal<string>('');
   readonly activeFilter = signal<FileFilter>('all');
 
+  private _trashFiles   = signal<FileItem[]>([]);
+  private _trashFolders = signal<FolderItem[]>([]);
+  private _trashLoading = signal<boolean>(false);
+
   files        = computed(() => this._files());
   folders      = computed(() => this._folders());
+  trashFiles   = computed(() => this._trashFiles());
+  trashFolders = computed(() => this._trashFolders());
+  trashLoading = computed(() => this._trashLoading());
+  trashCount   = computed(() => this._trashFiles().length + this._trashFolders().length);
   selectedItem = computed(() => this._selectedItem());
   loading      = computed(() => this._loading());
   error        = computed(() => this._error());
@@ -307,6 +315,55 @@ export class FileSystem {
     );
   }
 
+  // ─── Корзина ───
+
+  loadTrash() {
+    this._trashLoading.set(true);
+    this.http.get<{ files: FileItem[]; folders: FolderItem[] }>(
+      `${this.apiUrl}/file-system/trash`, { withCredentials: true }
+    ).pipe(
+      catchError(err => this.handleError(err, 'Не удалось загрузить корзину'))
+    ).subscribe({
+      next: (res) => {
+        this._trashFiles.set(res?.files ?? []);
+        this._trashFolders.set(res?.folders ?? []);
+        this._trashLoading.set(false);
+      },
+      error: () => { this._trashLoading.set(false); },
+    });
+  }
+
+  restoreItem(id: string, type: 'file' | 'folder') {
+    return this.http.patch(
+      `${this.apiUrl}/file-system/restore/${id}?type=${type}`, {}, { withCredentials: true }
+    ).pipe(
+      catchError(err => this.handleError(err, 'Не удалось восстановить')),
+      tap(() => {
+        this.loadTrash();
+        this.loadTree();
+        this.loadFiles(this.currentFolderId());
+      }),
+    );
+  }
+
+  permanentDelete(id: string, type: 'file' | 'folder') {
+    return this.http.delete(
+      `${this.apiUrl}/file-system/trash/${id}?type=${type}`, { withCredentials: true }
+    ).pipe(
+      catchError(err => this.handleError(err, 'Не удалось удалить навсегда')),
+      tap(() => this.loadTrash()),
+    );
+  }
+
+  emptyTrash() {
+    return this.http.delete(
+      `${this.apiUrl}/file-system/trash`, { withCredentials: true }
+    ).pipe(
+      catchError(err => this.handleError(err, 'Не удалось очистить корзину')),
+      tap(() => this.loadTrash()),
+    );
+  }
+
   createFolder(name: string, parentId: string | null = null) {
     this._loading.set(true);
     this._error.set(null);
@@ -342,6 +399,23 @@ export class FileSystem {
       { withCredentials: true }
     ).pipe(
       catchError(err => this.handleError(err, 'Не удалось переместить файл')),
+      tap({
+        next: () => this.refreshAfterUpload(this.currentFolderId()),
+      }),
+    );
+  }
+
+  // Перемещает несколько файлов одним пакетом и обновляет дерево один раз
+  moveFiles(fileIds: string[], targetFolderId: string | null) {
+    const requests = fileIds.map(id =>
+      this.http.patch(
+        `${this.apiUrl}/file-system/move/${id}`,
+        { folderId: targetFolderId },
+        { withCredentials: true }
+      )
+    );
+    return forkJoin(requests).pipe(
+      catchError(err => this.handleError(err, 'Не удалось переместить файлы')),
       tap({
         next: () => this.refreshAfterUpload(this.currentFolderId()),
       }),

@@ -10,4 +10,5 @@ export interface FileItem {
   updatedAt: string;
   isShared: boolean;
   downloadUrl: string;
+  deletedAt?: string | null;
 }

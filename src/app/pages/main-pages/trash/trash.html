@@ -1,0 +1,120 @@
+<div class="tr-root">
+  <app-side-bar></app-side-bar>
+
+  <main class="tr-main">
+    <div class="tr-shell">
+
+      <!-- Шапка -->
+      <header class="tr-head">
+        <div class="tr-head-text">
+          <span class="tr-eyebrow">{{ t().eyebrow }}</span>
+          <h1 class="tr-title">{{ t().title }}</h1>
+          <p class="tr-subtitle">{{ t().subtitle }}</p>
+        </div>
+        @if (!isEmpty()) {
+          <button class="tr-empty-btn" (click)="askEmpty()">
+            <i class="pi pi-trash"></i> {{ t().emptyTrashBtn }}
+          </button>
+        }
+      </header>
+
+      <!-- Тело -->
+      <div class="tr-body">
+        @if (loading()) {
+          <div class="tr-spin"><p-progressSpinner strokeWidth="3"/></div>
+        } @else if (isEmpty()) {
+          <div class="tr-empty">
+            <div class="tr-empty-ic"><i class="pi pi-trash"></i></div>
+            <h3 class="tr-empty-title">{{ t().empty }}</h3>
+            <p class="tr-empty-sub">{{ t().emptySub }}</p>
+          </div>
+        } @else {
+
+          <!-- Папки -->
+          @if (folders().length > 0) {
+            <section class="tr-section">
+              <div class="tr-sec-head">
+                <span class="tr-sec-label">{{ t().foldersLabel }}</span>
+                <span class="tr-sec-count">{{ folders().length }}</span>
+                <span class="tr-sec-rule"></span>
+              </div>
+              <div class="tr-grid">
+                @for (folder of folders(); track folder.id) {
+                  <article class="tr-card">
+                    <div class="tr-card-ic tr-card-ic--folder"><i class="pi pi-folder"></i></div>
+                    <div class="tr-card-info">
+                      <span class="tr-card-name" [title]="folder.name">{{ folder.name | decodeURIComponent }}</span>
+                      @if (folder.deletedAt) {
+                        <span class="tr-card-meta">{{ t().deletedPrefix }} {{ folder.deletedAt | date:'dd MMM yyyy' }}</span>
+                      }
+                    </div>
+                    <div class="tr-card-actions">
+                      <button class="tr-act tr-act--restore" (click)="restore(folder.id, 'folder')" [title]="t().restore">
+                        <i class="pi pi-replay"></i>
+                      </button>
+                      <button class="tr-act tr-act--delete" (click)="askDelete(folder, 'folder')" [title]="t().deleteForever">
+                        <i class="pi pi-trash"></i>
+                      </button>
+                    </div>
+                  </article>
+                }
+              </div>
+            </section>
+          }
+
+          <!-- Файлы -->
+          @if (files().length > 0) {
+            <section class="tr-section">
+              <div class="tr-sec-head">
+                <span class="tr-sec-label">{{ t().filesLabel }}</span>
+                <span class="tr-sec-count">{{ files().length }}</span>
+                <span class="tr-sec-rule"></span>
+              </div>
+              <div class="tr-grid">
+                @for (file of files(); track file.id) {
+                  <article class="tr-card">
+                    <div class="tr-card-ic"><i [class]="'pi ' + getFileIcon(file.mimeType)"></i></div>
+                    <div class="tr-card-info">
+                      <span class="tr-card-name" [title]="file.name">{{ file.name | decodeURIComponent }}</span>
+                      <span class="tr-card-meta">
+                        {{ formatSize(file.size) }}
+                        @if (file.deletedAt) { · {{ t().deletedPrefix }} {{ file.deletedAt | date:'dd MMM yyyy' }} }
+                      </span>
+                    </div>
+                    <div class="tr-card-actions">
+                      <button class="tr-act tr-act--restore" (click)="restore(file.id, 'file')" [title]="t().restore">
+                        <i class="pi pi-replay"></i>
+                      </button>
+                      <button class="tr-act tr-act--delete" (click)="askDelete(file, 'file')" [title]="t().deleteForever">
+                        <i class="pi pi-trash"></i>
+                      </button>
+                    </div>
+                  </article>
+                }
+              </div>
+            </section>
+          }
+
+        }
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- Подтверждение -->
+<p-dialog [(visible)]="confirmVisible" [modal]="true" [draggable]="false" [resizable]="false"
+  [closable]="false" [style]="{ width: '420px' }" styleClass="tr-confirm-dialog">
+  <ng-template pTemplate="header"><span></span></ng-template>
+  <div class="tr-confirm">
+    <div class="tr-confirm-ic"><i class="pi pi-exclamation-triangle"></i></div>
+    <h3 class="tr-confirm-title">{{ confirmTitle() }}</h3>
+    <p class="tr-confirm-msg">{{ confirmMessage() }}</p>
+    <div class="tr-confirm-actions">
+      <button class="tr-confirm-btn tr-confirm-btn--ghost" (click)="closeConfirm()">{{ t().cancel }}</button>
+      <button class="tr-confirm-btn tr-confirm-btn--danger" (click)="confirmYes()">{{ t().confirm }}</button>
+    </div>
+  </div>
+</p-dialog>
+
+<p-toast key="br" position="bottom-right"/>

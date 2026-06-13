@@ -1,149 +1,151 @@
 :host {
-  --bg:        #0a0a0a;
-  --bg2:       #111111;
-  --bg3:       #1a1a1a;
-  --border:    #222222;
-  --border2:   #2e2e2e;
-  --text:      #f0f0f0;
-  --text2:     #888888;
-  --text3:     #444444;
-  --dot-color: rgba(255,255,255,.018);
+  --bg:      #0a0a0a;
+  --bg2:     #111111;
+  --bg3:     #1a1a1a;
+  --border:  #222222;
+  --border2: #2e2e2e;
+  --text:    #f0f0f0;
+  --text2:   #8a8a8a;
+  --text3:   #4a4a4a;
+  --shadow:  rgba(0,0,0,.4);
+  --danger:  #e05555;
 
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
+  display: block;
+  flex: 0 0 248px;
 }
 
 :host-context(.light-theme) {
-  --bg:        #f8f8f8;
-  --bg2:       #ffffff;
-  --bg3:       #f2f2f2;
-  --border:    #e0e0e0;
-  --border2:   #d0d0d0;
-  --text:      #111111;
-  --text2:     #555555;
-  --text3:     #aaaaaa;
-  --dot-color: rgba(0,0,0,.025);
+  --bg:      #f8f8f8;
+  --bg2:     #ffffff;
+  --bg3:     #f2f2f2;
+  --border:  #e6e6e6;
+  --border2: #d4d4d4;
+  --text:    #111111;
+  --text2:   #5a5a5a;
+  --text3:   #b0b0b0;
+  --shadow:  rgba(0,0,0,.12);
+  --danger:  #cc3b3b;
 }
 
-// ─── Sidebar ───
+// ─── Панель ───────────────────────────────────────────────
 
-.fone-side-bar {
+.sb {
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-  width: 80px;
-  height: 98vh;
-  padding: 16px 0;
-  margin-left: 16px;
-  border-radius: var(--radius-lg);
-  background: var(--bg2);
-  background-image: radial-gradient(circle, var(--dot-color, rgba(255,255,255,.035)) 1px, transparent 1px);
-  background-size: 28px 28px;
-  border: 1px solid var(--border);
-  overflow: visible;
+  width: 232px;
+  height: calc(100vh - 32px);
+  margin: 16px 0 16px 16px;
+  padding: 16px 14px;
   position: sticky;
-  top: 0;
-  animation: slideInLeft .4s ease-out forwards;
-  transition: background .3s, border-color .3s;
+  top: 16px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  animation: sbIn .4s cubic-bezier(.7,0,.2,1) forwards;
 }
 
-@keyframes slideInLeft {
-  from { opacity: 0; transform: translateX(-20px); }
+@keyframes sbIn {
+  from { opacity: 0; transform: translateX(-14px); }
   to   { opacity: 1; transform: translateX(0); }
 }
 
-// ─── Аватар ───
+// ─── Бренд ────────────────────────────────────────────────
 
-.sb-top {
+.sb-brand {
   display: flex;
-  justify-content: center;
-  width: 100%;
+  align-items: center;
+  gap: 11px;
+  padding: 6px 10px 16px;
+  text-decoration: none;
+  outline: none;
 }
 
-.sb-avatar-wrap {
-  cursor: pointer;
-  border-radius: 50%;
-  padding: 2px;
-  border: 1.5px solid var(--border2);
-  transition: border-color .2s;
+.sb-brand-tile {
+  position: relative;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: var(--brand-accent);
+  flex-shrink: 0;
+  transition: transform .25s cubic-bezier(.7,0,.2,1);
 
-  &:hover { border-color: var(--text3); }
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 8px;
+    border-radius: 3px;
+    background: var(--bg2);
+  }
 }
 
-::ng-deep .sb-avatar {
-  display: block !important;
+.sb-brand-name {
+  font-family: var(--brand-display);
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: .3px;
+  color: var(--text);
+  line-height: 1;
 }
 
-// ─── Навигация ───
+.sb-brand:hover .sb-brand-tile { transform: rotate(-8deg) scale(1.06); }
+.sb-brand:focus-visible .sb-brand-tile {
+  box-shadow: 0 0 0 2px var(--bg2), 0 0 0 4px var(--text2);
+}
+
+// ─── Навигация ────────────────────────────────────────────
 
 .sb-nav {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  flex: 1;
-  justify-content: center;
-  width: 100%;
-  padding: 0 8px;
+  gap: 3px;
 }
-
-// ─── Нижний блок ───
-
-.sb-bottom {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  width: 100%;
-  padding: 0 8px;
-}
-
-// ─── Разделитель ───
 
 .sb-divider {
-  width: 60%;
   height: 1px;
   background: var(--border);
-  margin: 8px auto;
-  border-radius: 1px;
+  margin: 11px 6px;
 }
 
-// ─── Пункт меню ───
-
-.sb-item {
+.sb-link {
   position: relative;
   display: flex;
   align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: var(--radius-sm);
+  gap: 13px;
+  height: 42px;
+  padding: 0 13px;
+  border-radius: 11px;
   border: 1px solid transparent;
   background: transparent;
-  color: var(--text3);
-  cursor: pointer;
+  color: var(--text2);
   text-decoration: none;
-  transition: color .2s, background .2s, border-color .2s;
+  cursor: pointer;
   outline: none;
+  transition: color .18s, background .18s, border-color .18s;
 
   i {
-    font-size: 17px;
+    font-size: 16px;
+    width: 20px;
+    text-align: center;
+    flex-shrink: 0;
     pointer-events: none;
   }
 
   &:hover {
-    color: var(--text2);
-    background: rgba(128,128,128,.08);
-    border-color: var(--border);
+    color: var(--brand-accent);
+    background: rgba(128,128,128,.07);
   }
 
-  // Активный роут
+  &:focus-visible {
+    color: var(--text);
+    border-color: var(--border2);
+    box-shadow: 0 0 0 2px var(--bg2), 0 0 0 3px var(--text3);
+  }
+
   &--active {
     color: var(--text) !important;
     background: rgba(128,128,128,.1) !important;
-    border-color: var(--border2) !important;
+    border-color: var(--border) !important;
 
     &::before {
       content: '';
@@ -152,71 +154,264 @@
       top: 50%;
       transform: translateY(-50%);
       width: 3px;
-      height: 16px;
-      border-radius: 0 2px 2px 0;
-      background: var(--text2);
+      height: 20px;
+      border-radius: 0 3px 3px 0;
+      background: var(--brand-accent);
     }
   }
 
-  // Заглушки
   &--soon {
-    opacity: .35;
+    opacity: .38;
     cursor: default;
     pointer-events: none;
-
-    &:hover {
-      color: var(--text3);
-      background: transparent;
-      border-color: transparent;
-    }
-  }
-
-  // Переключатель темы
-  &--theme {
-    &:hover {
-      color: var(--text2) !important;
-      background: rgba(128,128,128,.08) !important;
-    }
-
-    i { transition: transform .3s; }
-    &:hover i { transform: rotate(20deg); }
-  }
-
-  // Переключатель языка
-  &--lang {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: .5px;
-
-    &:hover {
-      color: var(--text2) !important;
-      background: rgba(128,128,128,.08) !important;
-    }
-  }
-
-  // Кнопка выхода
-  &--logout {
-    &:hover {
-      color: #e05555 !important;
-      background: rgba(224,85,85,.08) !important;
-      border-color: rgba(224,85,85,.15) !important;
-    }
   }
 }
 
-// ─── Badge "soon" ───
+.sb-label {
+  font-family: var(--brand-mono);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: .2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
-.sb-soon-badge {
-  position: absolute;
-  top: 2px;
-  right: 1px;
-  font-size: 7px;
-  font-family: 'DM Sans', sans-serif;
-  font-weight: 600;
-  color: var(--text3);
-  letter-spacing: .3px;
-  text-transform: uppercase;
+.sb-badge {
+  margin-left: auto;
+  min-width: 19px;
+  height: 19px;
+  padding: 0 5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: var(--brand-accent);
+  color: var(--brand-accent-ink);
+  font-family: var(--brand-mono);
+  font-size: 11px;
+  font-weight: 700;
   line-height: 1;
-  pointer-events: none;
+  flex-shrink: 0;
+}
+
+.sb-spacer { flex: 1; min-height: 12px; }
+
+// ─── Инструменты (тема / язык / настройки) ────────────────
+
+.sb-tools {
+  display: flex;
+  gap: 7px;
+  padding: 0 2px 12px;
+}
+
+.sb-tool {
+  flex: 1;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: transparent;
+  color: var(--text2);
+  cursor: pointer;
+  outline: none;
+  text-decoration: none;
+  transition: color .18s, background .18s, border-color .18s, transform .25s;
+
+  i { font-size: 15px; pointer-events: none; }
+
+  span {
+    font-family: var(--brand-mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    pointer-events: none;
+  }
+
+  &:hover {
+    color: var(--brand-accent);
+    background: rgba(128,128,128,.07);
+    border-color: var(--brand-accent);
+  }
+
+  &:focus-visible {
+    color: var(--text);
+    border-color: var(--border2);
+    box-shadow: 0 0 0 2px var(--bg2), 0 0 0 3px var(--text3);
+  }
+
+  &--active {
+    color: var(--text) !important;
+    background: rgba(128,128,128,.1) !important;
+    border-color: var(--border2) !important;
+  }
+
+  &--theme:hover i { transform: rotate(22deg); }
+}
+
+// ─── Аккаунт ──────────────────────────────────────────────
+
+.sb-account {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  background: var(--bg);
+}
+
+.sb-account-id {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  outline: none;
+  border-radius: 9px;
+  transition: opacity .18s;
+
+  &:hover { opacity: .85; }
+  &:focus-visible { box-shadow: 0 0 0 2px var(--bg2), 0 0 0 4px var(--text3); }
+}
+
+.sb-id-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.sb-id-name {
+  font-family: var(--brand-mono);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sb-id-mail {
+  font-family: var(--brand-mono);
+  font-size: 10.5px;
+  font-weight: 400;
+  color: var(--text3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sb-logout {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text2);
+  cursor: pointer;
+  outline: none;
+  transition: color .18s, background .18s, border-color .18s;
+
+  i { font-size: 15px; pointer-events: none; }
+
+  &:hover {
+    color: var(--danger);
+    background: rgba(224,85,85,.09);
+    border-color: rgba(224,85,85,.18);
+  }
+
+  &:focus-visible {
+    color: var(--danger);
+    border-color: rgba(224,85,85,.3);
+    box-shadow: 0 0 0 2px var(--bg2), 0 0 0 3px rgba(224,85,85,.4);
+  }
+}
+
+::ng-deep .sb-account-id .p-avatar {
+  width: 36px !important;
+  height: 36px !important;
+  flex-shrink: 0;
+  background: var(--bg3) !important;
+  color: var(--text2) !important;
+  border: 1px solid var(--border) !important;
+
+  .p-avatar-icon { font-size: 15px !important; }
+}
+
+// ─── Мобильная нижняя панель (≤768px) ─────────────────────
+
+@media (max-width: 768px) {
+  :host { flex: 0 0 auto; }
+
+  .sb {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-around;
+    width: auto;
+    height: 62px;
+    position: fixed;
+    inset: auto 0 0 0;
+    margin: 0;
+    padding: 0 10px;
+    border-radius: 18px 18px 0 0;
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
+    box-shadow: 0 -4px 22px var(--shadow);
+    z-index: 50;
+    animation: sbInUp .35s cubic-bezier(.7,0,.2,1) forwards;
+  }
+
+  @keyframes sbInUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .sb-brand,
+  .sb-divider,
+  .sb-tools,
+  .sb-spacer,
+  .sb-link--soon,
+  .sb-label,
+  .sb-id-text { display: none; }
+
+  .sb-nav {
+    flex-direction: row;
+    gap: 4px;
+  }
+
+  .sb-link {
+    width: 48px;
+    height: 46px;
+    justify-content: center;
+    padding: 0;
+    gap: 0;
+
+    &--active::before {
+      left: 50%;
+      top: auto;
+      bottom: -8px;
+      transform: translateX(-50%);
+      width: 18px;
+      height: 3px;
+      border-radius: 3px 3px 0 0;
+    }
+  }
+
+  .sb-account {
+    border: none;
+    background: transparent;
+    padding: 0;
+    gap: 4px;
+  }
+
+  .sb-account-id { flex: 0 0 auto; }
 }

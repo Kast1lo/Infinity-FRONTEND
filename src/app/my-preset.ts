@@ -5,45 +5,45 @@ import { colorScheme } from '@primeuix/themes/aura/autocomplete';
 const ZincPreset = definePreset(Aura, {
   semantic: {
     primary: {
-      50: '#FBFBFC',
-      100: '#F7F7F8',
-      200: '#EAEBEB',
-      300: '#D7D8DA',
-      400: '#AFB2B7',
-      500: '#878C95',
-      600: '#646973',
-      700: '#43464C',
-      800: '#34363B',
-      900: '#26272B',
-      950: '#17181A'
+      50:  '#FFF4EB',
+      100: '#FFE6D1',
+      200: '#FFCBA3',
+      300: '#FFAD70',
+      400: '#FF933D',
+      500: '#FF7A00',
+      600: '#E06B00',
+      700: '#B85700',
+      800: '#8F4400',
+      900: '#6B3300',
+      950: '#401F00'
     },
     colorScheme: {
         light: {
             primary: {
-                color: '{zinc.950}',
-                inverseColor: '#ffffff',
-                hoverColor: '{zinc.900}',
-                activeColor: '{zinc.800}'
+                color: '{primary.500}',
+                inverseColor: '#0a0a0a',
+                hoverColor: '{primary.600}',
+                activeColor: '{primary.700}'
             },
             highlight: {
-                background: '{zinc.950}',
-                focusBackground: '{zinc.700}',
-                color: '#ffffff',
-                focusColor: '#ffffff'
+                background: '{primary.500}',
+                focusBackground: '{primary.600}',
+                color: '#0a0a0a',
+                focusColor: '#0a0a0a'
             }
         },
         dark: {
             primary: {
-                color: '{zinc.50}',
-                inverseColor: '{zinc.950}',
-                hoverColor: '{zinc.300}',
-                activeColor: '{zinc.200}'
+                color: '{primary.500}',
+                inverseColor: '#0a0a0a',
+                hoverColor: '{primary.400}',
+                activeColor: '{primary.300}'
             },
             highlight: {
-                background: 'rgba(250, 250, 250, .16)',
-                focusBackground: 'rgba(250, 250, 250, .24)',
-                color: 'rgba(255,255,255,.87)',
-                focusColor: 'rgba(255,255,255,.87)'
+                background: 'rgba(255, 122, 0, .18)',
+                focusBackground: 'rgba(255, 122, 0, .26)',
+                color: '{primary.400}',
+                focusColor: '{primary.300}'
             }
         }
     }

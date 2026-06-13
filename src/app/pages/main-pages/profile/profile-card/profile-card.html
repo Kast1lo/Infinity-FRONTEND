@@ -1,229 +1,179 @@
 <p-toast position="bottom-right"></p-toast>
 
-<div class="profile-page">
+@if (userService.profile(); as profile) {
+  <div class="pf">
 
-  @if (userService.profile(); as profile) {
-    <div class="profile-content">
-
-      <div class="profile-header">
-        <div class="avatar-wrap">
+    <!-- ─── 1. Личность ─── -->
+    <header class="pf-id">
+      <div class="pf-id-left">
+        <div class="pf-ava">
           <p-avatar [image]="avatarUrl()" size="xlarge" shape="circle"/>
         </div>
-        <div class="profile-meta">
-          <h1 class="profile-name">{{ profile.username }}</h1>
-          <p class="profile-email">{{ profile.email }}</p>
-
-          @if (planInfo(); as plan) {
-            <div class="plan-badge-wrap">
-              <span class="plan-badge" [ngClass]="'badge--' + plan.planType">
-                <i class="pi pi-bolt"></i>
-                {{ planBadgeMap[plan.planType]?.label ?? plan.planType }}
+        <div class="pf-id-info">
+          <div class="pf-id-name-row">
+            <h1 class="pf-id-name">{{ profile.username }}</h1>
+            @if (planInfo(); as plan) {
+              <span class="pf-chip" [ngClass]="'badge--' + plan.planType">
+                <i class="pi pi-bolt"></i>{{ planBadgeMap[plan.planType]?.label ?? plan.planType }}
               </span>
-
-              @if (plan.planType === 'spark' && !plan.isFrozen && plan.daysLeft !== null) {
-                <span class="plan-timer" [class.plan-timer--warn]="plan.daysLeft <= 2">
-                  <i class="pi pi-clock"></i>
-                  @if (plan.daysLeft > 0) {
-                    {{ plan.daysLeft }} {{ daysWord(plan.daysLeft) }}
-                  } @else {
-                    {{ t().expiresToday }}
-                  }
-                </span>
-              }
-
-              @if (plan.isFrozen) {
-                <span class="plan-timer plan-timer--frozen">
-                  <i class="pi pi-lock"></i>
-                  {{ t().frozenNoticePrefix }} {{ plan.freezeDaysLeft }} {{ t().frozenNoticeSuffix }}
-                </span>
-              }
-            </div>
-          }
-        </div>
-        <div class="profile-header-actions">
-          <p-button [label]="t().editBtn" icon="pi pi-pencil" [outlined]="true" severity="secondary" routerLink="/edit"/>
-          <p-button icon="pi pi-sign-out" [text]="true" severity="secondary" (onClick)="authService.logout()" routerLink="/login"/>
-        </div>
-      </div>
-
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-label">{{ t().totalTasksLabel }}</div>
-          <div class="stat-num">{{ totalTasks() }}</div>
-          <div class="stat-sub">
-            <span class="stat-done">{{ completedTasks() }} {{ t().completedSuffix }}</span>
-            <span class="stat-sep">·</span>
-            <span class="stat-left">{{ totalTasks() - completedTasks() }} {{ t().remainingSuffix }}</span>
-          </div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-label">{{ t().filesLabel }}</div>
-          <div class="stat-num">{{ totalFiles() }}</div>
-          <div class="stat-sub">
-            <span class="stat-done">{{ totalFolders() }} {{ t().foldersSuffix }}</span>
-          </div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-label">{{ t().columnsLabel }}</div>
-          <div class="stat-num">{{ infinityLife.columns().length }}</div>
-          <div class="stat-sub">
-            <span class="stat-done">Kanban</span>
-          </div>
-        </div>
-      </div>
-
-      @if (planInfo(); as plan) {
-        <div class="plan-section">
-
-          <div class="plan-card storage-card">
-            <div class="section-label">{{ t().storageSectionLabel }}</div>
-            <div class="storage-numbers">
-              <span class="storage-used" [style.color]="storageColor">{{ storageUsedLabel }}</span>
-              <span class="storage-sep">/</span>
-              <span class="storage-limit">{{ storageLimitLabel }}</span>
-            </div>
-            <div class="storage-bar-wrap">
-              <div class="storage-bar-track">
-                <div
-                  class="storage-bar-fill"
-                  [style.width.%]="storagePercent"
-                  [style.background]="storageColor"
-                ></div>
-              </div>
-              <span class="storage-percent">{{ storagePercent }}%</span>
-            </div>
-            <div class="storage-hint">
-              {{ storageLimitLabel }} {{ t().storageAvailable }} {{ plan.planLabel }}
-            </div>
-          </div>
-
-          <div class="plan-card plan-info-card" [class.plan-card--eternal]="plan.planType === 'eternal'">
-            <div class="section-label">{{ t().planSectionLabel }}</div>
-            <div class="plan-info-row">
-              <div class="plan-info-name">{{ plan.planLabel }}</div>
-              @if (plan.planType === 'spark' && !plan.isFrozen) {
-                <div class="plan-info-expires">
-                  {{ t().trialExpires }} {{ plan.planExpiresAt | date:'dd.MM.yyyy' }}
-                </div>
-              }
-              @if (plan.isFrozen) {
-                <div class="plan-info-frozen">
-                  <i class="pi pi-exclamation-triangle"></i>
-                  {{ t().dataFrozenNotice }}
-                </div>
-              }
-            </div>
-
-            @if (plan.planType === 'eternal') {
-              <ul class="plan-features-list">
-                <li><i class="pi pi-check"></i> {{ t().eternalF1 }}</li>
-                <li><i class="pi pi-check"></i> {{ t().eternalF2 }}</li>
-                <li><i class="pi pi-check"></i> {{ t().eternalF3 }}</li>
-                <li><i class="pi pi-infinity"></i> {{ t().eternalF4 }}</li>
-              </ul>
             }
+          </div>
+          <p class="pf-id-email">{{ profile.email }}</p>
+        </div>
+      </div>
+      <div class="pf-id-actions">
+        <p-button [label]="t().editBtn" icon="pi pi-pencil" [outlined]="true" severity="secondary" routerLink="/edit"/>
+        <p-button icon="pi pi-sign-out" [text]="true" severity="secondary" (onClick)="authService.logout()" routerLink="/login"/>
+      </div>
+    </header>
 
-            @if (plan.planType !== 'eternal') {
-              <div class="promo-section">
-                @if (!showPromoInput()) {
-                  <button class="promo-toggle-btn" (click)="showPromoInput.set(true)">
-                    <i class="pi pi-tag"></i>
-                    {{ t().enterPromo }}
-                  </button>
+    <!-- ─── 2. Тариф + хранилище ─── -->
+    @if (planInfo(); as plan) {
+      <section class="pf-panel pf-plan" [ngClass]="'plan--' + plan.planType">
+        <span class="pf-plan-accent"></span>
+
+        <div class="pf-plan-head">
+          <div class="pf-plan-id">
+            <span class="pf-eyebrow">{{ t().planSectionLabel }}</span>
+            <div class="pf-plan-name">{{ plan.planLabel }}</div>
+          </div>
+
+          <div class="pf-plan-status">
+            @if (plan.planType === 'spark' && !plan.isFrozen && plan.daysLeft !== null) {
+              <span class="pf-status" [class.pf-status--warn]="plan.daysLeft <= 2">
+                <i class="pi pi-clock"></i>
+                @if (plan.daysLeft > 0) {
+                  {{ plan.daysLeft }} {{ daysWord(plan.daysLeft) }}
                 } @else {
-                  <div class="promo-input-row">
-                    <input
-                      class="promo-input"
-                      type="text"
-                      placeholder="INF-XXXX-XXXX"
-                      [(ngModel)]="promoCode"
-                      (keyup.enter)="activatePromo()"
-                      maxlength="14"
-                    />
-                    <button
-                      class="promo-submit-btn"
-                      [disabled]="!promoCode().trim() || promoLoading()"
-                      (click)="activatePromo()"
-                    >
-                      @if (promoLoading()) {
-                        <i class="pi pi-spinner pi-spin"></i>
-                      } @else {
-                        {{ t().applyPromo }}
-                      }
-                    </button>
-                    <button class="promo-cancel-btn" (click)="showPromoInput.set(false); promoCode.set('')">
-                      <i class="pi pi-times"></i>
-                    </button>
-                  </div>
+                  {{ t().expiresToday }}
                 }
+              </span>
+            }
+            @if (plan.isFrozen) {
+              <span class="pf-status pf-status--frozen">
+                <i class="pi pi-lock"></i>
+                {{ t().frozenNoticePrefix }} {{ plan.freezeDaysLeft }} {{ t().frozenNoticeSuffix }}
+              </span>
+            }
+            @if (plan.planType === 'eternal') {
+              <span class="pf-status pf-status--ok">
+                <i class="pi pi-infinity"></i> {{ t().eternalF4 }}
+              </span>
+            }
+          </div>
+        </div>
+
+        <div class="pf-storage">
+          <div class="pf-storage-row">
+            <span class="pf-eyebrow">{{ t().storageSectionLabel }}</span>
+            <span class="pf-storage-nums">
+              <b [style.color]="storageColor">{{ storageUsedLabel }}</b>
+              <span class="pf-storage-slash">/</span>
+              {{ storageLimitLabel }}
+            </span>
+          </div>
+          <div class="pf-bar">
+            <div class="pf-bar-fill" [style.width.%]="storagePercent" [style.background]="storageColor"></div>
+          </div>
+          <div class="pf-storage-foot">
+            <span class="pf-storage-pct">{{ storagePercent }}%</span>
+            {{ t().storageAvailable }} {{ plan.planLabel }}
+          </div>
+        </div>
+
+        @if (plan.planType !== 'eternal') {
+          <div class="pf-promo">
+            @if (!showPromoInput()) {
+              <button class="pf-promo-toggle" (click)="showPromoInput.set(true)">
+                <i class="pi pi-tag"></i>{{ t().enterPromo }}
+              </button>
+            } @else {
+              <div class="pf-promo-row">
+                <input
+                  class="pf-promo-input"
+                  type="text"
+                  placeholder="INF-XXXX-XXXX"
+                  [(ngModel)]="promoCode"
+                  (keyup.enter)="activatePromo()"
+                  maxlength="14"
+                  aria-label="Промокод"
+                />
+                <button class="pf-promo-apply" [disabled]="!promoCode().trim() || promoLoading()" (click)="activatePromo()">
+                  @if (promoLoading()) {
+                    <i class="pi pi-spinner pi-spin"></i>
+                  } @else {
+                    {{ t().applyPromo }}
+                  }
+                </button>
+                <button class="pf-promo-cancel" (click)="showPromoInput.set(false); promoCode.set('')" aria-label="Отмена">
+                  <i class="pi pi-times"></i>
+                </button>
               </div>
             }
           </div>
+        }
+      </section>
+    }
 
+    <!-- ─── 3. Метрики ─── -->
+    <section class="pf-metrics">
+      <div class="pf-metric">
+        <div class="pf-metric-top">
+          <i class="pi pi-check-square"></i>
+          <span class="pf-eyebrow">{{ t().totalTasksLabel }}</span>
         </div>
-      }
-
-      <div class="progress-section">
-        <div class="progress-card knob-card">
-          <div class="section-label">{{ t().progressLabel }}</div>
-          <div class="knob-wrap">
-            <p-knob
-              [(ngModel)]="knobValue"
-              [readonly]="true"
-              [min]="0"
-              [max]="100"
-              [size]="160"
-              valueTemplate="{value}%"
-              strokeWidth="6"
-            />
-          </div>
-          <div class="knob-legend">
-            <div class="legend-item">
-              <span class="legend-dot done"></span>
-              <span>{{ t().legendDone }} — {{ completedTasks() }}</span>
-            </div>
-            <div class="legend-item">
-              <span class="legend-dot left"></span>
-              <span>{{ t().legendLeft }} — {{ totalTasks() - completedTasks() }}</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="progress-card links-card">
-          <div class="section-label">{{ t().quickNavLabel }}</div>
-          <div class="quick-links">
-            <a class="quick-link" routerLink="/infinity-life">
-              <div class="ql-icon"><i class="pi pi-objects-column"></i></div>
-              <div class="ql-text">
-                <span class="ql-title">{{ t().kanbanLinkTitle }}</span>
-                <span class="ql-sub">{{ infinityLife.columns().length }} {{ t().kanbanColsSuffix }} · {{ totalTasks() }} {{ t().kanbanTasksSuffix }}</span>
-              </div>
-              <i class="pi pi-chevron-right ql-arrow"></i>
-            </a>
-            <div class="ql-divider"></div>
-            <a class="quick-link" routerLink="/file-system">
-              <div class="ql-icon"><i class="pi pi-folder-open"></i></div>
-              <div class="ql-text">
-                <span class="ql-title">{{ t().storageLinkTitle }}</span>
-                <span class="ql-sub">{{ totalFiles() }} {{ t().storageFilesSuffix }} · {{ totalFolders() }} {{ t().storageFoldersSuffix }}</span>
-              </div>
-              <i class="pi pi-chevron-right ql-arrow"></i>
-            </a>
-            <div class="ql-divider"></div>
-            <a class="quick-link" routerLink="/edit">
-              <div class="ql-icon"><i class="pi pi-user-edit"></i></div>
-              <div class="ql-text">
-                <span class="ql-title">{{ t().editLinkTitle }}</span>
-                <span class="ql-sub">{{ t().editLinkSub }}</span>
-              </div>
-              <i class="pi pi-chevron-right ql-arrow"></i>
-            </a>
-          </div>
+        <div class="pf-metric-num">{{ totalTasks() }}</div>
+        <div class="pf-metric-sub">
+          {{ completedTasks() }} {{ t().completedSuffix }} · {{ totalTasks() - completedTasks() }} {{ t().remainingSuffix }}
         </div>
       </div>
 
-    </div>
-  }
-</div>
+      <div class="pf-metric">
+        <div class="pf-metric-top">
+          <i class="pi pi-folder"></i>
+          <span class="pf-eyebrow">{{ t().filesLabel }}</span>
+        </div>
+        <div class="pf-metric-num">{{ totalFiles() }}</div>
+        <div class="pf-metric-sub">{{ totalFolders() }} {{ t().foldersSuffix }}</div>
+      </div>
+
+      <div class="pf-metric">
+        <div class="pf-metric-top">
+          <i class="pi pi-objects-column"></i>
+          <span class="pf-eyebrow">{{ t().columnsLabel }}</span>
+        </div>
+        <div class="pf-metric-num">{{ infinityLife.columns().length }}</div>
+        <div class="pf-metric-sub">Kanban</div>
+      </div>
+
+      <div class="pf-metric">
+        <div class="pf-metric-top">
+          <i class="pi pi-chart-pie"></i>
+          <span class="pf-eyebrow">{{ t().progressLabel }}</span>
+        </div>
+        <div class="pf-metric-num">{{ knobValue }}<span class="pf-metric-unit">%</span></div>
+        <div class="pf-metric-sub">{{ completedTasks() }} / {{ totalTasks() }}</div>
+      </div>
+    </section>
+
+    <!-- ─── 4. Прогресс задач ─── -->
+    <section class="pf-panel pf-progress">
+      <div class="pf-storage-row">
+        <span class="pf-eyebrow">{{ t().progressLabel }}</span>
+        <span class="pf-storage-nums"><b>{{ knobValue }}%</b></span>
+      </div>
+      <div class="pf-bar">
+        <div class="pf-bar-fill pf-bar-fill--accent" [style.width.%]="knobValue"></div>
+      </div>
+      <div class="pf-legend">
+        <span class="pf-legend-item">
+          <span class="pf-dot pf-dot--done"></span>{{ t().legendDone }} — {{ completedTasks() }}
+        </span>
+        <span class="pf-legend-item">
+          <span class="pf-dot pf-dot--left"></span>{{ t().legendLeft }} — {{ totalTasks() - completedTasks() }}
+        </span>
+      </div>
+    </section>
+
+  </div>
+}

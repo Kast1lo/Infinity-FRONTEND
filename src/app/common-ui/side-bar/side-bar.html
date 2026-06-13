@@ -1,78 +1,88 @@
-<aside class="fone-side-bar">
+<aside class="sb">
 
+  <!-- Бренд (вордмарк, без символа бесконечности) -->
+  <a class="sb-brand" routerLink="/projects" aria-label="Infinity">
+    <span class="sb-brand-tile" aria-hidden="true"></span>
+    <span class="sb-brand-name">Infinity</span>
+  </a>
 
-  <div class="sb-top">
-    <div class="sb-avatar-wrap" routerLink="/profile">
-      <p-avatar
-        [image]="avatarUrl()"
-        size="large"
-        shape="circle"
-        class="sb-avatar"/>
-    </div>
-  </div>
+  <!-- Навигация -->
+  <nav class="sb-nav" aria-label="Основная навигация">
 
-
-  <nav class="sb-nav">
-
-    <a class="sb-item" routerLink="/profile" routerLinkActive="sb-item--active" [routerLinkActiveOptions]="{ exact: true }" [pTooltip]="t().profile" tooltipPosition="right">
-      <i class="pi pi-home"></i>
+    <a class="sb-link" routerLink="/profile" routerLinkActive="sb-link--active" [routerLinkActiveOptions]="{ exact: true }">
+      <i class="pi pi-user" aria-hidden="true"></i>
+      <span class="sb-label">{{ t().profile }}</span>
     </a>
 
-    <a class="sb-item" routerLink="/projects" routerLinkActive="sb-item--active" [pTooltip]="t().kanban" tooltipPosition="right">
-      <i class="pi pi-objects-column"></i>
+    <a class="sb-link" routerLink="/projects" routerLinkActive="sb-link--active">
+      <i class="pi pi-objects-column" aria-hidden="true"></i>
+      <span class="sb-label">{{ t().kanban }}</span>
     </a>
 
-    <a class="sb-item" routerLink="/file-system" routerLinkActive="sb-item--active" [pTooltip]="t().files" tooltipPosition="right">
-      <i class="pi pi-folder"></i>
+    <a class="sb-link" routerLink="/file-system" routerLinkActive="sb-link--active">
+      <i class="pi pi-folder" aria-hidden="true"></i>
+      <span class="sb-label">{{ t().files }}</span>
+    </a>
+
+    <a class="sb-link" routerLink="/trash" routerLinkActive="sb-link--active">
+      <i class="pi pi-trash" aria-hidden="true"></i>
+      <span class="sb-label">{{ t().trash }}</span>
+      @if (trashCount() > 0) {
+        <span class="sb-badge">{{ trashCount() }}</span>
+      }
     </a>
 
     <div class="sb-divider"></div>
 
-    <div class="sb-item sb-item--soon" [pTooltip]="t().notes" tooltipPosition="right">
-      <i class="pi pi-file-edit"></i>
-      <span class="sb-soon-badge">soon</span>
+    <div class="sb-link sb-link--soon" aria-disabled="true">
+      <i class="pi pi-file-edit" aria-hidden="true"></i>
+      <span class="sb-label">{{ t().notes }}</span>
     </div>
 
-    <div class="sb-item sb-item--soon" [pTooltip]="t().calendar" tooltipPosition="right">
-      <i class="pi pi-calendar"></i>
-      <span class="sb-soon-badge">soon</span>
+    <div class="sb-link sb-link--soon" aria-disabled="true">
+      <i class="pi pi-calendar" aria-hidden="true"></i>
+      <span class="sb-label">{{ t().calendar }}</span>
     </div>
 
-    <div class="sb-item sb-item--soon" [pTooltip]="t().chat" tooltipPosition="right">
-      <i class="pi pi-comments"></i>
-      <span class="sb-soon-badge">soon</span>
+    <div class="sb-link sb-link--soon" aria-disabled="true">
+      <i class="pi pi-comments" aria-hidden="true"></i>
+      <span class="sb-label">{{ t().chat }}</span>
     </div>
 
   </nav>
 
+  <div class="sb-spacer"></div>
 
-  <div class="sb-bottom">
-
-
-    <button
-      class="sb-item sb-item--theme"
-      (click)="themeService.toggle()"
-      [pTooltip]="isDark() ? t().themeLight : t().themeDark"
-      tooltipPosition="right">
-      <i [class]="isDark() ? 'pi pi-sun' : 'pi pi-moon'"></i>
+  <!-- Инструменты -->
+  <div class="sb-tools">
+    <button type="button" class="sb-tool sb-tool--theme" (click)="themeService.toggle()"
+      [attr.aria-label]="isDark() ? t().themeLight : t().themeDark">
+      <i [class]="isDark() ? 'pi pi-sun' : 'pi pi-moon'" aria-hidden="true"></i>
     </button>
 
-    <button
-      class="sb-item sb-item--lang"
-      (click)="langService.toggle()"
-      [pTooltip]="t().langSwitch"
-      tooltipPosition="right">
-      <span class="sb-lang-label">{{ langService.lang() === 'ru' ? 'EN' : 'RU' }}</span>
+    <button type="button" class="sb-tool sb-tool--lang" (click)="langService.toggle()"
+      [attr.aria-label]="t().langSwitch">
+      <span aria-hidden="true">{{ langService.lang() === 'ru' ? 'EN' : 'RU' }}</span>
     </button>
 
-    <div class="sb-divider"></div>
-
-    <a class="sb-item" routerLink="/edit" routerLinkActive="sb-item--active" [pTooltip]="t().settings" tooltipPosition="right">
-      <i class="pi pi-cog"></i>
+    <a class="sb-tool" routerLink="/edit" routerLinkActive="sb-tool--active"
+      [attr.aria-label]="t().settings">
+      <i class="pi pi-cog" aria-hidden="true"></i>
     </a>
-    <div class="sb-divider"></div>
-    <button class="sb-item sb-item--logout" (click)="authService.logout()" [pTooltip]="t().logout" tooltipPosition="right">
-      <i class="pi pi-sign-out"></i>
+  </div>
+
+  <!-- Аккаунт -->
+  <div class="sb-account">
+    <a class="sb-account-id" routerLink="/profile" [attr.aria-label]="t().profile">
+      <p-avatar [image]="avatarUrl()" icon="pi pi-user" shape="circle"/>
+      <span class="sb-id-text">
+        <span class="sb-id-name">{{ username() || '—' }}</span>
+        <span class="sb-id-mail">{{ email() }}</span>
+      </span>
+    </a>
+    <button type="button" class="sb-logout" (click)="authService.logout()"
+      [attr.aria-label]="t().logout">
+      <i class="pi pi-sign-out" aria-hidden="true"></i>
     </button>
   </div>
 

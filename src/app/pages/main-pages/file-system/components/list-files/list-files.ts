@@ -66,6 +66,14 @@ export class ListFiles implements OnInit {
 
   files = this.fileSystem.filteredFiles;
   folders = this.fileSystem.filteredFolders;
+
+  // Папки, видимые в текущей директории (по parentId)
+  visibleFolders = computed(() =>
+    this.fileSystem.filteredFolders().filter(
+      (f) => f.parentId === this.fileSystem.currentFolderId(),
+    ),
+  );
+
   selectedItem = this.fileSystem.selectedItem;
   loading = this.fileSystem.loading;
   error = this.fileSystem.error;
@@ -130,6 +138,25 @@ export class ListFiles implements OnInit {
   private static readonly INTERNAL_FILE_MIME = 'application/x-infinity-file';
   draggingFileId      = signal<string | null>(null);
   draggedOverFolderId = signal<string | null>(null);
+
+  // Множественное выделение файлов (для группового перетаскивания)
+  selectedFileIds = signal<Set<string>>(new Set());
+  draggingFileIds = signal<Set<string>>(new Set());
+  private lastClickedFileId: string | null = null;
+
+  // Выделение рамкой (lasso / marquee)
+  private readonly hostEl = inject(ElementRef);
+  marqueeBox = signal<{ left: number; top: number; width: number; height: number } | null>(null);
+  private marqueeStart: { x: number; y: number } | null = null;
+  private marqueeBaseIds = new Set<string>();
+  private marqueeMoved = false;
+  private suppressNextClickClear = false;
+  private static readonly MARQUEE_THRESHOLD = 5;
+  private static readonly MARQUEE_SKIP_SELECTOR =
+    '.file-card, .folder-card, .card-menu-btn, button, a, input, ' +
+    '.p-tieredmenu, .p-menu, .p-overlay, .p-overlay-mask, ' +
+    '.p-dialog, .p-dialog-mask, .fs-selbar, .fs-crumbs, .p-breadcrumb, ' +
+    '.p-scrollpanel-bar, .p-scrollpanel-bar-x, .p-scrollpanel-bar-y';
 
   uploadConfirmVisible = signal(false);
   uploadConfirmTitle   = signal('');
@@ -210,17 +237,18 @@ export class ListFiles implements OnInit {
   }
 
   private static readonly KEEP_SELECTION_SELECTOR =
-    '.file-card, .folder-card, .p-card, .p-toolbar, ' +
+    '.file-card, .folder-card, .p-card, .p-toolbar, .fs-selbar, ' +
     '.p-tieredmenu, .p-menu, .p-overlay, .p-overlay-mask, ' +
     '.p-dialog, .p-dialog-mask, .p-toast';
 
   @HostListener('document:click', ['$event'])
   onDocumentClickClearSelection(event: MouseEvent) {
-    if (!this.selectedItem()) return;
+    if (this.suppressNextClickClear) { this.suppressNextClickClear = false; return; }
+    if (!this.selectedItem() && this.selectedFileIds().size === 0) return;
     const target = event.target as HTMLElement | null;
     if (!target || !target.isConnected) return;
     if (target.closest(ListFiles.KEEP_SELECTION_SELECTOR)) return;
-    this.fileSystem.clearSelection();
+    this.clearAllSelection();
   }
 
   isImage(file: FileItem): boolean { return file.mimeType.startsWith('image/'); }
@@ -661,8 +689,10 @@ export class ListFiles implements OnInit {
 
   onVolumeChange(event: Event) {
     const video = this.videoPlayerRef?.nativeElement; if (!video) return;
-    const val = parseFloat((event.target as HTMLInputElement).value);
+    const input = event.target as HTMLInputElement;
+    const val = parseFloat(input.value);
     video.volume = val; this.volume = val; this.isMuted = val === 0;
+    input.style.setProperty('--volume-pct', `${val * 100}%`);
     this.cdr.markForCheck();
   }
 
@@ -827,33 +857,56 @@ export class ListFiles implements OnInit {
 
   onFileDragStart(event: DragEvent, file: FileItem) {
     if (!event.dataTransfer) return;
-    event.dataTransfer.setData(ListFiles.INTERNAL_FILE_MIME, file.id);
+
+    // Если перетаскиваемый файл не входит в выделение — делаем его единственным выбранным
+    let ids = this.selectedFileIds();
+    if (!ids.has(file.id)) {
+      ids = new Set([file.id]);
+      this.selectedFileIds.set(ids);
+      this.lastClickedFileId = file.id;
+      this.syncSingleSelection(ids);
+    }
+
+    const idArr = Array.from(ids);
+    event.dataTransfer.setData(ListFiles.INTERNAL_FILE_MIME, idArr.join(','));
     event.dataTransfer.effectAllowed = 'move';
 
-    const ghost = this.buildDragGhost(file);
+    const ghost = this.buildDragGhost(file, idArr.length);
     document.body.appendChild(ghost);
     event.dataTransfer.setDragImage(ghost, 18, 18);
     setTimeout(() => ghost.remove(), 0);
 
     this.draggingFileId.set(file.id);
+    this.draggingFileIds.set(new Set(ids));
   }
 
-  private buildDragGhost(file: FileItem): HTMLElement {
+  private buildDragGhost(file: FileItem, count = 1): HTMLElement {
     const ghost = document.createElement('div');
     ghost.className = 'file-drag-ghost';
 
-    const icon = document.createElement('i');
-    icon.className = 'pi ' + this.getFileIcon(file.mimeType);
-
-    const name = document.createElement('span');
-    name.textContent = decodeURIComponent(file.name);
-
-    ghost.append(icon, name);
+    if (count > 1) {
+      ghost.classList.add('file-drag-ghost--multi');
+      const icon = document.createElement('i');
+      icon.className = 'pi pi-copy';
+      const name = document.createElement('span');
+      name.textContent = `${count}`;
+      const badge = document.createElement('span');
+      badge.className = 'file-drag-ghost-count';
+      badge.textContent = `${count}`;
+      ghost.append(icon, name, badge);
+    } else {
+      const icon = document.createElement('i');
+      icon.className = 'pi ' + this.getFileIcon(file.mimeType);
+      const name = document.createElement('span');
+      name.textContent = decodeURIComponent(file.name);
+      ghost.append(icon, name);
+    }
     return ghost;
   }
 
   onFileDragEnd() {
     this.draggingFileId.set(null);
+    this.draggingFileIds.set(new Set());
     this.draggedOverFolderId.set(null);
   }
 
@@ -883,18 +936,24 @@ export class ListFiles implements OnInit {
     event.stopPropagation();
     this.draggedOverFolderId.set(null);
     this.draggingFileId.set(null);
+    this.draggingFileIds.set(new Set());
 
-    const fileId = event.dataTransfer!.getData(ListFiles.INTERNAL_FILE_MIME);
-    if (!fileId) return;
+    const raw = event.dataTransfer!.getData(ListFiles.INTERNAL_FILE_MIME);
+    if (!raw) return;
 
-    const file = this.fileSystem.files().find(f => f.id === fileId);
-    if (file && file.folderId === folder.id) return;
+    // Перемещаем только те файлы, что ещё не лежат в целевой папке
+    const ids = raw.split(',').filter(Boolean).filter(id => {
+      const file = this.fileSystem.files().find(f => f.id === id);
+      return file ? file.folderId !== folder.id : false;
+    });
+    if (ids.length === 0) return;
 
     const lf = this.langService.t().pages.listFiles;
-    this.fileSystem.moveFile(fileId, folder.id).subscribe({
+    this.clearAllSelection();
+    this.fileSystem.moveFiles(ids, folder.id).subscribe({
       next: () => this.messageService.add({
         severity: 'secondary', summary: lf.toastDone,
-        detail: lf.menuMove, life: 2000, key: 'br',
+        detail: ids.length > 1 ? lf.moveMany : lf.menuMove, life: 2000, key: 'br',
       }),
       error: () => this.messageService.add({
         severity: 'secondary', summary: lf.toastError,
@@ -903,11 +962,122 @@ export class ListFiles implements OnInit {
     });
   }
 
-  selectFile(file: FileItem) { this.fileSystem.selectItem(file); }
+  selectFile(file: FileItem, event: MouseEvent) {
+    const ids = new Set(this.selectedFileIds());
+    const additive = event.ctrlKey || event.metaKey;
+    const range = event.shiftKey;
+
+    if (range && this.lastClickedFileId) {
+      const list = this.files();
+      const a = list.findIndex(f => f.id === this.lastClickedFileId);
+      const b = list.findIndex(f => f.id === file.id);
+      if (a !== -1 && b !== -1) {
+        const [lo, hi] = a < b ? [a, b] : [b, a];
+        for (let i = lo; i <= hi; i++) ids.add(list[i].id);
+      } else {
+        ids.add(file.id);
+      }
+    } else if (additive) {
+      if (ids.has(file.id)) ids.delete(file.id);
+      else ids.add(file.id);
+      this.lastClickedFileId = file.id;
+    } else {
+      // Обычный клик: повторный по единственному выделенному — снять
+      if (ids.size === 1 && ids.has(file.id)) {
+        ids.clear();
+        this.lastClickedFileId = null;
+      } else {
+        ids.clear();
+        ids.add(file.id);
+        this.lastClickedFileId = file.id;
+      }
+    }
+
+    this.selectedFileIds.set(ids);
+    this.syncSingleSelection(ids);
+  }
+
+  // Синхронизирует одиночное выделение сервиса (для контекстного меню/диалогов)
+  private syncSingleSelection(ids: Set<string>) {
+    this.fileSystem.clearSelection();
+    if (ids.size === 1) {
+      const only = this.files().find(f => ids.has(f.id));
+      if (only) this.fileSystem.selectItem(only);
+    }
+  }
+
+  private clearFileSelection() {
+    if (this.selectedFileIds().size > 0) this.selectedFileIds.set(new Set());
+    this.lastClickedFileId = null;
+  }
+
+  clearAllSelection() {
+    this.clearFileSelection();
+    this.fileSystem.clearSelection();
+  }
+
+  // ─── Выделение рамкой ───
+
+  onBoardMouseDown(event: MouseEvent) {
+    if (event.button !== 0) return;
+    const target = event.target as HTMLElement | null;
+    if (!target || target.closest(ListFiles.MARQUEE_SKIP_SELECTOR)) return;
+    this.marqueeStart = { x: event.clientX, y: event.clientY };
+    // Ctrl/⌘ — добавляем к текущему выделению, иначе начинаем с чистого листа
+    this.marqueeBaseIds = (event.ctrlKey || event.metaKey)
+      ? new Set(this.selectedFileIds())
+      : new Set();
+    this.marqueeMoved = false;
+  }
+
+  @HostListener('document:mousemove', ['$event'])
+  onDocumentMouseMove(event: MouseEvent) {
+    if (!this.marqueeStart) return;
+    const dx = event.clientX - this.marqueeStart.x;
+    const dy = event.clientY - this.marqueeStart.y;
+    if (!this.marqueeMoved && Math.hypot(dx, dy) < ListFiles.MARQUEE_THRESHOLD) return;
+    this.marqueeMoved = true;
+    event.preventDefault();
+
+    const left = Math.min(event.clientX, this.marqueeStart.x);
+    const top = Math.min(event.clientY, this.marqueeStart.y);
+    const width = Math.abs(dx);
+    const height = Math.abs(dy);
+    this.marqueeBox.set({ left, top, width, height });
+    this.applyMarqueeSelection(left, top, left + width, top + height);
+  }
+
+  @HostListener('document:mouseup')
+  onDocumentMouseUp() {
+    if (this.marqueeStart && this.marqueeMoved) {
+      // Подавляем клик-сброс, который придёт сразу после mouseup
+      this.suppressNextClickClear = true;
+    }
+    this.marqueeStart = null;
+    this.marqueeMoved = false;
+    this.marqueeBox.set(null);
+  }
+
+  private applyMarqueeSelection(l: number, t: number, r: number, b: number) {
+    const cards = (this.hostEl.nativeElement as HTMLElement)
+      .querySelectorAll<HTMLElement>('.file-card[data-file-id]');
+    const ids = new Set(this.marqueeBaseIds);
+    cards.forEach(card => {
+      const rect = card.getBoundingClientRect();
+      const hit = !(rect.right < l || rect.left > r || rect.bottom < t || rect.top > b);
+      if (hit) {
+        const id = card.getAttribute('data-file-id');
+        if (id) ids.add(id);
+      }
+    });
+    this.selectedFileIds.set(ids);
+    this.syncSingleSelection(ids);
+  }
 
   selectFolder(folder: FolderItem) {
     clearTimeout(this.clickTimer);
     this.clickTimer = setTimeout(() => {
+      this.clearFileSelection();
       const current = this.selectedItem();
       if (current && current.id === folder.id) this.fileSystem.selectItem(null);
       else this.fileSystem.selectItem(folder);

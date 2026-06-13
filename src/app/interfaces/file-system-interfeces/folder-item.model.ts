@@ -11,4 +11,5 @@ export interface FolderItem {
   isShared: boolean;
   children: FolderItem[];
   files: FileItem[];
+  deletedAt?: string | null;
 }

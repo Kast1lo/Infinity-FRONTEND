@@ -14,6 +14,7 @@ import { finalize } from 'rxjs';
 import { SideBar } from '../../../common-ui/side-bar/side-bar';
 import { ProjectService } from '../../../services/project';
 import { Project } from '../../../interfaces/project/project.model';
+import { LangService } from '../../../services/lang';
 
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
@@ -23,6 +24,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
 import { MenuModule } from 'primeng/menu';
 import { Toast, ToastModule } from 'primeng/toast';
+import { TooltipModule } from 'primeng/tooltip';
 import { MessageService } from 'primeng/api';
 
 @Component({
@@ -40,6 +42,7 @@ import { MessageService } from 'primeng/api';
     MenuModule,
     Toast,
     ToastModule,
+    TooltipModule,
   ],
   templateUrl: './projects.html',
   styleUrl: './projects.scss',
@@ -50,6 +53,9 @@ export class Projects implements OnInit {
   private router         = inject(Router);
   private projectService = inject(ProjectService);
   private messageService = inject(MessageService);
+  readonly langService   = inject(LangService);
+
+  readonly t = computed(() => this.langService.t().pages.projects);
 
   readonly projects = this.projectService.projects;
   readonly isLoading = this.projectService.isLoading.asReadonly();
@@ -89,7 +95,7 @@ export class Projects implements OnInit {
 
   loadProjects() {
     this.projectService.loadProjects().subscribe({
-      error: () => this.toast('Не удалось загрузить проекты'),
+      error: () => this.toast(this.t().loadFailed),
     });
   }
 
@@ -105,14 +111,14 @@ export class Projects implements OnInit {
   createProject() {
     const name = this.newName().trim();
     if (!name) {
-      this.toast('Укажите название проекта');
+      this.toast(this.t().nameRequired);
       return;
     }
     const description = this.newDescription().trim();
     const wantsAi     = this.useAiGeneration();
 
     if (wantsAi && description.length < 10) {
-      this.toast('Для AI-генерации опишите проект подробнее (минимум 10 символов)');
+      this.toast(this.t().aiDescTooShort);
       return;
     }
 
@@ -135,12 +141,12 @@ export class Projects implements OnInit {
               state: { aiGenerate: { description, includeSubtasks } },
             });
           } else {
-            this.toast('Проект создан', true);
+            this.toast(this.t().created, true);
             this.router.navigate(['/projects', project.id]);
           }
         },
         error: (err) => {
-          this.toast(err?.message ?? 'Не удалось создать проект');
+          this.toast(err?.message ?? this.t().createFailed);
         },
       });
   }
@@ -162,7 +168,7 @@ export class Projects implements OnInit {
     if (!target) return;
     const name = this.renameName().trim();
     if (!name) {
-      this.toast('Название не может быть пустым');
+      this.toast(this.t().renameEmpty);
       return;
     }
     this.projectService.updateProject(target.id, {
@@ -170,26 +176,26 @@ export class Projects implements OnInit {
       description: this.renameDescription().trim() || undefined,
     }).subscribe({
       next: () => {
-        this.toast('Проект обновлён', true);
+        this.toast(this.t().updated, true);
         this.showRenameDialog.set(false);
         this.loadProjects();
       },
-      error: (err) => this.toast(err?.message ?? 'Не удалось обновить проект'),
+      error: (err) => this.toast(err?.message ?? this.t().updateFailed),
     });
   }
 
   deleteProject(project: Project, event: Event) {
     event.stopPropagation();
     this.openConfirm(
-      'Удалить проект?',
-      `Все задачи и колонки проекта «${project.name}» будут безвозвратно удалены.`,
+      this.t().deleteTitle,
+      `${this.t().deleteMsgPrefix}${project.name}${this.t().deleteMsgSuffix}`,
       () => {
         this.projectService.deleteProject(project.id).subscribe({
           next: () => {
-            this.toast('Проект удалён', true);
+            this.toast(this.t().deleted, true);
             this.loadProjects();
           },
-          error: (err) => this.toast(err?.message ?? 'Не удалось удалить проект'),
+          error: (err) => this.toast(err?.message ?? this.t().deleteFailed),
         });
       },
     );
@@ -215,7 +221,7 @@ export class Projects implements OnInit {
   private toast(detail: string, success = false) {
     this.messageService.add({
       severity: 'secondary',
-      summary: success ? 'Готово' : 'Ошибка',
+      summary: success ? this.t().toastDone : this.t().toastError,
       detail,
       key: 'br',
     });

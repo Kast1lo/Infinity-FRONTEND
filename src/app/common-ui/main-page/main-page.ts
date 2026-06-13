@@ -28,17 +28,21 @@ export class MainPage implements OnInit, OnDestroy {
 
   readonly t        = computed(() => this.langService.t());
   readonly features = computed(() => this.langService.t().features);
-  readonly stats    = computed(() => this.langService.t().stats);
   readonly trust    = computed(() => this.langService.t().trust);
   readonly faqs     = computed(() => this.langService.t().faqs);
 
   openFaq: number | null = 0;
   toggleFaq(i: number) { this.openFaq = this.openFaq === i ? null : i; }
 
+  menuOpen = false;
+  toggleMenu() { this.menuOpen = !this.menuOpen; }
+  closeMenu()  { this.menuOpen = false; }
+
   @HostListener('window:scroll')
   onScroll() { this.navScrolled = window.scrollY > 140; }
 
   scrollTo(id: string) {
+    this.closeMenu();
     const el = document.getElementById(id);
     if (!el) return;
     el.scrollIntoView({ behavior: 'smooth', block: 'start' });

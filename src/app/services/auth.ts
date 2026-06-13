@@ -82,6 +82,36 @@ export class AuthService {
       );
   }
 
+  forgotPassword(email: string): Observable<{ message: string }> {
+    return this.http
+      .post<{ message: string }>(
+        `${this.apiUrl}/auth/forgot-password`,
+        { email },
+        { withCredentials: true },
+      )
+      .pipe(
+        catchError(err => throwError(() => err)),
+      );
+  }
+
+  resetPassword(email: string, code: string, passwordHash: string): Observable<UserProfile> {
+    this._isLoading.set(true);
+    this._error.set(null);
+    return this.http
+      .post(`${this.apiUrl}/auth/reset-password`, { email, code, passwordHash }, { withCredentials: true })
+      .pipe(
+        switchMap(() => this.userService.getProfile()),
+        tap(() => {
+          this._isLoading.set(false);
+          this.router.navigate(['/profile']);
+        }),
+        catchError(err => {
+          this._isLoading.set(false);
+          return throwError(() => err);
+        }),
+      );
+  }
+
   resendCode(email: string): Observable<{ message: string }> {
     return this.http
       .post<{ message: string }>(

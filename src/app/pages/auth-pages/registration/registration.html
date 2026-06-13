@@ -1,30 +1,56 @@
+<div class="auth">
 
-<div class="page-actions">
-  <button class="page-btn" (click)="screen() === 'verify' ? goBack() : null"
-    [routerLink]="screen() === 'register' ? '/' : null"
-    [pTooltip]="screen() === 'verify' ? t().tooltipBack : t().tooltipHome" tooltipPosition="right">
-    <i class="pi pi-arrow-left"></i>
-  </button>
-  <button class="page-btn" (click)="themeService.toggle()"
-    [pTooltip]="isDark() ? t().themeLight : t().themeDark" tooltipPosition="left">
-    <i [class]="isDark() ? 'pi pi-sun' : 'pi pi-moon'"></i>
-  </button>
-</div>
+  <div class="page-actions">
+    <button type="button" class="page-btn" (click)="screen() === 'verify' ? goBack() : null"
+      [routerLink]="screen() === 'register' ? '/' : null"
+      [pTooltip]="screen() === 'verify' ? t().tooltipBack : t().tooltipHome" tooltipPosition="right"
+      [attr.aria-label]="screen() === 'verify' ? t().tooltipBack : t().tooltipHome">
+      <i class="pi pi-arrow-left" aria-hidden="true"></i>
+    </button>
+    <button type="button" class="page-btn" (click)="themeService.toggle()"
+      [pTooltip]="isDark() ? t().themeLight : t().themeDark" tooltipPosition="left"
+      [attr.aria-label]="isDark() ? t().themeLight : t().themeDark">
+      <i [class]="isDark() ? 'pi pi-sun' : 'pi pi-moon'" aria-hidden="true"></i>
+    </button>
+  </div>
 
-<div class="form-container">
+  <!-- ───── Бренд-панель ───── -->
+  <aside class="auth__brand" aria-hidden="true">
+    <span class="auth__ghost">∞</span>
 
-  @if (screen() === 'register') {
-    <form (submit)="onSubmit($event)" novalidate>
-      <div class="form-card">
+    <div class="auth__brand-inner">
+      <div class="auth__brand-content">
+        <img class="auth__brand-logo" src="infinity.svg" alt="Infinity">
+        <h2 class="auth__brand-title">{{ t().panelTitle }}</h2>
+        <p class="auth__brand-text">{{ t().panelText }}</p>
+      </div>
 
-        <img class="logotype" [src]="imagePath()" alt="infinity">
+      <div class="auth__brand-foot">
+        <span>RU · EN</span>
+        <span>infinity-vault.com</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ───── Форма ───── -->
+  <main class="auth__main">
+
+    @if (screen() === 'register') {
+      <form class="auth__form" (submit)="onSubmit($event)" novalidate>
+
+        <div class="auth__head">
+          <img class="auth__logo" [src]="imagePath()" alt="Infinity">
+          <h1 class="auth__title">{{ t().title }}</h1>
+          <p class="auth__subtitle">{{ t().subtitle }}</p>
+        </div>
 
         <div class="inputs-form">
 
           <div class="field-wrap">
+            <label for="reg-username" class="sr-only">{{ t().usernamePlaceholder }}</label>
             <div class="input-field" [class.input-field--error]="showUsernameError()">
-              <i class="pi pi-user field-icon"></i>
-              <input pInputText [placeholder]="t().usernamePlaceholder" [formField]="registerForm.username"/>
+              <i class="pi pi-user field-icon" aria-hidden="true"></i>
+              <input id="reg-username" autocomplete="username" pInputText [placeholder]="t().usernamePlaceholder" [formField]="registerForm.username"/>
             </div>
             @if (showUsernameError()) {
               <span class="field-error">{{ usernameError() }}</span>
@@ -32,9 +58,10 @@
           </div>
 
           <div class="field-wrap">
+            <label for="reg-email" class="sr-only">{{ t().emailPlaceholder }}</label>
             <div class="input-field" [class.input-field--error]="showEmailError()">
-              <i class="pi pi-at field-icon"></i>
-              <input type="email" pInputText [placeholder]="t().emailPlaceholder" [formField]="registerForm.email"/>
+              <i class="pi pi-at field-icon" aria-hidden="true"></i>
+              <input id="reg-email" type="email" autocomplete="email" pInputText [placeholder]="t().emailPlaceholder" [formField]="registerForm.email"/>
             </div>
             @if (showEmailError()) {
               <span class="field-error">{{ emailError() }}</span>
@@ -42,9 +69,12 @@
           </div>
 
           <div class="field-wrap">
+            <label for="reg-password" class="sr-only">{{ t().passwordPlaceholder }}</label>
             <div class="input-field" [class.input-field--error]="showPasswordError()">
-              <i class="pi pi-lock field-icon"></i>
+              <i class="pi pi-lock field-icon" aria-hidden="true"></i>
               <p-password
+                inputId="reg-password"
+                autocomplete="new-password"
                 [placeholder]="t().passwordPlaceholder"
                 [toggleMask]="true"
                 [feedback]="false"
@@ -71,70 +101,75 @@
           />
         </div>
 
-        <p class="notreg">{{ t().hasAccount }}</p>
-        <p-button class="go-login" routerLink="/login" [label]="t().loginBtn"/>
-
-      </div>
-    </form>
-  }
-
-  @if (screen() === 'verify') {
-    <div class="form-card verify-card">
-
-      <div class="verify-header">
-        <div class="verify-icon">
-          <i class="pi pi-envelope"></i>
-        </div>
-        <h2 class="verify-title">{{ t().verifyTitle }}</h2>
-        <p class="verify-subtitle">
-          {{ t().verifySubtitle }}<br>
-          <strong>{{ pendingEmail() }}</strong>
+        <p class="notreg">
+          {{ t().hasAccount }}
+          <a class="notreg__link" routerLink="/login">{{ t().loginBtn }}</a>
         </p>
-      </div>
 
-      <div class="code-inputs">
-        @for (digit of codeDigits(); track $index) {
-          <input
-            [id]="'code-' + $index"
-            class="code-input"
-            [class.code-input--error]="!!codeError()"
-            [class.code-input--filled]="digit !== ''"
-            type="text"
-            inputmode="numeric"
-            maxlength="1"
-            [value]="digit"
-            (input)="onDigitInput($event, $index)"
-            (keydown)="onDigitKeydown($event, $index)"
-            (paste)="onDigitPaste($event)"
-            [disabled]="isVerifying()"
+      </form>
+    }
+
+    @if (screen() === 'verify') {
+      <div class="auth__form verify">
+
+        <div class="verify-header">
+          <div class="verify-icon">
+            <i class="pi pi-envelope"></i>
+          </div>
+          <h2 class="auth__title">{{ t().verifyTitle }}</h2>
+          <p class="verify-subtitle">
+            {{ t().verifySubtitle }}<br>
+            <strong>{{ pendingEmail() }}</strong>
+          </p>
+        </div>
+
+        <div class="code-inputs" role="group" [attr.aria-label]="t().verifyTitle">
+          @for (digit of codeDigits(); track $index) {
+            <input
+              [id]="'code-' + $index"
+              class="code-input"
+              [class.code-input--error]="!!codeError()"
+              [class.code-input--filled]="digit !== ''"
+              type="text"
+              inputmode="numeric"
+              autocomplete="one-time-code"
+              maxlength="1"
+              [attr.aria-label]="'Цифра ' + ($index + 1) + ' из 6'"
+              [value]="digit"
+              (input)="onDigitInput($event, $index)"
+              (keydown)="onDigitKeydown($event, $index)"
+              (paste)="onDigitPaste($event)"
+              [disabled]="isVerifying()"
+            />
+          }
+        </div>
+
+        @if (codeError()) {
+          <div class="error-msg">{{ codeError() }}</div>
+        }
+
+        <div class="btn-submit">
+          <p-button
+            [label]="t().verifyBtn"
+            [loading]="isVerifying()"
+            [disabled]="isVerifying() || codeDigits().join('').length !== 6"
+            (onClick)="submitCode()"
           />
-        }
+        </div>
+
+        <div class="resend-wrap">
+          @if (resendCooldown() > 0) {
+            <span class="resend-timer">{{ t().resendTimerPrefix }} {{ resendCooldown() }} {{ t().resendTimerSuffix }}</span>
+          } @else {
+            <button type="button" class="resend-btn" (click)="resendCode()" [disabled]="isResending()">
+              {{ isResending() ? t().resending : t().resendBtn }}
+            </button>
+          }
+        </div>
+
       </div>
+    }
 
-      @if (codeError()) {
-        <div class="error-msg">{{ codeError() }}</div>
-      }
-
-      <div class="btn-submit">
-        <p-button
-          [label]="t().verifyBtn"
-          [loading]="isVerifying()"
-          [disabled]="isVerifying() || codeDigits().join('').length !== 6"
-          (onClick)="submitCode()"
-        />
-      </div>
-
-      <div class="resend-wrap">
-        @if (resendCooldown() > 0) {
-          <span class="resend-timer">{{ t().resendTimerPrefix }} {{ resendCooldown() }} {{ t().resendTimerSuffix }}</span>
-        } @else {
-          <button class="resend-btn" (click)="resendCode()" [disabled]="isResending()">
-            {{ isResending() ? t().resending : t().resendBtn }}
-          </button>
-        }
-      </div>
-
-    </div>
-  }
+  </main>
 
 </div>

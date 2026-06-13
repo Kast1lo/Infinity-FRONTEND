@@ -16,7 +16,10 @@
         [pTooltip]="t().backToProjects" tooltipPosition="bottom"
         (onClick)="goToProjects()"/>
       @if (projectName()) {
-        <h1 class="project-name">{{ projectName() }}</h1>
+        <div class="board-head">
+          <span class="board-eyebrow">{{ t().boardEyebrow }}</span>
+          <h1 class="project-name">{{ projectName() }}</h1>
+        </div>
       }
     </div>
     <div class="toolbar-actions">
@@ -41,7 +44,10 @@
         <div class="column" cdkDropList [cdkDropListData]="column.tasks || []" (cdkDropListDropped)="drop($event, column.id)">
 
           <div class="work-with-column">
-            <h2 class="name-columns">{{ column.name }}</h2>
+            <div class="col-head-left">
+              <h2 class="name-columns">{{ column.name }}</h2>
+              <span class="col-count">{{ (column.tasks || []).length }}</span>
+            </div>
             <div>
               <p-button icon="pi pi-ellipsis-v" [text]="true" [outlined]="true" size="small"
                 (click)="openColumnMenu($event, column, columnMenu)"/>

@@ -3,26 +3,23 @@
 
   <p-toast position="bottom-right" key="profile-toast"></p-toast>
 
-  
+  <!-- ─── Cropper modal ─── -->
   @if (showCropper()) {
-    <div class="ep-cropper-backdrop" (click)="closeCropper()">
-      <div class="ep-cropper-modal" (click)="$event.stopPropagation()">
-        <div class="ep-cropper-header">
-          <span class="ep-cropper-title">{{ t().cropTitle }}</span>
-          <button class="ep-cropper-close" (click)="closeCropper()">
+    <div class="ep-crop-backdrop" (click)="closeCropper()">
+      <div class="ep-crop-modal" (click)="$event.stopPropagation()">
+        <div class="ep-crop-head">
+          <span class="ep-crop-title">{{ t().cropTitle }}</span>
+          <button class="ep-crop-x" (click)="closeCropper()" aria-label="Закрыть">
             <i class="pi pi-times"></i>
           </button>
         </div>
-        <div class="ep-cropper-body">
-          <img #cropperImage [src]="cropImageSrc()" class="ep-cropper-img" />
+        <div class="ep-crop-body">
+          <img #cropperImage [src]="cropImageSrc()" class="ep-crop-img" />
         </div>
-        <div class="ep-cropper-footer">
-          <button class="ep-cropper-btn ep-cropper-btn--cancel" (click)="closeCropper()">
-            {{ t().cropCancel }}
-          </button>
-          <button class="ep-cropper-btn ep-cropper-btn--confirm" (click)="confirmCrop()">
-            <i class="pi pi-check"></i>
-            {{ t().cropApply }}
+        <div class="ep-crop-foot">
+          <button class="ep-btn ep-btn--ghost" (click)="closeCropper()">{{ t().cropCancel }}</button>
+          <button class="ep-btn ep-btn--solid" (click)="confirmCrop()">
+            <i class="pi pi-check"></i>{{ t().cropApply }}
           </button>
         </div>
       </div>
@@ -30,45 +27,55 @@
   }
 
   @if (userService.profile(); as user) {
-    <div class="ep-page">
+    <main class="ep-main">
+      <div class="ep-wrap">
 
-      
-      <div class="ep-left">
+        <!-- ─── Page header ─── -->
+        <header class="ep-head">
+          <div class="ep-head-text">
+            <span class="ep-eyebrow">{{ t().pageEyebrow }}</span>
+            <h1 class="ep-title">{{ t().pageTitle }}</h1>
+            <p class="ep-subtitle">{{ t().pageSubtitle }}</p>
+          </div>
+          <span class="ep-head-mark" aria-hidden="true">∞</span>
+        </header>
 
-        
-        <div class="ep-card ep-avatar-card">
+        <!-- ─── Identity hero ─── -->
+        <section class="ep-hero">
+          <span class="ep-hero-accent" aria-hidden="true"></span>
 
-          <div class="ep-avatar-wrap" (click)="avatarFileInput.click()">
-            @if (avatarPreview()) {
-              <img [src]="avatarPreview()" class="ep-avatar-img" />
-            } @else if (user.avatarUrl) {
-              <img [src]="user.avatarUrl" class="ep-avatar-img" />
-            } @else {
-              <div class="ep-avatar-initials">{{ initials() }}</div>
-            }
-            <div class="ep-avatar-overlay">
-              <i class="pi pi-camera"></i>
+          <div class="ep-hero-id">
+            <div class="ep-avatar" (click)="avatarFileInput.click()">
+              @if (avatarPreview()) {
+                <img [src]="avatarPreview()" class="ep-avatar-img" />
+              } @else if (user.avatarUrl) {
+                <img [src]="user.avatarUrl" class="ep-avatar-img" />
+              } @else {
+                <div class="ep-avatar-initials">{{ initials() }}</div>
+              }
+              <div class="ep-avatar-overlay"><i class="pi pi-camera"></i></div>
+              <input
+                #avatarFileInput
+                type="file"
+                accept="image/*"
+                hidden
+                (change)="onAvatarFileChange($event)"
+              />
             </div>
-            <input
-              #avatarFileInput
-              type="file"
-              accept="image/*"
-              style="display:none"
-              (change)="onAvatarFileChange($event)"
-            />
+
+            <div class="ep-hero-meta">
+              <h2 class="ep-name">{{ user.username }}</h2>
+              <span class="ep-email">{{ user.email }}</span>
+              <span class="ep-avatar-hint">
+                <i class="pi pi-camera"></i>{{ t().avatarHint }}
+              </span>
+            </div>
           </div>
 
-          <div class="ep-avatar-info">
-            <div class="ep-username">{{ user.username }}</div>
-            <div class="ep-useremail">{{ user.email }}</div>
-          </div>
-
-          <div class="ep-divider"></div>
-
-          <div class="ep-upload-row">
+          <div class="ep-hero-actions">
             <button
-              class="ep-upload-btn"
-              [class.ep-upload-btn--active]="!!selectedFile()"
+              class="ep-btn ep-btn--solid"
+              [class.is-armed]="!!selectedFile()"
               [disabled]="isUploading()"
               (click)="selectedFile() ? onAvatarUpload() : avatarFileInput.click()"
             >
@@ -82,155 +89,176 @@
             </button>
 
             @if (selectedFile()) {
-              <button class="ep-cancel-btn" (click)="cancelAvatarSelect()">
+              <button class="ep-btn ep-btn--ghost ep-btn--icon" (click)="cancelAvatarSelect()" aria-label="Отмена">
                 <i class="pi pi-times"></i>
               </button>
             }
           </div>
+        </section>
 
-        </div>
+        <!-- ─── Settings grid ─── -->
+        <div class="ep-grid">
 
-        
-        <div class="ep-card ep-bg-card">
-          <div class="ep-card-label">{{ t().bgLabel }}</div>
-          <div class="ep-bg-upload" (click)="bgFileInput.click()">
-            <i class="pi pi-cloud-upload"></i>
-            <span>{{ t().bgUpload }}</span>
-            <input #bgFileInput type="file" accept="image/*" style="display:none" (change)="onCustomBg($event)" />
-          </div>
-          @if (bgService.history().length > 0) {
-            <div class="ep-card-label ep-bg-history-label">{{ t().bgHistoryLabel }}</div>
-            <div class="ep-bg-grid">
-              @for (url of bgService.history(); track url) {
-                <div
-                  class="ep-bg-thumb"
-                  [class.ep-bg-active]="bgService.backgroundUrl() === url"
-                  (click)="bgService.setBackground(url)"
-                >
-                  <img [src]="url" loading="lazy" />
-                  <button
-                    class="ep-bg-remove"
-                    (click)="bgService.removeFromHistory(url); $event.stopPropagation()"
-                  >
-                    <i class="pi pi-times"></i>
-                  </button>
-                  @if (bgService.backgroundUrl() === url) {
-                    <div class="ep-bg-check"><i class="pi pi-check"></i></div>
+          <!-- 01 — Логин -->
+          <section class="ep-card">
+            <div class="ep-sec-head">
+              <span class="ep-sec-idx">01</span>
+              <span class="ep-sec-label">{{ t().infoLabel }}</span>
+              <span class="ep-sec-rule"></span>
+            </div>
+
+            <div class="ep-field">
+              <label class="ep-label">{{ t().currentLoginLabel }}</label>
+              <div class="ep-input-wrap is-readonly">
+                <i class="pi pi-user ep-input-ic"></i>
+                <input pInputText [value]="user.username" class="ep-input" readonly />
+              </div>
+            </div>
+
+            <div class="ep-field">
+              <label class="ep-label">{{ t().newLoginLabel }}</label>
+              <div class="ep-input-wrap">
+                <i class="pi pi-pencil ep-input-ic"></i>
+                <input
+                  pInputText
+                  [(ngModel)]="newUsername"
+                  [placeholder]="t().newLoginPlaceholder"
+                  class="ep-input"
+                />
+              </div>
+            </div>
+
+            <div class="ep-actions">
+              <p-button
+                [label]="t().saveLoginBtn"
+                icon="pi pi-check"
+                [disabled]="!hasUsernameChanges() || isLoading()"
+                [loading]="isLoading()"
+                (onClick)="saveUsername()"
+              />
+            </div>
+          </section>
+
+          <!-- 02 — Пароль -->
+          <section class="ep-card">
+            <div class="ep-sec-head">
+              <span class="ep-sec-idx">02</span>
+              <span class="ep-sec-label">{{ t().pwdSectionLabel }}</span>
+              <span class="ep-sec-rule"></span>
+            </div>
+
+            <div class="ep-field">
+              <label class="ep-label">{{ t().currentPwdLabel }}</label>
+              <div class="ep-input-wrap">
+                <i class="pi pi-lock ep-input-ic"></i>
+                <p-password
+                  [(ngModel)]="currentPassword"
+                  [placeholder]="t().currentPwdPlaceholder"
+                  [toggleMask]="true"
+                  [feedback]="false"
+                  styleClass="ep-pwd-input"
+                />
+              </div>
+            </div>
+
+            <div class="ep-field">
+              <label class="ep-label">{{ t().newPwdLabel }}</label>
+              <div class="ep-input-wrap">
+                <i class="pi pi-lock-open ep-input-ic"></i>
+                <p-password
+                  [(ngModel)]="newPassword"
+                  [placeholder]="t().newPwdPlaceholder"
+                  [toggleMask]="true"
+                  [feedback]="false"
+                  styleClass="ep-pwd-input"
+                />
+              </div>
+            </div>
+
+            <div class="ep-field">
+              <label class="ep-label">{{ t().confirmPwdLabel }}</label>
+              <div class="ep-input-wrap">
+                <i class="pi pi-lock-open ep-input-ic"></i>
+                <p-password
+                  [(ngModel)]="confirmPassword"
+                  [placeholder]="t().confirmPwdPlaceholder"
+                  [toggleMask]="true"
+                  [feedback]="false"
+                  styleClass="ep-pwd-input"
+                />
+              </div>
+            </div>
+
+            @if (pwdError()) {
+              <div class="ep-error">
+                <i class="pi pi-exclamation-circle"></i>{{ pwdError() }}
+              </div>
+            }
+
+            <div class="ep-actions">
+              <p-button
+                [label]="t().changePwdBtn"
+                icon="pi pi-shield"
+                [disabled]="!hasPasswordChanges() || isChangingPwd()"
+                [loading]="isChangingPwd()"
+                (onClick)="changePassword()"
+              />
+            </div>
+          </section>
+
+          <!-- 03 — Фон приложения -->
+          <section class="ep-card ep-card--wide">
+            <div class="ep-sec-head">
+              <span class="ep-sec-idx">03</span>
+              <span class="ep-sec-label">{{ t().bgLabel }}</span>
+              <span class="ep-sec-rule"></span>
+              @if (bgService.backgroundUrl()) {
+                <button class="ep-reset" (click)="bgService.clearBackground()">
+                  <i class="pi pi-eye-slash"></i>{{ t().bgRemove }}
+                </button>
+              }
+            </div>
+
+            <div class="ep-bg-row">
+              <div class="ep-bg-drop" (click)="bgFileInput.click()">
+                <i class="pi pi-cloud-upload"></i>
+                <span>{{ t().bgUpload }}</span>
+                <input #bgFileInput type="file" accept="image/*" hidden (change)="onCustomBg($event)" />
+              </div>
+
+              @if (bgService.history().length > 0) {
+                <div class="ep-bg-grid">
+                  @for (url of bgService.history(); track url) {
+                    <div
+                      class="ep-bg-thumb"
+                      [class.is-active]="bgService.backgroundUrl() === url"
+                      (click)="bgService.setBackground(url)"
+                    >
+                      <img [src]="url" loading="lazy" />
+                      <button
+                        class="ep-bg-rm"
+                        (click)="bgService.removeFromHistory(url); $event.stopPropagation()"
+                        aria-label="Удалить"
+                      >
+                        <i class="pi pi-times"></i>
+                      </button>
+                      @if (bgService.backgroundUrl() === url) {
+                        <div class="ep-bg-check"><i class="pi pi-check"></i></div>
+                      }
+                    </div>
                   }
+                </div>
+              } @else {
+                <div class="ep-bg-empty">
+                  <i class="pi pi-image"></i>
+                  <span>{{ t().bgHistoryLabel }}</span>
                 </div>
               }
             </div>
-          }
-          @if (bgService.backgroundUrl()) {
-            <button class="ep-reset-bg" (click)="bgService.clearBackground()">
-              <i class="pi pi-eye-slash"></i> {{ t().bgRemove }}
-            </button>
-          }
-        </div>
+          </section>
 
+        </div>
       </div>
-
-      
-      <div class="ep-right">
-
-        
-        <div class="ep-card ep-form-card">
-          <div class="ep-card-label">{{ t().infoLabel }}</div>
-
-          <div class="ep-field">
-            <label class="ep-field-label">{{ t().currentLoginLabel }}</label>
-            <div class="ep-input-wrap ep-input-wrap--readonly">
-              <i class="pi pi-user ep-input-icon"></i>
-              <input pInputText [value]="user.username" class="ep-input" readonly />
-            </div>
-          </div>
-
-          <div class="ep-field">
-            <label class="ep-field-label">{{ t().newLoginLabel }}</label>
-            <div class="ep-input-wrap">
-              <i class="pi pi-user ep-input-icon"></i>
-              <input
-                pInputText
-                [(ngModel)]="newUsername"
-                [placeholder]="t().newLoginPlaceholder"
-                class="ep-input"
-              />
-            </div>
-          </div>
-
-          <div class="ep-form-actions">
-            <p-button
-              [label]="t().saveLoginBtn"
-              icon="pi pi-check"
-              [disabled]="!hasUsernameChanges() || isLoading()"
-              [loading]="isLoading()"
-              (onClick)="saveUsername()"
-            />
-          </div>
-        </div>
-
-        
-        <div class="ep-card ep-form-card ep-pwd-card">
-          <div class="ep-card-label">{{ t().pwdSectionLabel }}</div>
-
-          <div class="ep-field">
-            <label class="ep-field-label">{{ t().currentPwdLabel }}</label>
-            <div class="ep-input-wrap">
-              <i class="pi pi-lock ep-input-icon"></i>
-              <p-password
-                [(ngModel)]="currentPassword"
-                [placeholder]="t().currentPwdPlaceholder"
-                [toggleMask]="true"
-                [feedback]="false"
-                styleClass="ep-pwd-input"
-              />
-            </div>
-          </div>
-
-          <div class="ep-field">
-            <label class="ep-field-label">{{ t().newPwdLabel }}</label>
-            <div class="ep-input-wrap">
-              <i class="pi pi-lock-open ep-input-icon"></i>
-              <p-password
-                [(ngModel)]="newPassword"
-                [placeholder]="t().newPwdPlaceholder"
-                [toggleMask]="true"
-                [feedback]="false"
-                styleClass="ep-pwd-input"
-              />
-            </div>
-          </div>
-
-          <div class="ep-field">
-            <label class="ep-field-label">{{ t().confirmPwdLabel }}</label>
-            <div class="ep-input-wrap">
-              <i class="pi pi-lock-open ep-input-icon"></i>
-              <p-password
-                [(ngModel)]="confirmPassword"
-                [placeholder]="t().confirmPwdPlaceholder"
-                [toggleMask]="true"
-                [feedback]="false"
-                styleClass="ep-pwd-input"
-              />
-            </div>
-          </div>
-
-          @if (pwdError()) {
-            <div class="ep-error-msg">{{ pwdError() }}</div>
-          }
-
-          <div class="ep-form-actions">
-            <p-button
-              [label]="t().changePwdBtn"
-              icon="pi pi-shield"
-              [disabled]="!hasPasswordChanges() || isChangingPwd()"
-              [loading]="isChangingPwd()"
-              (onClick)="changePassword()"
-            />
-          </div>
-        </div>
-
-      </div>
-    </div>
+    </main>
   }
 </div>

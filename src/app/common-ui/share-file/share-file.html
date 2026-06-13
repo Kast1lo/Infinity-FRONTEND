@@ -13,11 +13,6 @@
   </div>
 </nav>
 
-<div class="sf-orbs" aria-hidden="true">
-  <span class="orb orb--1"></span>
-  <span class="orb orb--2"></span>
-</div>
-
 <main class="sf-page">
 
   @if (loading()) {
@@ -30,7 +25,7 @@
   @else if (errorMsg()) {
     <div class="sf-state sf-state--error">
       <div class="sf-error-icon"><i class="pi pi-exclamation-circle"></i></div>
-      <h2 class="sf-error-title">{{ t().errorTitlePart1 }} <em class="gradient-text">{{ t().errorTitleEm }}</em></h2>
+      <h2 class="sf-error-title">{{ t().errorTitlePart1 }} <em>{{ t().errorTitleEm }}</em></h2>
       <p class="sf-error-msg">{{ errorMsg() }}</p>
       <a class="btn-hero-ghost" routerLink="/">
         <i class="pi pi-arrow-left"></i> {{ t().errorBack }}
@@ -44,7 +39,6 @@
 
 
       <section class="sf-preview-wrap">
-        <span class="sf-preview-glow" aria-hidden="true"></span>
         <div class="sf-preview" [class.sf-preview--media]="isImage(file.mimeType) || isVideo(file.mimeType)">
 
           @if (isImage(file.mimeType)) {
@@ -148,9 +142,7 @@
             <i [class]="'pi ' + getFileIcon(file.mimeType)"></i>
           </div>
 
-          <h1 class="sf-name" [title]="file.name">
-            <em class="gradient-text">{{ file.name }}</em>
-          </h1>
+          <h1 class="sf-name" [title]="file.name">{{ file.name }}</h1>
 
           <div class="sf-chips">
             <span class="sf-chip">{{ getFileType(file.mimeType) }}</span>
@@ -162,7 +154,7 @@
           <li class="sf-stat">
             <span class="sf-stat-label"><i class="pi pi-database"></i> {{ t().statSize }}</span>
             <span class="sf-stat-value">
-              <strong class="gradient-text">{{ formatSizeShort(file.size) }}</strong> {{ getSizeUnit(file.size) }}
+              <strong>{{ formatSizeShort(file.size) }}</strong> {{ getSizeUnit(file.size) }}
             </span>
           </li>
           <li class="sf-stat">
