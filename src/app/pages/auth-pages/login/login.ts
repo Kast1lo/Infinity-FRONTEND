@@ -5,6 +5,7 @@ import {
   computed,
   inject,
   OnDestroy,
+  OnInit,
   signal,
 } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
@@ -41,12 +42,17 @@ type Screen = 'login' | 'forgot' | 'reset';
   styleUrl: './login.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class Login implements OnDestroy {
+export class Login implements OnInit, OnDestroy {
   private readonly router      = inject(Router);
   private readonly authService = inject(AuthService);
   private readonly cdr         = inject(ChangeDetectorRef);
   readonly themeService = inject(ThemeService);
   readonly langService  = inject(LangService);
+
+  ngOnInit() {
+    // Если пользователь ранее выбрал «запомнить меня» и сессия жива — сразу в профиль.
+    this.authService.autoRedirectIfRemembered();
+  }
 
   isDark    = computed(() => this.themeService.theme() === 'dark');
   imagePath = computed(() => this.isDark() ? 'infinityLogo.svg' : 'infinity.svg');
@@ -73,7 +79,7 @@ export class Login implements OnDestroy {
 
   isSubmitting = signal(false);
   errorMessage = signal<string | null>(null);
-  rememberMe   = signal(true);
+  rememberMe   = signal(false);
 
   toggleRemember() { this.rememberMe.update(v => !v); }
 

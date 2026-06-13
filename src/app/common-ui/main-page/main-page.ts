@@ -6,6 +6,7 @@ import { RouterLink } from '@angular/router';
 import { TooltipModule } from 'primeng/tooltip';
 import { ThemeService } from '../../services/theme';
 import { LangService } from '../../services/lang';
+import { AuthService } from '../../services/auth';
 
 @Component({
   selector: 'app-main-page',
@@ -19,6 +20,7 @@ export class MainPage implements OnInit, OnDestroy {
 
   readonly themeService = inject(ThemeService);
   readonly langService  = inject(LangService);
+  private readonly authService = inject(AuthService);
 
   isDark = computed(() => this.themeService.theme() === 'dark');
 
@@ -49,6 +51,9 @@ export class MainPage implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    // Запомненного пользователя с живой сессией сразу уводим в профиль.
+    this.authService.autoRedirectIfRemembered();
+
     this.observer = new IntersectionObserver(
       entries => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }),
       { threshold: 0.12 }
