@@ -485,6 +485,17 @@ export class FileSystem {
     await this.setShare(fileId, { isShared: true });
   }
 
+  // ─── Глобальный поиск (по имени, сервер) ───
+
+  searchAll(query: string) {
+    return this.http.get<{ files: FileItem[]; folders: FolderItem[] }>(
+      `${this.apiUrl}/file-system/search`,
+      { params: { q: query }, withCredentials: true }
+    ).pipe(
+      catchError(err => this.handleError(err, 'Ошибка поиска')),
+    );
+  }
+
   // ─── Избранное ───
 
   loadStarred() {

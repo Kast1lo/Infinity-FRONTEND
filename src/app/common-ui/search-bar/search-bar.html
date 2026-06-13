@@ -1,0 +1,58 @@
+<div class="asb">
+  <div class="asb-bar" [class.asb-bar--active]="open()">
+    <i class="pi pi-search asb-ic" aria-hidden="true"></i>
+    <input id="app-search-input" type="text" class="asb-field"
+      [value]="value()" (input)="onInput($event)" (focus)="onFocus()"
+      [placeholder]="t().searchPlaceholder" autocomplete="off" spellcheck="false"/>
+    @if (loading()) {
+      <i class="pi pi-spinner pi-spin asb-spin" aria-hidden="true"></i>
+    } @else if (value().length > 0) {
+      <button type="button" class="asb-clear" (click)="clear()" aria-label="×"><i class="pi pi-times"></i></button>
+    } @else {
+      <span class="asb-kbd">Ctrl K</span>
+    }
+  </div>
+
+  @if (open() && value().trim().length >= 2) {
+    <div class="asb-panel">
+      @if (searchEmpty()) {
+        <div class="asb-hint">{{ t().searchEmpty }}</div>
+      } @else {
+
+        @if (resFolders().length > 0) {
+          <div class="asb-group">{{ t().searchFolders }}</div>
+          @for (folder of resFolders(); track folder.id) {
+            <button type="button" class="asb-row" (click)="openFolderResult(folder)">
+              <i class="pi pi-folder asb-row-ic" aria-hidden="true"></i>
+              <span class="asb-row-name">{{ folder.name }}</span>
+              <i class="pi pi-arrow-up-right asb-row-go" aria-hidden="true"></i>
+            </button>
+          }
+        }
+
+        @if (resFiles().length > 0) {
+          <div class="asb-group">{{ t().searchFiles }}</div>
+          @for (file of resFiles(); track file.id) {
+            <button type="button" class="asb-row" (click)="openFileResult(file)">
+              <i class="pi pi-file asb-row-ic" aria-hidden="true"></i>
+              <span class="asb-row-name">{{ file.name }}</span>
+              <i class="pi pi-arrow-up-right asb-row-go" aria-hidden="true"></i>
+            </button>
+          }
+        }
+
+        @if (resTasks().length > 0) {
+          <div class="asb-group">{{ t().searchTasks }}</div>
+          @for (task of resTasks(); track task.id) {
+            <button type="button" class="asb-row" (click)="openTaskResult(task)">
+              <i class="pi pi-check-circle asb-row-ic" [class.asb-row-ic--done]="task.isCompleted" aria-hidden="true"></i>
+              <span class="asb-row-name" [class.asb-row-name--done]="task.isCompleted">{{ task.title }}</span>
+              <span class="asb-row-proj">{{ task.projectName }}</span>
+            </button>
+          }
+        }
+
+      }
+    </div>
+  }
+</div>

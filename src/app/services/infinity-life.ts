@@ -4,6 +4,7 @@ import { catchError, finalize, Observable, tap, throwError } from 'rxjs';
 
 import { Task, Subtask } from '../interfaces/infinity-life/tasks.model';
 import { Reminder } from '../interfaces/infinity-life/reminder.model';
+import { SearchTask } from '../interfaces/search/search-results.model';
 import { UpdateTask } from '../interfaces/infinity-life/update-task.model';
 import { CreateSubtaskDto } from '../interfaces/infinity-life/create-subtask.model';
 import { CreateColumnDto } from '../interfaces/infinity-life/create-column.model';
@@ -40,6 +41,15 @@ export class InfinityLife {
     return this.http.get<Reminder[]>(`${this.baseUrl}/infinity-life/reminders`, { withCredentials: true }).pipe(
       tap(reminders => this.reminders.set(reminders ?? [])),
       catchError(err => this.handleError(err, 'Не удалось загрузить напоминания'))
+    );
+  }
+
+  // Поиск задач по названию (для глобального поиска).
+  searchTasks(query: string): Observable<SearchTask[]> {
+    return this.http.get<SearchTask[]>(`${this.baseUrl}/infinity-life/search`, {
+      params: { q: query }, withCredentials: true,
+    }).pipe(
+      catchError(err => this.handleError(err, 'Ошибка поиска задач')),
     );
   }
 

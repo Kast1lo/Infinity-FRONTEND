@@ -232,6 +232,12 @@ export const TRANSLATIONS = {
       remindersEmpty: 'Нет дедлайнов',
       remindersOverdue: 'Просрочено',
       remindersSnooze: 'Отложить на 3 дня',
+      searchPlaceholder: 'Поиск файлов, папок, задач…',
+      searchHint: 'Введите минимум 2 символа для поиска',
+      searchEmpty: 'Ничего не найдено',
+      searchFiles: 'Файлы',
+      searchFolders: 'Папки',
+      searchTasks: 'Задачи',
     },
     pages: {
       auth: {
@@ -928,6 +934,12 @@ export const TRANSLATIONS = {
       remindersEmpty: 'No deadlines',
       remindersOverdue: 'Overdue',
       remindersSnooze: 'Snooze for 3 days',
+      searchPlaceholder: 'Search files, folders, tasks…',
+      searchHint: 'Type at least 2 characters to search',
+      searchEmpty: 'Nothing found',
+      searchFiles: 'Files',
+      searchFolders: 'Folders',
+      searchTasks: 'Tasks',
     },
     pages: {
       auth: {
