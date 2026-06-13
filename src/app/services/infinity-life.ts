@@ -1,8 +1,9 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { inject, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, signal } from '@angular/core';
 import { catchError, finalize, Observable, tap, throwError } from 'rxjs';
 
 import { Task, Subtask } from '../interfaces/infinity-life/tasks.model';
+import { Reminder } from '../interfaces/infinity-life/reminder.model';
 import { UpdateTask } from '../interfaces/infinity-life/update-task.model';
 import { CreateSubtaskDto } from '../interfaces/infinity-life/create-subtask.model';
 import { CreateColumnDto } from '../interfaces/infinity-life/create-column.model';
@@ -22,12 +23,33 @@ export class InfinityLife {
   readonly isLoading = signal(false);
   readonly error = signal<string | null>(null);
 
+  readonly reminders = signal<Reminder[]>([]);
+  readonly reminderCount = computed(() => this.reminders().length);
+  readonly overdueCount  = computed(() => this.reminders().filter(r => r.isOverdue).length);
+
   constructor() {}
 
   loadAllUserTasks(): Observable<Task[]> {
     return this.http.get<Task[]>(`${this.baseUrl}/infinity-life/tasks`, { withCredentials: true }).pipe(
       tap(tasks => this.allTasks.set(tasks)),
       catchError(err => this.handleError(err, 'Не удалось загрузить задачи'))
+    );
+  }
+
+  loadReminders(): Observable<Reminder[]> {
+    return this.http.get<Reminder[]>(`${this.baseUrl}/infinity-life/reminders`, { withCredentials: true }).pipe(
+      tap(reminders => this.reminders.set(reminders ?? [])),
+      catchError(err => this.handleError(err, 'Не удалось загрузить напоминания'))
+    );
+  }
+
+  // Отложить напоминание: сразу убираем из списка оптимистично, затем шлём на бэк.
+  snoozeReminder(taskId: string, days = 3): Observable<{ snoozedUntil: string }> {
+    this.reminders.update(list => list.filter(r => r.id !== taskId));
+    return this.http.patch<{ snoozedUntil: string }>(
+      `${this.baseUrl}/infinity-life/reminders/${taskId}/snooze`, { days }, { withCredentials: true }
+    ).pipe(
+      catchError(err => this.handleError(err, 'Не удалось отложить напоминание'))
     );
   }
 

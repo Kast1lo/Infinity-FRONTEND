@@ -227,6 +227,10 @@ export const TRANSLATIONS = {
       langSwitch: 'Switch to English',
       storageUpgrade: 'Улучшить план',
       storageAlmostFull: 'Хранилище почти заполнено',
+      remindersTitle: 'Напоминания',
+      remindersEmpty: 'Нет дедлайнов',
+      remindersOverdue: 'Просрочено',
+      remindersSnooze: 'Отложить на 3 дня',
     },
     pages: {
       auth: {
@@ -902,6 +906,10 @@ export const TRANSLATIONS = {
       langSwitch: 'Switch to Russian',
       storageUpgrade: 'Upgrade plan',
       storageAlmostFull: 'Storage almost full',
+      remindersTitle: 'Reminders',
+      remindersEmpty: 'No deadlines',
+      remindersOverdue: 'Overdue',
+      remindersSnooze: 'Snooze for 3 days',
     },
     pages: {
       auth: {

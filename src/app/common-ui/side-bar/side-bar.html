@@ -60,6 +60,48 @@
 
   <!-- Инструменты -->
   <div class="sb-tools">
+    <div class="sb-reminders">
+      <button type="button" class="sb-tool sb-tool--bell"
+        [class.sb-tool--active]="remindersOpen()"
+        (click)="toggleReminders($event)" [attr.aria-label]="t().remindersTitle">
+        <i class="pi pi-bell" aria-hidden="true"></i>
+        @if (reminderCount() > 0) {
+          <span class="sb-bell-badge" [class.sb-bell-badge--over]="overdueCount() > 0">{{ reminderCount() }}</span>
+        }
+      </button>
+
+      @if (remindersOpen()) {
+        <div class="sb-rem-panel" (click)="$event.stopPropagation()">
+          <div class="sb-rem-head">{{ t().remindersTitle }}</div>
+          @if (reminders().length === 0) {
+            <div class="sb-rem-empty">{{ t().remindersEmpty }}</div>
+          } @else {
+            <div class="sb-rem-list">
+              @for (r of reminders(); track r.id) {
+                <div class="sb-rem-row">
+                  <button type="button" class="sb-rem-item" (click)="openReminder(r)">
+                    <span class="sb-rem-dot" [class.sb-rem-dot--over]="r.isOverdue"></span>
+                    <span class="sb-rem-info">
+                      <span class="sb-rem-title">{{ r.title }}</span>
+                      <span class="sb-rem-meta">
+                        <span class="sb-rem-proj">{{ r.projectName }}</span>
+                        <span class="sb-rem-sep">·</span>
+                        <span [class.sb-rem-over]="r.isOverdue">{{ r.isOverdue ? t().remindersOverdue : (r.dueDate | date:'dd MMM') }}</span>
+                      </span>
+                    </span>
+                  </button>
+                  <button type="button" class="sb-rem-snooze" (click)="snoozeReminder(r, $event)"
+                    [attr.aria-label]="t().remindersSnooze" [attr.title]="t().remindersSnooze">
+                    <i class="pi pi-clock" aria-hidden="true"></i>
+                  </button>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+
     <button type="button" class="sb-tool sb-tool--theme" (click)="themeService.toggle()"
       [attr.aria-label]="isDark() ? t().themeLight : t().themeDark">
       <i [class]="isDark() ? 'pi pi-sun' : 'pi pi-moon'" aria-hidden="true"></i>
