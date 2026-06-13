@@ -1,13 +1,12 @@
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { SideBar } from '../../../common-ui/side-bar/side-bar';
 import { KanbanBoard } from './kanban-board/kanban-board';
 import { ProjectService } from '../../../services/project';
 
 @Component({
   selector: 'app-infinity-life',
-  imports: [CommonModule, SideBar, KanbanBoard],
+  imports: [CommonModule, KanbanBoard],
   templateUrl: './infinity-life.html',
   styleUrl: './infinity-life.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

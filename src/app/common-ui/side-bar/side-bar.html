@@ -1,11 +1,5 @@
 <aside class="sb">
 
-  <!-- Бренд (вордмарк, без символа бесконечности) -->
-  <a class="sb-brand" routerLink="/projects" aria-label="Infinity">
-    <span class="sb-brand-tile" aria-hidden="true"></span>
-    <span class="sb-brand-name">Infinity</span>
-  </a>
-
   <!-- Навигация -->
   <nav class="sb-nav" aria-label="Основная навигация">
 
@@ -63,66 +57,6 @@
 
   <div class="sb-spacer"></div>
 
-  <!-- Инструменты -->
-  <div class="sb-tools">
-    <div class="sb-reminders">
-      <button type="button" class="sb-tool sb-tool--bell"
-        [class.sb-tool--active]="remindersOpen()"
-        (click)="toggleReminders($event)" [attr.aria-label]="t().remindersTitle">
-        <i class="pi pi-bell" aria-hidden="true"></i>
-        @if (reminderCount() > 0) {
-          <span class="sb-bell-badge" [class.sb-bell-badge--over]="overdueCount() > 0">{{ reminderCount() }}</span>
-        }
-      </button>
-
-      @if (remindersOpen()) {
-        <div class="sb-rem-panel" (click)="$event.stopPropagation()">
-          <div class="sb-rem-head">{{ t().remindersTitle }}</div>
-          @if (reminders().length === 0) {
-            <div class="sb-rem-empty">{{ t().remindersEmpty }}</div>
-          } @else {
-            <div class="sb-rem-list">
-              @for (r of reminders(); track r.id) {
-                <div class="sb-rem-row">
-                  <button type="button" class="sb-rem-item" (click)="openReminder(r)">
-                    <span class="sb-rem-dot" [class.sb-rem-dot--over]="r.isOverdue"></span>
-                    <span class="sb-rem-info">
-                      <span class="sb-rem-title">{{ r.title }}</span>
-                      <span class="sb-rem-meta">
-                        <span class="sb-rem-proj">{{ r.projectName }}</span>
-                        <span class="sb-rem-sep">·</span>
-                        <span [class.sb-rem-over]="r.isOverdue">{{ r.isOverdue ? t().remindersOverdue : (r.dueDate | date:'dd MMM') }}</span>
-                      </span>
-                    </span>
-                  </button>
-                  <button type="button" class="sb-rem-snooze" (click)="snoozeReminder(r, $event)"
-                    [attr.aria-label]="t().remindersSnooze" [attr.title]="t().remindersSnooze">
-                    <i class="pi pi-clock" aria-hidden="true"></i>
-                  </button>
-                </div>
-              }
-            </div>
-          }
-        </div>
-      }
-    </div>
-
-    <button type="button" class="sb-tool sb-tool--theme" (click)="themeService.toggle()"
-      [attr.aria-label]="isDark() ? t().themeLight : t().themeDark">
-      <i [class]="isDark() ? 'pi pi-sun' : 'pi pi-moon'" aria-hidden="true"></i>
-    </button>
-
-    <button type="button" class="sb-tool sb-tool--lang" (click)="langService.toggle()"
-      [attr.aria-label]="t().langSwitch">
-      <span aria-hidden="true">{{ langService.lang() === 'ru' ? 'EN' : 'RU' }}</span>
-    </button>
-
-    <a class="sb-tool" routerLink="/edit" routerLinkActive="sb-tool--active"
-      [attr.aria-label]="t().settings">
-      <i class="pi pi-cog" aria-hidden="true"></i>
-    </a>
-  </div>
-
   <!-- Хранилище -->
   @if (storage(); as st) {
     <a class="sb-storage" routerLink="/profile" [class.sb-storage--warn]="showUpsell()">
@@ -142,20 +76,5 @@
       }
     </a>
   }
-
-  <!-- Аккаунт -->
-  <div class="sb-account">
-    <a class="sb-account-id" routerLink="/profile" [attr.aria-label]="t().profile">
-      <p-avatar [image]="avatarUrl()" icon="pi pi-user" shape="circle"/>
-      <span class="sb-id-text">
-        <span class="sb-id-name">{{ username() || '—' }}</span>
-        <span class="sb-id-mail">{{ email() }}</span>
-      </span>
-    </a>
-    <button type="button" class="sb-logout" (click)="authService.logout()"
-      [attr.aria-label]="t().logout">
-      <i class="pi pi-sign-out" aria-hidden="true"></i>
-    </button>
-  </div>
 
 </aside>

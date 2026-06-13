@@ -1,0 +1,221 @@
+:host {
+  --bg:      #0a0a0a;
+  --bg2:     #111111;
+  --bg3:     #1a1a1a;
+  --border:  #222222;
+  --border2: #2e2e2e;
+  --text:    #f0f0f0;
+  --text2:   #8a8a8a;
+  --text3:   #4a4a4a;
+  --shadow:  rgba(0,0,0,.4);
+  --danger:  #e05555;
+
+  display: block;
+  flex: 0 0 auto;
+}
+
+:host-context(.light-theme) {
+  --bg:      #f8f8f8;
+  --bg2:     #ffffff;
+  --bg3:     #f2f2f2;
+  --border:  #e6e6e6;
+  --border2: #d4d4d4;
+  --text:    #111111;
+  --text2:   #5a5a5a;
+  --text3:   #b0b0b0;
+  --shadow:  rgba(0,0,0,.12);
+  --danger:  #cc3b3b;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+.tb {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  height: 60px;
+  margin: 16px 16px 0;
+  padding: 0 14px 0 18px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+}
+
+// ─── Бренд ───
+
+.tb-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  text-decoration: none;
+  width: 200px;
+}
+
+.tb-brand-tile {
+  width: 22px; height: 22px;
+  border-radius: 6px;
+  background: var(--brand-accent);
+  flex-shrink: 0;
+}
+
+.tb-brand-name {
+  font-family: var(--brand-display);
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -.01em;
+  color: var(--text);
+}
+
+// ─── Поиск ───
+
+.tb-search {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  justify-content: center;
+
+  app-search-bar { width: 100%; max-width: 520px; }
+}
+
+// ─── Действия ───
+
+.tb-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  justify-content: flex-end;
+}
+
+.tb-tool {
+  position: relative;
+  width: 38px; height: 38px;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: 9px;
+  color: var(--text2);
+  cursor: pointer;
+  text-decoration: none;
+  transition: color .15s, background .15s, border-color .15s;
+
+  i { font-size: 15px; }
+  span { font-family: var(--brand-mono); font-size: 11px; font-weight: 700; }
+
+  &:hover { color: var(--text); background: rgba(128,128,128,.1); }
+  &--active { color: var(--brand-accent); border-color: var(--brand-accent); }
+  &--logout:hover { color: var(--danger); }
+}
+
+.tb-bell-badge {
+  position: absolute; top: 4px; right: 5px;
+  min-width: 15px; height: 15px; padding: 0 4px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 8px;
+  background: var(--brand-accent);
+  color: #0a0a0a;
+  font-family: var(--brand-mono); font-size: 9px; font-weight: 700;
+  &--over { background: var(--danger); color: #fff; }
+}
+
+.tb-account {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 4px 10px 4px 4px;
+  border-radius: 30px;
+  border: 1px solid var(--border);
+  text-decoration: none;
+  margin-left: 4px;
+  transition: border-color .15s, background .15s;
+  &:hover { border-color: var(--border2); background: rgba(128,128,128,.06); }
+}
+
+.tb-account-name {
+  font-family: var(--brand-mono);
+  font-size: 12.5px;
+  color: var(--text);
+  max-width: 130px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+// ─── Панель напоминаний ───
+
+.tb-reminders { position: relative; display: flex; }
+
+.tb-rem-panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 320px;
+  max-height: 380px;
+  display: flex; flex-direction: column;
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: 14px;
+  box-shadow: 0 18px 50px var(--shadow);
+  overflow: hidden;
+  z-index: 1100;
+  animation: tbRemIn .18s ease both;
+}
+
+@keyframes tbRemIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.tb-rem-head {
+  padding: 13px 16px;
+  font-family: var(--brand-mono); font-size: 11px; font-weight: 700;
+  letter-spacing: .14em; text-transform: uppercase; color: var(--text2);
+  border-bottom: 1px solid var(--border);
+}
+
+.tb-rem-empty {
+  padding: 24px 16px; text-align: center;
+  font-family: var(--brand-mono); font-size: 12px; color: var(--text3);
+}
+
+.tb-rem-list { overflow-y: auto; padding: 6px; display: flex; flex-direction: column; gap: 2px; }
+
+.tb-rem-row {
+  display: flex; align-items: stretch; border-radius: 9px;
+  transition: background .15s;
+  &:hover { background: rgba(128,128,128,.08); }
+  &:hover .tb-rem-snooze { opacity: 1; }
+}
+
+.tb-rem-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 9px 10px; border: none; background: transparent;
+  border-radius: 9px; cursor: pointer; text-align: left; flex: 1; min-width: 0;
+}
+
+.tb-rem-snooze {
+  flex-shrink: 0; width: 34px; border: none; background: transparent;
+  border-radius: 9px; cursor: pointer; color: var(--text3);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity .15s, color .15s, background .15s;
+  i { font-size: 12px; }
+  &:hover { color: var(--brand-accent); background: rgba(128,128,128,.10); }
+}
+
+.tb-rem-dot {
+  width: 7px; height: 7px; border-radius: 50%; margin-top: 5px; flex-shrink: 0;
+  background: var(--brand-accent);
+  &--over { background: var(--danger); }
+}
+
+.tb-rem-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+.tb-rem-title { font-family: var(--brand-mono); font-size: 12.5px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tb-rem-meta { display: flex; align-items: center; gap: 5px; font-family: var(--brand-mono); font-size: 10.5px; color: var(--text3); }
+.tb-rem-proj { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; }
+.tb-rem-over { color: var(--danger); font-weight: 600; }
+
+@media (max-width: 768px) {
+  .tb-brand { width: auto; }
+  .tb-brand-name { display: none; }
+  .tb-account-name { display: none; }
+  .tb-search app-search-bar { max-width: none; }
+}

@@ -1,6 +1,4 @@
 <div class="ep-root">
-  <app-side-bar></app-side-bar>
-
   <p-toast position="bottom-right" key="profile-toast"></p-toast>
 
   <!-- ─── Cropper modal ─── -->
@@ -29,16 +27,6 @@
   @if (userService.profile(); as user) {
     <main class="ep-main">
       <div class="ep-wrap">
-
-        <!-- ─── Page header ─── -->
-        <header class="ep-head">
-          <div class="ep-head-text">
-            <span class="ep-eyebrow">{{ t().pageEyebrow }}</span>
-            <h1 class="ep-title">{{ t().pageTitle }}</h1>
-            <p class="ep-subtitle">{{ t().pageSubtitle }}</p>
-          </div>
-          <span class="ep-head-mark" aria-hidden="true">∞</span>
-        </header>
 
         <!-- ─── Identity hero ─── -->
         <section class="ep-hero">

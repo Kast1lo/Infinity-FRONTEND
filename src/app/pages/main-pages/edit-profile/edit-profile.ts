@@ -9,7 +9,6 @@ import {
   ViewChild,
 } from '@angular/core';
 import Cropper from 'cropperjs';
-import { SideBar } from '../../../common-ui/side-bar/side-bar';
 import { UserService } from '../../../services/user-service';
 import { BackgroundService } from '../../../services/background';
 import { LangService } from '../../../services/lang';
@@ -25,7 +24,6 @@ import { MessageService } from 'primeng/api';
 @Component({
   selector: 'app-edit-profile',
   imports: [
-    SideBar,
     FormsModule,
     InputTextModule,
     Button,

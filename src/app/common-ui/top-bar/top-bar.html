@@ -1,0 +1,86 @@
+<header class="tb">
+
+  <!-- Бренд -->
+  <a class="tb-brand" routerLink="/projects" aria-label="Infinity">
+    <span class="tb-brand-tile" aria-hidden="true"></span>
+    <span class="tb-brand-name">Infinity</span>
+  </a>
+
+  <!-- Поиск -->
+  <div class="tb-search">
+    <app-search-bar></app-search-bar>
+  </div>
+
+  <!-- Действия / идентичность -->
+  <div class="tb-actions">
+
+    <div class="tb-reminders">
+      <button type="button" class="tb-tool tb-tool--bell"
+        [class.tb-tool--active]="remindersOpen()"
+        (click)="toggleReminders($event)" [attr.aria-label]="t().remindersTitle">
+        <i class="pi pi-bell" aria-hidden="true"></i>
+        @if (reminderCount() > 0) {
+          <span class="tb-bell-badge" [class.tb-bell-badge--over]="overdueCount() > 0">{{ reminderCount() }}</span>
+        }
+      </button>
+
+      @if (remindersOpen()) {
+        <div class="tb-rem-panel" (click)="$event.stopPropagation()">
+          <div class="tb-rem-head">{{ t().remindersTitle }}</div>
+          @if (reminders().length === 0) {
+            <div class="tb-rem-empty">{{ t().remindersEmpty }}</div>
+          } @else {
+            <div class="tb-rem-list">
+              @for (r of reminders(); track r.id) {
+                <div class="tb-rem-row">
+                  <button type="button" class="tb-rem-item" (click)="openReminder(r)">
+                    <span class="tb-rem-dot" [class.tb-rem-dot--over]="r.isOverdue"></span>
+                    <span class="tb-rem-info">
+                      <span class="tb-rem-title">{{ r.title }}</span>
+                      <span class="tb-rem-meta">
+                        <span class="tb-rem-proj">{{ r.projectName }}</span>
+                        <span class="tb-rem-sep">·</span>
+                        <span [class.tb-rem-over]="r.isOverdue">{{ r.isOverdue ? t().remindersOverdue : (r.dueDate | date:'dd MMM') }}</span>
+                      </span>
+                    </span>
+                  </button>
+                  <button type="button" class="tb-rem-snooze" (click)="snoozeReminder(r, $event)"
+                    [attr.aria-label]="t().remindersSnooze" [attr.title]="t().remindersSnooze">
+                    <i class="pi pi-clock" aria-hidden="true"></i>
+                  </button>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <button type="button" class="tb-tool" (click)="themeService.toggle()"
+      [attr.aria-label]="isDark() ? t().themeLight : t().themeDark">
+      <i [class]="isDark() ? 'pi pi-sun' : 'pi pi-moon'" aria-hidden="true"></i>
+    </button>
+
+    <button type="button" class="tb-tool tb-tool--lang" (click)="langService.toggle()"
+      [attr.aria-label]="t().langSwitch">
+      <span aria-hidden="true">{{ langService.lang() === 'ru' ? 'EN' : 'RU' }}</span>
+    </button>
+
+    <a class="tb-tool" routerLink="/edit" routerLinkActive="tb-tool--active"
+      [attr.aria-label]="t().settings">
+      <i class="pi pi-cog" aria-hidden="true"></i>
+    </a>
+
+    <a class="tb-account" routerLink="/profile" [attr.aria-label]="t().profile">
+      <p-avatar [image]="avatarUrl()" icon="pi pi-user" shape="circle"/>
+      <span class="tb-account-name">{{ username() || '—' }}</span>
+    </a>
+
+    <button type="button" class="tb-tool tb-tool--logout" (click)="authService.logout()"
+      [attr.aria-label]="t().logout">
+      <i class="pi pi-sign-out" aria-hidden="true"></i>
+    </button>
+
+  </div>
+
+</header>

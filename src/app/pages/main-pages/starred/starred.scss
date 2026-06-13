@@ -14,8 +14,11 @@
   --radius-md: 12px;
   --radius-lg: 16px;
 
-  display: block;
-  height: 100vh;
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
   overflow: hidden;
 }
 
@@ -33,13 +36,13 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 
-.st-root { display: flex; flex-direction: row; height: 100vh; }
+.st-root { flex: 1; min-width: 0; display: flex; height: 100%; }
 
 .st-main {
   flex: 1;
   min-width: 0;
   display: flex;
-  height: 100vh;
+  height: 100%;
   overflow: hidden;
 }
 
@@ -244,7 +247,7 @@
 }
 
 @media (max-width: 768px) {
-  .st-root, .st-main { height: 100dvh; }
+  .st-root, .st-main { height: 100%; }
   .st-main { padding-bottom: 60px; }
   .st-shell { margin: 8px; }
   .st-head { flex-direction: column; }

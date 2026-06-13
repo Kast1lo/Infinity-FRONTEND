@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { SideBar } from '../../../common-ui/side-bar/side-bar';
 import { FileSystem } from '../../../services/file-system';
 import { LangService } from '../../../services/lang';
 import { FileItem } from '../../../interfaces/file-system-interfeces/file-item.model';
@@ -12,7 +11,7 @@ import { DecodeURIComponentPipe } from '../../../pipes/decode-uri.pipe';
 
 @Component({
   selector: 'app-starred',
-  imports: [SideBar, ProgressSpinner, ToastModule, DecodeURIComponentPipe],
+  imports: [ProgressSpinner, ToastModule, DecodeURIComponentPipe],
   templateUrl: './starred.html',
   styleUrl: './starred.scss',
   providers: [MessageService],

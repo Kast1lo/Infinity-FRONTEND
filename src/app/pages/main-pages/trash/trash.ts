@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { SideBar } from '../../../common-ui/side-bar/side-bar';
 import { FileSystem } from '../../../services/file-system';
 import { LangService } from '../../../services/lang';
 import { FileItem } from '../../../interfaces/file-system-interfeces/file-item.model';
@@ -17,7 +16,7 @@ type ConfirmAction =
 
 @Component({
   selector: 'app-trash',
-  imports: [SideBar, ProgressSpinner, DialogModule, ToastModule, DatePipe, DecodeURIComponentPipe],
+  imports: [ProgressSpinner, DialogModule, ToastModule, DatePipe, DecodeURIComponentPipe],
   templateUrl: './trash.html',
   styleUrl: './trash.scss',
   providers: [MessageService],

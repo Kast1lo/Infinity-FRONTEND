@@ -10,10 +10,10 @@ import { FileSystem } from './pages/main-pages/file-system/file-system';
 import { Trash } from './pages/main-pages/trash/trash';
 import { Shared } from './pages/main-pages/shared/shared';
 import { Starred } from './pages/main-pages/starred/starred';
-import { ProfileCard } from './pages/main-pages/profile/profile-card/profile-card';
 import { ShareFile } from './common-ui/share-file/share-file';
 import { MainPage } from './common-ui/main-page/main-page';
 import { UiKit } from './common-ui/ui-kit/ui-kit';
+import { Shell } from './common-ui/shell/shell';
 
 export const routes: Routes = [
     {
@@ -34,53 +34,29 @@ export const routes: Routes = [
         component: ShareFile
     },
     {
-        path: 'profile',
-        component: Profile,
-        canActivate:[authGuard]
-    },
-    {
-        path: 'edit',
-        component: EditProfile,
-        canActivate:[authGuard]
-    },
-    {
-        path: 'projects',
-        component: Projects,
-        canActivate:[authGuard]
-    },
-    {
-        path: 'projects/:projectId',
-        component: InfinityLife,
-        canActivate:[authGuard]
+        path: 'ui-kit',
+        component: UiKit
     },
     {
         path: 'infinity-life',
         redirectTo: 'projects',
         pathMatch: 'full'
     },
+    // Авторизованные страницы внутри общего шелла (топбар + сайдбар)
     {
-        path: 'file-system',
-        component: FileSystem,
-        canActivate:[authGuard],
-    },
-    {
-        path: 'trash',
-        component: Trash,
-        canActivate:[authGuard],
-    },
-    {
-        path: 'shared',
-        component: Shared,
-        canActivate:[authGuard],
-    },
-    {
-        path: 'starred',
-        component: Starred,
-        canActivate:[authGuard],
-    },
-    {
-        path: 'ui-kit',
-        component: UiKit
+        path: '',
+        component: Shell,
+        canActivate: [authGuard],
+        children: [
+            { path: 'profile',             component: Profile },
+            { path: 'edit',                component: EditProfile },
+            { path: 'projects',            component: Projects },
+            { path: 'projects/:projectId', component: InfinityLife },
+            { path: 'file-system',         component: FileSystem },
+            { path: 'trash',               component: Trash },
+            { path: 'shared',              component: Shared },
+            { path: 'starred',             component: Starred },
+        ],
     },
     { path: '**', redirectTo: 'file-system' }
 ];

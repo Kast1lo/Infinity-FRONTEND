@@ -14,8 +14,11 @@
   --radius-md: 12px;
   --radius-lg: 16px;
 
-  display: block;
-  height: 100vh;
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
   overflow: hidden;
 }
 
@@ -33,13 +36,13 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 
-.tr-root { display: flex; flex-direction: row; height: 100vh; }
+.tr-root { flex: 1; min-width: 0; display: flex; height: 100%; }
 
 .tr-main {
   flex: 1;
   min-width: 0;
   display: flex;
-  height: 100vh;
+  height: 100%;
   overflow: hidden;
 }
 
@@ -320,7 +323,7 @@
 }
 
 @media (max-width: 768px) {
-  .tr-root, .tr-main { height: 100dvh; }
+  .tr-root, .tr-main { height: 100%; }
   .tr-main { padding-bottom: 60px; }
   .tr-shell { margin: 8px; }
   .tr-head { flex-direction: column; }

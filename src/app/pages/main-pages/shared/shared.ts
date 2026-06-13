@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { SideBar } from '../../../common-ui/side-bar/side-bar';
 import { FileSystem } from '../../../services/file-system';
 import { ShareService } from '../../../services/share';
 import { LangService } from '../../../services/lang';
@@ -12,7 +11,7 @@ import { DecodeURIComponentPipe } from '../../../pipes/decode-uri.pipe';
 
 @Component({
   selector: 'app-shared',
-  imports: [SideBar, ProgressSpinner, ToastModule, DatePipe, DecodeURIComponentPipe],
+  imports: [ProgressSpinner, ToastModule, DatePipe, DecodeURIComponentPipe],
   templateUrl: './shared.html',
   styleUrl: './shared.scss',
   providers: [MessageService],

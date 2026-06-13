@@ -1,12 +1,22 @@
-.infinity-life {
+:host {
   display: flex;
-  flex-direction: row;
-  height: 100vh;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.infinity-life {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  height: 100%;
 }
 
 .tasks-system {
   flex: 1;
   min-width: 0;
+  min-height: 0;
   display: flex;
   overflow: hidden;
 }
@@ -14,7 +24,7 @@
 @media (max-width: 768px) {
   .infinity-life,
   .tasks-system {
-    height: 100dvh;
+    height: 100%;
   }
 
   .tasks-system {

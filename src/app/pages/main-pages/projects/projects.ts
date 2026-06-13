@@ -11,7 +11,6 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
 
-import { SideBar } from '../../../common-ui/side-bar/side-bar';
 import { ProjectService } from '../../../services/project';
 import { Project } from '../../../interfaces/project/project.model';
 import { LangService } from '../../../services/lang';
@@ -32,7 +31,6 @@ import { MessageService } from 'primeng/api';
   imports: [
     CommonModule,
     FormsModule,
-    SideBar,
     ButtonModule,
     CardModule,
     CheckboxModule,
