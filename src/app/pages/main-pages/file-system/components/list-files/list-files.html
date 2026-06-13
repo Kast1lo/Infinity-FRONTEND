@@ -71,6 +71,7 @@
                   (dragleave)="onFolderDragLeave($event, folder)"
                   (drop)="onFolderDrop($event, folder)">
                   <i class="pi pi-folder folder-ic"></i>
+                  @if (folder.isStarred) { <i class="pi pi-star-fill fs-star-badge" aria-hidden="true"></i> }
                   <div class="folder-name">{{ folder.name }}</div>
                   <button class="card-menu-btn" (click)="openFolderMenu(folder, folderMenu, $event)" aria-label="Меню">
                     <i class="pi pi-ellipsis-v"></i>
@@ -101,6 +102,8 @@
                   draggable="true"
                   (dragstart)="onFileDragStart($event, file)"
                   (dragend)="onFileDragEnd()">
+
+                  @if (file.isStarred) { <i class="pi pi-star-fill fs-star-badge" aria-hidden="true"></i> }
 
                   @if (isImage(file)) {
                     <div class="file-preview" (click)="openImagePreview(file); $event.stopPropagation()">

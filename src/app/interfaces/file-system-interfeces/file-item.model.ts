@@ -9,6 +9,7 @@ export interface FileItem {
   createdAt: string;
   updatedAt: string;
   isShared: boolean;
+  isStarred?: boolean;
   downloadUrl: string;
   deletedAt?: string | null;
 }

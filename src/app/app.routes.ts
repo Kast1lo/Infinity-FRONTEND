@@ -9,6 +9,7 @@ import { Projects } from './pages/main-pages/projects/projects';
 import { FileSystem } from './pages/main-pages/file-system/file-system';
 import { Trash } from './pages/main-pages/trash/trash';
 import { Shared } from './pages/main-pages/shared/shared';
+import { Starred } from './pages/main-pages/starred/starred';
 import { ProfileCard } from './pages/main-pages/profile/profile-card/profile-card';
 import { ShareFile } from './common-ui/share-file/share-file';
 import { MainPage } from './common-ui/main-page/main-page';
@@ -70,6 +71,11 @@ export const routes: Routes = [
     {
         path: 'shared',
         component: Shared,
+        canActivate:[authGuard],
+    },
+    {
+        path: 'starred',
+        component: Starred,
         canActivate:[authGuard],
     },
     {

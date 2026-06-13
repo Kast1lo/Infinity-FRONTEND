@@ -198,10 +198,17 @@ export class ListFiles implements OnInit {
       command: () => this.deleteSelected(),
     };
 
+    const starItem: MenuItem = {
+      label: selected.isStarred ? lf.menuUnstar : lf.menuStar,
+      icon: selected.isStarred ? PrimeIcons.STAR_FILL : PrimeIcons.STAR,
+      command: () => this.fileSystem.toggleStar(selected.id, type).subscribe({ error: () => {} }),
+    };
+
     if (isFile) {
       const file = selected as FileItem;
       const menuItems: MenuItem[] = [
         { label: lf.menuDownload, icon: PrimeIcons.DOWNLOAD, command: () => this.fileSystem.downloadFile(file) },
+        starItem,
         renameItem,
         { label: lf.menuMove, icon: PrimeIcons.ARROW_RIGHT_ARROW_LEFT, command: () => this.openMoveDialog(file) },
         deleteItem,
@@ -225,6 +232,7 @@ export class ListFiles implements OnInit {
     } else {
       return [
         { label: lf.menuDownload, icon: PrimeIcons.DOWNLOAD, command: () => this.fileSystem.downloadFolder(selected.id, selected.name) },
+        starItem,
         renameItem,
         deleteItem,
       ];

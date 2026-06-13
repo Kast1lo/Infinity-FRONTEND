@@ -35,6 +35,10 @@ export class FileSystem {
   private _sharedFiles   = signal<SharedFileItem[]>([]);
   private _sharedLoading = signal<boolean>(false);
 
+  private _starredFiles   = signal<FileItem[]>([]);
+  private _starredFolders = signal<FolderItem[]>([]);
+  private _starredLoading = signal<boolean>(false);
+
   files        = computed(() => this._files());
   folders      = computed(() => this._folders());
   trashFiles   = computed(() => this._trashFiles());
@@ -43,6 +47,10 @@ export class FileSystem {
   trashCount   = computed(() => this._trashFiles().length + this._trashFolders().length);
   sharedFiles   = computed(() => this._sharedFiles());
   sharedLoading = computed(() => this._sharedLoading());
+  starredFiles   = computed(() => this._starredFiles());
+  starredFolders = computed(() => this._starredFolders());
+  starredLoading = computed(() => this._starredLoading());
+  starredCount   = computed(() => this._starredFiles().length + this._starredFolders().length);
   selectedItem = computed(() => this._selectedItem());
   loading      = computed(() => this._loading());
   error        = computed(() => this._error());
@@ -475,6 +483,52 @@ export class FileSystem {
   // оставлено для обратной совместимости (быстрый шаринг без настроек)
   async publishShare(fileId: string): Promise<void> {
     await this.setShare(fileId, { isShared: true });
+  }
+
+  // ─── Избранное ───
+
+  loadStarred() {
+    this._starredLoading.set(true);
+    this.http.get<{ files: FileItem[]; folders: FolderItem[] }>(
+      `${this.apiUrl}/file-system/starred`, { withCredentials: true }
+    ).pipe(
+      catchError(err => this.handleError(err, 'Не удалось загрузить избранное'))
+    ).subscribe({
+      next: (res) => {
+        this._starredFiles.set(res?.files ?? []);
+        this._starredFolders.set(res?.folders ?? []);
+        this._starredLoading.set(false);
+      },
+      error: () => { this._starredLoading.set(false); },
+    });
+  }
+
+  toggleStar(id: string, type: 'file' | 'folder') {
+    return this.http.patch<{ isStarred: boolean }>(
+      `${this.apiUrl}/file-system/star/${id}?type=${type}`, {}, { withCredentials: true }
+    ).pipe(
+      catchError(err => this.handleError(err, 'Не удалось изменить избранное')),
+      tap((res) => {
+        const starred = !!res?.isStarred;
+        if (type === 'file') {
+          this._files.update(files => files.map(f => (f.id === id ? { ...f, isStarred: starred } : f)));
+          this._starredFiles.update(list =>
+            starred ? list : list.filter(f => f.id !== id)
+          );
+        } else {
+          this._folders.update(folders => folders.map(f => (f.id === id ? { ...f, isStarred: starred } : f)));
+          this._starredFolders.update(list =>
+            starred ? list : list.filter(f => f.id !== id)
+          );
+        }
+        const selected = this._selectedItem();
+        if (selected && selected.id === id) {
+          this._selectedItem.set({ ...selected, isStarred: starred } as FileItem | FolderItem);
+        }
+        // если добавили в избранное и страница избранного открыта — подтянуть свежий список
+        if (starred) this.loadStarred();
+      }),
+    );
   }
 
   renameItem(id: string, type: 'file' | 'folder', name: string) {

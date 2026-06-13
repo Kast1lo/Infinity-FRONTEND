@@ -1,0 +1,92 @@
+<div class="st-root">
+  <app-side-bar></app-side-bar>
+
+  <main class="st-main">
+    <div class="st-shell">
+
+      <!-- Шапка -->
+      <header class="st-head">
+        <div class="st-head-text">
+          <span class="st-eyebrow">{{ t().eyebrow }}</span>
+          <h1 class="st-title">{{ t().title }}</h1>
+          <p class="st-subtitle">{{ t().subtitle }}</p>
+        </div>
+      </header>
+
+      <!-- Тело -->
+      <div class="st-body">
+        @if (loading()) {
+          <div class="st-spin"><p-progressSpinner strokeWidth="3"/></div>
+        } @else if (isEmpty()) {
+          <div class="st-empty">
+            <div class="st-empty-ic"><i class="pi pi-star"></i></div>
+            <h3 class="st-empty-title">{{ t().empty }}</h3>
+            <p class="st-empty-sub">{{ t().emptySub }}</p>
+          </div>
+        } @else {
+
+          <!-- Папки -->
+          @if (folders().length > 0) {
+            <section class="st-section">
+              <div class="st-sec-head">
+                <span class="st-sec-label">{{ t().foldersLabel }}</span>
+                <span class="st-sec-count">{{ folders().length }}</span>
+                <span class="st-sec-rule"></span>
+              </div>
+              <div class="st-grid">
+                @for (folder of folders(); track folder.id) {
+                  <article class="st-card st-card--clickable" (click)="openFolder(folder)">
+                    <div class="st-card-ic st-card-ic--folder"><i class="pi pi-folder"></i></div>
+                    <div class="st-card-info">
+                      <span class="st-card-name" [title]="folder.name">{{ folder.name | decodeURIComponent }}</span>
+                      <span class="st-card-meta">{{ t().folderHint }}</span>
+                    </div>
+                    <div class="st-card-actions">
+                      <button class="st-act st-act--unstar" (click)="unstar(folder, 'folder'); $event.stopPropagation()" [title]="t().unstar">
+                        <i class="pi pi-star-fill"></i>
+                      </button>
+                    </div>
+                  </article>
+                }
+              </div>
+            </section>
+          }
+
+          <!-- Файлы -->
+          @if (files().length > 0) {
+            <section class="st-section">
+              <div class="st-sec-head">
+                <span class="st-sec-label">{{ t().filesLabel }}</span>
+                <span class="st-sec-count">{{ files().length }}</span>
+                <span class="st-sec-rule"></span>
+              </div>
+              <div class="st-grid">
+                @for (file of files(); track file.id) {
+                  <article class="st-card">
+                    <div class="st-card-ic"><i [class]="'pi ' + getFileIcon(file.mimeType)"></i></div>
+                    <div class="st-card-info">
+                      <span class="st-card-name" [title]="file.name">{{ file.name | decodeURIComponent }}</span>
+                      <span class="st-card-meta">{{ formatSize(file.size) }}</span>
+                    </div>
+                    <div class="st-card-actions">
+                      <button class="st-act st-act--download" (click)="download(file)" [title]="t().download">
+                        <i class="pi pi-download"></i>
+                      </button>
+                      <button class="st-act st-act--unstar" (click)="unstar(file, 'file')" [title]="t().unstar">
+                        <i class="pi pi-star-fill"></i>
+                      </button>
+                    </div>
+                  </article>
+                }
+              </div>
+            </section>
+          }
+
+        }
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<p-toast key="br" position="bottom-right"/>

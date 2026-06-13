@@ -9,6 +9,7 @@ export interface FolderItem {
   createdAt: string;
   updatedAt: string;
   isShared: boolean;
+  isStarred?: boolean;
   children: FolderItem[];
   files: FileItem[];
   deletedAt?: string | null;
