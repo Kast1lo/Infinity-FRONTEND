@@ -509,6 +509,23 @@ export class FileSystem {
     );
   }
 
+  // Перемещает папку в другую папку (или в корень)
+  moveFolder(folderId: string, targetFolderId: string | null) {
+    return this.http.patch(
+      `${this.apiUrl}/file-system/move-folder/${folderId}`,
+      { folderId: targetFolderId },
+      { withCredentials: true }
+    ).pipe(
+      catchError(err => this.handleError(err, 'Не удалось переместить папку')),
+      tap({
+        next: () => {
+          this.loadTree();
+          this.loadFiles(this.currentFolderId());
+        },
+      }),
+    );
+  }
+
   // Перемещает несколько файлов одним пакетом и обновляет дерево один раз
   moveFiles(fileIds: string[], targetFolderId: string | null) {
     const requests = fileIds.map(id =>

@@ -84,7 +84,45 @@ export class ListFiles implements OnInit {
 
   moveDialogVisible = signal(false);
   moveTargetFile    = signal<FileItem | null>(null);
+  moveTargetFolder  = signal<FolderItem | null>(null);
+  moveKind          = signal<'file' | 'folder'>('file');
   selectedFolderId  = signal<string | null>(null);
+
+  // Имя/иконка перемещаемого объекта (файл или папка)
+  moveTargetName = computed(() => {
+    const f = this.moveTargetFile();
+    return f ? f.name : (this.moveTargetFolder()?.name ?? '');
+  });
+  moveTargetIcon = computed(() => {
+    const f = this.moveTargetFile();
+    return f ? 'pi ' + this.getFileIcon(f.mimeType) : 'pi pi-folder';
+  });
+  // Текущий родитель (откуда перемещаем) — для пометки и блокировки
+  moveCurrentParentId = computed(() =>
+    this.moveKind() === 'file'
+      ? (this.moveTargetFile()?.folderId ?? null)
+      : (this.moveTargetFolder()?.parentId ?? null)
+  );
+  // Запрещённые цели при перемещении папки: сама папка и всё её поддерево
+  moveForbiddenIds = computed<Set<string>>(() => {
+    if (this.moveKind() !== 'folder') return new Set();
+    const root = this.moveTargetFolder();
+    if (!root) return new Set();
+    const all = this.fileSystem.folders();
+    const forbidden = new Set<string>([root.id]);
+    const queue = [root.id];
+    while (queue.length) {
+      const current = queue.shift()!;
+      for (const f of all) {
+        if (f.parentId === current && !forbidden.has(f.id)) { forbidden.add(f.id); queue.push(f.id); }
+      }
+    }
+    return forbidden;
+  });
+
+  isMoveTargetSelectable(folderId: string): boolean {
+    return !this.moveForbiddenIds().has(folderId) && folderId !== this.moveCurrentParentId();
+  }
 
   videoDialogVisible = false;
   videoUrl: string | null = null;
@@ -235,6 +273,7 @@ export class ListFiles implements OnInit {
         { label: lf.menuDownload, icon: PrimeIcons.DOWNLOAD, command: () => this.fileSystem.downloadFolder(selected.id, selected.name) },
         starItem,
         renameItem,
+        { label: lf.menuMove, icon: PrimeIcons.ARROW_RIGHT_ARROW_LEFT, command: () => this.openMoveFolderDialog(folder) },
         { label: lf.menuShare, icon: PrimeIcons.SEND, command: () => this.openFolderShareDialog(folder) },
         deleteItem,
       ];
@@ -429,26 +468,43 @@ export class ListFiles implements OnInit {
   }
 
   openMoveDialog(file: FileItem) {
+    this.moveKind.set('file');
     this.moveTargetFile.set(file);
+    this.moveTargetFolder.set(null);
     this.selectedFolderId.set(file.folderId ?? null);
+    this.moveDialogVisible.set(true);
+  }
+
+  openMoveFolderDialog(folder: FolderItem) {
+    this.moveKind.set('folder');
+    this.moveTargetFolder.set(folder);
+    this.moveTargetFile.set(null);
+    this.selectedFolderId.set(folder.parentId ?? null);
     this.moveDialogVisible.set(true);
   }
 
   closeMoveDialog() {
     this.moveDialogVisible.set(false);
     this.moveTargetFile.set(null);
+    this.moveTargetFolder.set(null);
     this.selectedFolderId.set(null);
   }
 
   submitMove() {
-    const file = this.moveTargetFile();
     const folderId = this.selectedFolderId();
-    if (!file) return;
     const lf = this.langService.t().pages.listFiles;
-    this.fileSystem.moveFile(file.id, folderId).subscribe({
-      next: () => { this.messageService.add({ severity: 'secondary', summary: lf.toastDone, detail: lf.menuMove, key: 'br' }); this.closeMoveDialog(); },
-      error: () => this.messageService.add({ severity: 'secondary', summary: lf.toastError, detail: lf.menuMove, key: 'br' }),
-    });
+    const done = () => { this.messageService.add({ severity: 'secondary', summary: lf.toastDone, detail: lf.menuMove, key: 'br' }); this.closeMoveDialog(); };
+    const fail = (err?: any) => this.messageService.add({ severity: 'secondary', summary: lf.toastError, detail: err?.message || lf.menuMove, key: 'br' });
+
+    if (this.moveKind() === 'folder') {
+      const folder = this.moveTargetFolder();
+      if (!folder) return;
+      this.fileSystem.moveFolder(folder.id, folderId).subscribe({ next: done, error: fail });
+    } else {
+      const file = this.moveTargetFile();
+      if (!file) return;
+      this.fileSystem.moveFile(file.id, folderId).subscribe({ next: done, error: fail });
+    }
   }
 
   getFolderTree(): FolderItem[] { return this.fileSystem.folders().filter(f => f.id !== this.moveTargetFile()?.folderId); }

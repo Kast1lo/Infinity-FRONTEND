@@ -387,15 +387,18 @@
     [draggable]="false" [resizable]="false" [dismissableMask]="true"
     [style]="{ width: '420px' }" styleClass="move-dialog">
   <div class="move-content">
-    @if (moveTargetFile()) {
+    @if (moveTargetName()) {
       <div class="move-filename">
-        <i [class]="'pi ' + getFileIcon(moveTargetFile()!.mimeType)"></i>
-        <span>{{ moveTargetFile()!.name | decodeURIComponent }}</span>
+        <i [class]="moveTargetIcon()"></i>
+        <span>{{ moveTargetName() | decodeURIComponent }}</span>
       </div>
     }
     <div class="move-tree">
-      <div class="move-folder-item" [class.move-folder-item--active]="selectedFolderId() === null" (click)="selectedFolderId.set(null)">
+      <div class="move-folder-item" [class.move-folder-item--active]="selectedFolderId() === null"
+        [class.move-folder-item--current]="moveCurrentParentId() === null"
+        (click)="moveCurrentParentId() !== null && selectedFolderId.set(null)">
         <i class="pi pi-home"></i><span>{{ t().rootFolder }}</span>
+        @if (moveCurrentParentId() === null) { <span class="move-current-label">{{ t().currentFolderLabel }}</span> }
         @if (selectedFolderId() === null) { <i class="pi pi-check move-check"></i> }
       </div>
       @for (folder of getRootFolders(); track folder.id) {
@@ -406,10 +409,10 @@
   <ng-template #folderNode let-folder="folder" let-depth="depth">
     <div class="move-folder-item" [style.padding-left.px]="16 + depth * 20"
       [class.move-folder-item--active]="selectedFolderId() === folder.id"
-      [class.move-folder-item--current]="moveTargetFile()?.folderId === folder.id"
-      (click)="moveTargetFile()?.folderId !== folder.id && selectedFolderId.set(folder.id)">
+      [class.move-folder-item--current]="!isMoveTargetSelectable(folder.id)"
+      (click)="isMoveTargetSelectable(folder.id) && selectedFolderId.set(folder.id)">
       <i class="pi pi-folder"></i><span>{{ folder.name }}</span>
-      @if (moveTargetFile()?.folderId === folder.id) { <span class="move-current-label">{{ t().currentFolderLabel }}</span> }
+      @if (moveCurrentParentId() === folder.id) { <span class="move-current-label">{{ t().currentFolderLabel }}</span> }
       @if (selectedFolderId() === folder.id) { <i class="pi pi-check move-check"></i> }
     </div>
     @for (child of getChildFolders(folder.id); track child.id) {
@@ -419,7 +422,7 @@
   <ng-template pTemplate="footer">
     <p-button [label]="t().cancelBtn" severity="secondary" [text]="true" (onClick)="closeMoveDialog()"/>
     <p-button [label]="t().moveBtn" icon="pi pi-arrow-right-arrow-left"
-      [disabled]="selectedFolderId() === (moveTargetFile()?.folderId ?? null)" (onClick)="submitMove()"/>
+      [disabled]="selectedFolderId() === moveCurrentParentId()" (onClick)="submitMove()"/>
   </ng-template>
 </p-dialog>
 
