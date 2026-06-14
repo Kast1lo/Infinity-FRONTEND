@@ -7,6 +7,8 @@ import { ThemeService } from '../../services/theme';
 import { LangService } from '../../services/lang';
 import { InfinityLife } from '../../services/infinity-life';
 import { Reminder } from '../../interfaces/infinity-life/reminder.model';
+import { NotificationsService } from '../../services/notifications';
+import { AppNotification } from '../../interfaces/notification.model';
 import { SearchBar } from '../search-bar/search-bar';
 
 @Component({
@@ -22,6 +24,7 @@ export class TopBar implements OnInit {
   public themeService = inject(ThemeService);
   public langService  = inject(LangService);
   private infinityLife = inject(InfinityLife);
+  public  notifications = inject(NotificationsService);
   private router       = inject(Router);
 
   profile   = this.userService.profile;
@@ -39,16 +42,47 @@ export class TopBar implements OnInit {
   overdueCount  = this.infinityLife.overdueCount;
   remindersOpen = signal(false);
 
+  // Уведомления
+  notifItems    = this.notifications.items;
+  notifUnread   = this.notifications.unreadCount;
+  notifOpen     = signal(false);
+
   isDark = computed(() => this.themeService.theme() === 'dark');
   t      = computed(() => this.langService.t().sidebar);
 
   ngOnInit() {
     this.infinityLife.loadReminders().subscribe({ error: () => {} });
+    this.notifications.load();
   }
 
   toggleReminders(event: Event) {
     event.stopPropagation();
+    this.notifOpen.set(false);
     this.remindersOpen.update(v => !v);
+  }
+
+  toggleNotifications(event: Event) {
+    event.stopPropagation();
+    this.remindersOpen.set(false);
+    const willOpen = !this.notifOpen();
+    this.notifOpen.set(willOpen);
+    if (willOpen) this.notifications.markAllRead();
+  }
+
+  openNotification(n: AppNotification) {
+    this.notifOpen.set(false);
+    this.notifications.markRead(n.id);
+    if (n.link) this.router.navigateByUrl(n.link);
+  }
+
+  removeNotification(n: AppNotification, event: Event) {
+    event.stopPropagation();
+    this.notifications.remove(n.id);
+  }
+
+  clearNotifications(event: Event) {
+    event.stopPropagation();
+    this.notifications.clear();
   }
 
   openReminder(r: Reminder) {
@@ -62,7 +96,8 @@ export class TopBar implements OnInit {
   }
 
   @HostListener('document:click')
-  closeReminders() {
+  closePanels() {
     if (this.remindersOpen()) this.remindersOpen.set(false);
+    if (this.notifOpen()) this.notifOpen.set(false);
   }
 }

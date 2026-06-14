@@ -14,11 +14,57 @@
   <!-- Действия / идентичность -->
   <div class="tb-actions">
 
+    <!-- Уведомления -->
+    <div class="tb-reminders">
+      <button type="button" class="tb-tool tb-tool--bell"
+        [class.tb-tool--active]="notifOpen()"
+        (click)="toggleNotifications($event)" [attr.aria-label]="t().notifTitle">
+        <i class="pi pi-bell" aria-hidden="true"></i>
+        @if (notifUnread() > 0) {
+          <span class="tb-bell-badge">{{ notifUnread() }}</span>
+        }
+      </button>
+
+      @if (notifOpen()) {
+        <div class="tb-rem-panel" (click)="$event.stopPropagation()">
+          <div class="tb-rem-head tb-notif-head">
+            <span>{{ t().notifTitle }}</span>
+            @if (notifItems().length > 0) {
+              <button type="button" class="tb-notif-clear" (click)="clearNotifications($event)">{{ t().notifClear }}</button>
+            }
+          </div>
+          @if (notifItems().length === 0) {
+            <div class="tb-rem-empty">{{ t().notifEmpty }}</div>
+          } @else {
+            <div class="tb-rem-list">
+              @for (n of notifItems(); track n.id) {
+                <div class="tb-rem-row">
+                  <button type="button" class="tb-rem-item" (click)="openNotification(n)">
+                    <span class="tb-notif-dot" [class.tb-notif-dot--unread]="!n.isRead"></span>
+                    <span class="tb-rem-info">
+                      <span class="tb-rem-title">{{ n.title }}</span>
+                      @if (n.body) { <span class="tb-notif-body">{{ n.body }}</span> }
+                      <span class="tb-rem-meta">{{ n.createdAt | date:'dd MMM, HH:mm' }}</span>
+                    </span>
+                  </button>
+                  <button type="button" class="tb-rem-snooze" (click)="removeNotification(n, $event)"
+                    [attr.aria-label]="t().notifRemove" [attr.title]="t().notifRemove">
+                    <i class="pi pi-times" aria-hidden="true"></i>
+                  </button>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Напоминания -->
     <div class="tb-reminders">
       <button type="button" class="tb-tool tb-tool--bell"
         [class.tb-tool--active]="remindersOpen()"
         (click)="toggleReminders($event)" [attr.aria-label]="t().remindersTitle">
-        <i class="pi pi-bell" aria-hidden="true"></i>
+        <i class="pi pi-clock" aria-hidden="true"></i>
         @if (reminderCount() > 0) {
           <span class="tb-bell-badge" [class.tb-bell-badge--over]="overdueCount() > 0">{{ reminderCount() }}</span>
         }
