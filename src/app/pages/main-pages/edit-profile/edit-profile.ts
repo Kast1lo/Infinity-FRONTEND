@@ -62,6 +62,17 @@ export class EditProfile {
     !!this.currentPassword() && !!this.newPassword() && !!this.confirmPassword()
   );
 
+  // ─── Смена email ───
+  emailStep     = signal<'request' | 'confirm'>('request');
+  newEmail      = signal('');
+  emailPassword = signal('');
+  emailCode     = signal('');
+  emailSending  = signal(false);
+  emailError    = signal<string | null>(null);
+  pendingEmail  = signal('');
+
+  hasEmailRequest = computed(() => !!this.newEmail().trim() && !!this.emailPassword());
+
   initials = computed(() => {
     const name = this.profile()?.username;
     if (!name) return '??';
@@ -102,6 +113,57 @@ export class EditProfile {
         });
       },
     });
+  }
+
+  requestEmailChange() {
+    this.emailError.set(null);
+    const t = this.langService.t().pages.editProfile;
+    const email = this.newEmail().trim();
+    if (!email || !this.emailPassword()) return;
+
+    this.emailSending.set(true);
+    this.userService.requestEmailChange(email, this.emailPassword()).subscribe({
+      next: () => {
+        this.emailSending.set(false);
+        this.pendingEmail.set(email);
+        this.emailStep.set('confirm');
+        this.emailPassword.set('');
+        this.messageService.add({ severity: 'secondary', summary: t.toastDone, detail: t.emailCodeSent, life: 3000 });
+      },
+      error: (err: any) => {
+        this.emailSending.set(false);
+        this.emailError.set(err.error?.message || t.emailFailed);
+      },
+    });
+  }
+
+  confirmEmailChange() {
+    this.emailError.set(null);
+    const t = this.langService.t().pages.editProfile;
+    const code = this.emailCode().trim();
+    if (code.length !== 6) { this.emailError.set(t.emailCodeInvalid); return; }
+
+    this.emailSending.set(true);
+    this.userService.confirmEmailChange(code).subscribe({
+      next: () => {
+        this.emailSending.set(false);
+        this.resetEmailChange();
+        this.messageService.add({ severity: 'secondary', summary: t.toastDone, detail: t.emailChanged, life: 3000 });
+      },
+      error: (err: any) => {
+        this.emailSending.set(false);
+        this.emailError.set(err.error?.message || t.emailFailed);
+      },
+    });
+  }
+
+  resetEmailChange() {
+    this.emailStep.set('request');
+    this.newEmail.set('');
+    this.emailPassword.set('');
+    this.emailCode.set('');
+    this.emailError.set(null);
+    this.pendingEmail.set('');
   }
 
   changePassword() {

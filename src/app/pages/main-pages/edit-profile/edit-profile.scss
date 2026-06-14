@@ -55,7 +55,7 @@
 
 .ep-wrap {
   width: 100%;
-  max-width: 960px;
+  max-width: 1200px;
   margin: auto;
   display: flex;
   flex-direction: column;
@@ -294,7 +294,7 @@
 
 .ep-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: 16px;
 }
 
@@ -462,6 +462,18 @@
   caret-color: var(--text) !important;
   font-family: var(--brand-mono) !important;
   transition: background-color 9999s ease-in-out 0s !important;
+}
+
+// ─── Email hint ───
+
+.ep-email-hint {
+  margin: -2px 0 12px;
+  font-family: var(--brand-mono);
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text2);
+
+  strong { color: var(--text); word-break: break-all; }
 }
 
 // ─── Error ───
@@ -738,7 +750,12 @@
 
 // ─── Адаптив ───
 
-@media (max-width: 880px) {
+// Планшеты: три блока в ряд не помещаются → две колонки, фон во всю ширину
+@media (max-width: 1080px) {
+  .ep-grid { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 720px) {
   .ep-grid { grid-template-columns: 1fr; }
 }
 

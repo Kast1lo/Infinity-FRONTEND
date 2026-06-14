@@ -194,10 +194,84 @@
             </div>
           </section>
 
-          <!-- 03 — Фон приложения -->
-          <section class="ep-card ep-card--wide">
+          <!-- 03 — Email -->
+          <section class="ep-card">
             <div class="ep-sec-head">
               <span class="ep-sec-idx">03</span>
+              <span class="ep-sec-label">{{ t().emailSectionLabel }}</span>
+              <span class="ep-sec-rule"></span>
+            </div>
+
+            @if (emailStep() === 'request') {
+              <div class="ep-field">
+                <label class="ep-label">{{ t().currentEmailLabel }}</label>
+                <div class="ep-input-wrap is-readonly">
+                  <i class="pi pi-envelope ep-input-ic"></i>
+                  <input pInputText [value]="profile()?.email" class="ep-input" readonly />
+                </div>
+              </div>
+
+              <div class="ep-field">
+                <label class="ep-label">{{ t().newEmailLabel }}</label>
+                <div class="ep-input-wrap">
+                  <i class="pi pi-at ep-input-ic"></i>
+                  <input pInputText type="email" [ngModel]="newEmail()" (ngModelChange)="newEmail.set($event)"
+                    [placeholder]="t().newEmailPlaceholder" class="ep-input" />
+                </div>
+              </div>
+
+              <div class="ep-field">
+                <label class="ep-label">{{ t().emailPasswordLabel }}</label>
+                <div class="ep-input-wrap">
+                  <i class="pi pi-lock ep-input-ic"></i>
+                  <p-password [ngModel]="emailPassword()" (ngModelChange)="emailPassword.set($event)"
+                    [placeholder]="t().emailPasswordPlaceholder" [toggleMask]="true" [feedback]="false"
+                    styleClass="ep-pwd-input" />
+                </div>
+              </div>
+
+              @if (emailError()) {
+                <div class="ep-error"><i class="pi pi-exclamation-circle"></i>{{ emailError() }}</div>
+              }
+
+              <div class="ep-actions">
+                <p-button [label]="t().emailRequestBtn" icon="pi pi-send"
+                  [disabled]="!hasEmailRequest() || emailSending()" [loading]="emailSending()"
+                  (onClick)="requestEmailChange()" />
+              </div>
+            } @else {
+              <p class="ep-email-hint">
+                {{ t().emailCodeHint }} <strong>{{ pendingEmail() }}</strong>
+              </p>
+
+              <div class="ep-field">
+                <label class="ep-label">{{ t().emailCodeLabel }}</label>
+                <div class="ep-input-wrap">
+                  <i class="pi pi-key ep-input-ic"></i>
+                  <input pInputText [ngModel]="emailCode()" (ngModelChange)="emailCode.set($event)"
+                    [placeholder]="t().emailCodePlaceholder" inputmode="numeric" maxlength="6" class="ep-input"
+                    (keyup.enter)="confirmEmailChange()" />
+                </div>
+              </div>
+
+              @if (emailError()) {
+                <div class="ep-error"><i class="pi pi-exclamation-circle"></i>{{ emailError() }}</div>
+              }
+
+              <div class="ep-actions">
+                <p-button [label]="t().emailBackBtn" icon="pi pi-arrow-left" [text]="true" severity="secondary"
+                  [disabled]="emailSending()" (onClick)="resetEmailChange()" />
+                <p-button [label]="t().emailConfirmBtn" icon="pi pi-check"
+                  [disabled]="emailCode().trim().length !== 6 || emailSending()" [loading]="emailSending()"
+                  (onClick)="confirmEmailChange()" />
+              </div>
+            }
+          </section>
+
+          <!-- 04 — Фон приложения -->
+          <section class="ep-card ep-card--wide">
+            <div class="ep-sec-head">
+              <span class="ep-sec-idx">04</span>
               <span class="ep-sec-label">{{ t().bgLabel }}</span>
               <span class="ep-sec-rule"></span>
               @if (bgService.backgroundUrl()) {

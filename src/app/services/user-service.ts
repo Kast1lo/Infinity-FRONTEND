@@ -64,6 +64,32 @@ export class UserService {
     );
   }
 
+  requestEmailChange(newEmail: string, password: string): Observable<{ message: string }> {
+    return this.http
+      .post<{ message: string }>(
+        `${this.apiUrl}/user/request-email-change`,
+        { newEmail, password },
+        { withCredentials: true },
+      )
+      .pipe(catchError(err => throwError(() => err)));
+  }
+
+  confirmEmailChange(code: string): Observable<{ message: string; email: string }> {
+    return this.http
+      .post<{ message: string; email: string }>(
+        `${this.apiUrl}/user/confirm-email-change`,
+        { code },
+        { withCredentials: true },
+      )
+      .pipe(
+        tap(res => {
+          const current = this._profile();
+          if (current) this._profile.set({ ...current, email: res.email });
+        }),
+        catchError(err => throwError(() => err)),
+      );
+  }
+
   changePassword(currentPassword: string, newPassword: string): Observable<{ message: string }> {
     return this.http
       .patch<{ message: string }>(
