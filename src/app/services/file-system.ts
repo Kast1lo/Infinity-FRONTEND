@@ -44,6 +44,9 @@ export class FileSystem {
   private _starredFolders = signal<FolderItem[]>([]);
   private _starredLoading = signal<boolean>(false);
 
+  private _recentFiles   = signal<FileItem[]>([]);
+  private _recentLoading = signal<boolean>(false);
+
   files        = computed(() => this._files());
   folders      = computed(() => this._folders());
   trashFiles   = computed(() => this._trashFiles());
@@ -58,6 +61,8 @@ export class FileSystem {
   starredFolders = computed(() => this._starredFolders());
   starredLoading = computed(() => this._starredLoading());
   starredCount   = computed(() => this._starredFiles().length + this._starredFolders().length);
+  recentFiles    = computed(() => this._recentFiles());
+  recentLoading  = computed(() => this._recentLoading());
   selectedItem = computed(() => this._selectedItem());
   loading      = computed(() => this._loading());
   error        = computed(() => this._error());
@@ -649,6 +654,23 @@ export class FileSystem {
     });
   }
 
+  // ─── Недавние ───
+
+  loadRecent() {
+    this._recentLoading.set(true);
+    this.http.get<FileItem[]>(
+      `${this.apiUrl}/file-system/recent`, { withCredentials: true }
+    ).pipe(
+      catchError(err => this.handleError(err, 'Не удалось загрузить недавние'))
+    ).subscribe({
+      next: (files) => {
+        this._recentFiles.set(files ?? []);
+        this._recentLoading.set(false);
+      },
+      error: () => { this._recentLoading.set(false); },
+    });
+  }
+
   toggleStar(id: string, type: 'file' | 'folder') {
     return this.http.patch<{ isStarred: boolean }>(
       `${this.apiUrl}/file-system/star/${id}?type=${type}`, {}, { withCredentials: true }
@@ -658,6 +680,7 @@ export class FileSystem {
         const starred = !!res?.isStarred;
         if (type === 'file') {
           this._files.update(files => files.map(f => (f.id === id ? { ...f, isStarred: starred } : f)));
+          this._recentFiles.update(files => files.map(f => (f.id === id ? { ...f, isStarred: starred } : f)));
           this._starredFiles.update(list =>
             starred ? list : list.filter(f => f.id !== id)
           );

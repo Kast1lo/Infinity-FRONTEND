@@ -1,0 +1,59 @@
+<div class="st-root">
+  <main class="st-main">
+    <div class="st-shell">
+
+      <!-- Шапка -->
+      <header class="st-head">
+        <div class="st-head-text">
+          <span class="st-eyebrow">{{ t().eyebrow }}</span>
+          <h1 class="st-title">{{ t().title }}</h1>
+          <p class="st-subtitle">{{ t().subtitle }}</p>
+        </div>
+      </header>
+
+      <!-- Тело -->
+      <div class="st-body">
+        @if (loading()) {
+          <div class="st-spin"><p-progressSpinner strokeWidth="3"/></div>
+        } @else if (isEmpty()) {
+          <div class="st-empty">
+            <div class="st-empty-ic"><i class="pi pi-clock"></i></div>
+            <h3 class="st-empty-title">{{ t().empty }}</h3>
+            <p class="st-empty-sub">{{ t().emptySub }}</p>
+          </div>
+        } @else {
+          <section class="st-section">
+            <div class="st-sec-head">
+              <span class="st-sec-label">{{ t().filesLabel }}</span>
+              <span class="st-sec-count">{{ files().length }}</span>
+              <span class="st-sec-rule"></span>
+            </div>
+            <div class="st-grid">
+              @for (file of files(); track file.id) {
+                <article class="st-card">
+                  <div class="st-card-ic"><i [class]="'pi ' + getFileIcon(file.mimeType)"></i></div>
+                  <div class="st-card-info">
+                    <span class="st-card-name" [title]="file.name">{{ file.name | decodeURIComponent }}</span>
+                    <span class="st-card-meta">{{ formatSize(file.size) }} · {{ file.updatedAt | date:'dd MMM, HH:mm' }}</span>
+                  </div>
+                  <div class="st-card-actions">
+                    <button class="st-act st-act--download" (click)="download(file)" [title]="t().download">
+                      <i class="pi pi-download"></i>
+                    </button>
+                    <button class="st-act" [class.st-act--unstar]="file.isStarred" (click)="toggleStar(file)"
+                      [title]="file.isStarred ? t().unstar : t().star">
+                      <i class="pi" [class.pi-star-fill]="file.isStarred" [class.pi-star]="!file.isStarred"></i>
+                    </button>
+                  </div>
+                </article>
+              }
+            </div>
+          </section>
+        }
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<p-toast key="br" position="bottom-right"/>

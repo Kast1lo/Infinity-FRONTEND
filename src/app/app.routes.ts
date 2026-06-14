@@ -10,6 +10,7 @@ import { FileSystem } from './pages/main-pages/file-system/file-system';
 import { Trash } from './pages/main-pages/trash/trash';
 import { Shared } from './pages/main-pages/shared/shared';
 import { Starred } from './pages/main-pages/starred/starred';
+import { Recent } from './pages/main-pages/recent/recent';
 import { ShareFile } from './common-ui/share-file/share-file';
 import { ShareFolder } from './common-ui/share-folder/share-folder';
 import { MainPage } from './common-ui/main-page/main-page';
@@ -58,6 +59,7 @@ export const routes: Routes = [
             { path: 'projects',            component: Projects },
             { path: 'projects/:projectId', component: InfinityLife },
             { path: 'file-system',         component: FileSystem },
+            { path: 'recent',              component: Recent },
             { path: 'trash',               component: Trash },
             { path: 'shared',              component: Shared },
             { path: 'starred',             component: Starred },
