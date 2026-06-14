@@ -36,6 +36,7 @@ import { ShareService } from '../../../../../services/share';
 import { UploadQueueService } from '../../../../../services/upload-queue';
 import { ZipEntry } from '../../../../../interfaces/file-system-interfeces/zip-entry.model';
 import { LangService } from '../../../../../services/lang';
+import { FolderMember } from '../../../../../interfaces/file-system-interfeces/folder-collab.model';
 
 @Component({
   selector: 'app-list-files',
@@ -63,6 +64,7 @@ export class ListFiles implements OnInit {
   private readonly cdr = inject(ChangeDetectorRef);
 
   t = computed(() => this.langService.t().pages.listFiles);
+  tp = computed(() => this.langService.t().pages.projects);
 
   files = this.fileSystem.filteredFiles;
   folders = this.fileSystem.filteredFolders;
@@ -275,6 +277,7 @@ export class ListFiles implements OnInit {
         renameItem,
         { label: lf.menuMove, icon: PrimeIcons.ARROW_RIGHT_ARROW_LEFT, command: () => this.openMoveFolderDialog(folder) },
         { label: lf.menuShare, icon: PrimeIcons.SEND, command: () => this.openFolderShareDialog(folder) },
+        { label: lf.menuFolderAccess, icon: PrimeIcons.USERS, command: () => this.openFolderAccessDialog(folder) },
         deleteItem,
       ];
     }
@@ -1338,6 +1341,70 @@ export class ListFiles implements OnInit {
     } finally {
       this.folderShareSaving.set(false);
     }
+  }
+
+  // ─── Доступ к папке для пользователей ───
+
+  folderAccessVisible = signal(false);
+  folderAccessTarget  = signal<FolderItem | null>(null);
+  folderMembers       = signal<FolderMember[]>([]);
+  folderMembersLoading = signal(false);
+  faInviteEmail = signal('');
+  faInviteRole  = signal<'VIEWER' | 'EDITOR'>('EDITOR');
+  faInviting    = signal(false);
+
+  openFolderAccessDialog(folder: FolderItem) {
+    this.folderAccessTarget.set(folder);
+    this.folderMembers.set([]);
+    this.faInviteEmail.set('');
+    this.faInviteRole.set('EDITOR');
+    this.folderAccessVisible.set(true);
+    this.loadFolderMembers(folder.id);
+  }
+
+  private loadFolderMembers(folderId: string) {
+    this.folderMembersLoading.set(true);
+    this.fileSystem.listFolderMembers(folderId).subscribe({
+      next: (m) => { this.folderMembers.set(m); this.folderMembersLoading.set(false); this.cdr.markForCheck(); },
+      error: () => { this.folderMembersLoading.set(false); },
+    });
+  }
+
+  faInvite() {
+    const folder = this.folderAccessTarget();
+    const email = this.faInviteEmail().trim();
+    if (!folder || !email || this.faInviting()) return;
+    this.faInviting.set(true);
+    this.fileSystem.inviteFolderMember(folder.id, email, this.faInviteRole()).subscribe({
+      next: () => {
+        this.faInviting.set(false);
+        this.faInviteEmail.set('');
+        this.messageService.add({ severity: 'secondary', summary: this.tp().toastDone, detail: this.tp().memberAdded, key: 'br', life: 1600 });
+        this.loadFolderMembers(folder.id);
+      },
+      error: (err) => {
+        this.faInviting.set(false);
+        this.messageService.add({ severity: 'secondary', summary: this.tp().toastError, detail: err?.message ?? this.tp().inviteFailed, key: 'br', life: 1600 });
+      },
+    });
+  }
+
+  faChangeRole(member: FolderMember, role: 'VIEWER' | 'EDITOR') {
+    const folder = this.folderAccessTarget();
+    if (!folder || member.isOwner || member.role === role) return;
+    this.fileSystem.updateFolderMemberRole(folder.id, member.userId, role).subscribe({
+      next: () => this.loadFolderMembers(folder.id),
+      error: () => {},
+    });
+  }
+
+  faRemove(member: FolderMember) {
+    const folder = this.folderAccessTarget();
+    if (!folder || member.isOwner) return;
+    this.fileSystem.removeFolderMember(folder.id, member.userId).subscribe({
+      next: () => { this.messageService.add({ severity: 'secondary', summary: this.tp().toastDone, detail: this.tp().memberRemoved, key: 'br', life: 1600 }); this.loadFolderMembers(folder.id); },
+      error: () => {},
+    });
   }
 
   deleteSelected() {

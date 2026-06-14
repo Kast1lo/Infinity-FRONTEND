@@ -11,6 +11,7 @@ import { Trash } from './pages/main-pages/trash/trash';
 import { Shared } from './pages/main-pages/shared/shared';
 import { Starred } from './pages/main-pages/starred/starred';
 import { Recent } from './pages/main-pages/recent/recent';
+import { SharedWithMe } from './pages/main-pages/shared-with-me/shared-with-me';
 import { ShareFile } from './common-ui/share-file/share-file';
 import { ShareFolder } from './common-ui/share-folder/share-folder';
 import { MainPage } from './common-ui/main-page/main-page';
@@ -62,6 +63,7 @@ export const routes: Routes = [
             { path: 'recent',              component: Recent },
             { path: 'trash',               component: Trash },
             { path: 'shared',              component: Shared },
+            { path: 'shared-with-me',      component: SharedWithMe },
             { path: 'starred',             component: Starred },
         ],
     },

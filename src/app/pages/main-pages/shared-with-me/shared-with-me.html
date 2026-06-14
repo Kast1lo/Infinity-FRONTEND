@@ -1,0 +1,134 @@
+<div class="sw-root">
+  <main class="sw-main">
+    <div class="sw-shell">
+
+      <header class="sw-head">
+        <div class="sw-head-text">
+          <span class="sw-eyebrow">{{ t().eyebrow }}</span>
+          <h1 class="sw-title">{{ t().title }}</h1>
+          <p class="sw-subtitle">{{ t().subtitle }}</p>
+        </div>
+        @if (contents()) {
+          <div class="sw-head-actions">
+            <button class="sw-btn sw-btn--ghost" (click)="downloadZip()">
+              <i class="pi pi-download"></i> {{ t().downloadZip }}
+            </button>
+            @if (canEdit()) {
+              <button class="sw-btn sw-btn--ghost" (click)="openNewFolder()">
+                <i class="pi pi-folder-plus"></i> {{ t().newFolder }}
+              </button>
+              <label class="sw-btn sw-btn--solid">
+                <i class="pi pi-cloud-upload"></i> {{ t().upload }}
+                <input type="file" multiple hidden (change)="onUpload($event)" [disabled]="busy()"/>
+              </label>
+            }
+            <button class="sw-btn sw-btn--ghost" (click)="leave()" [title]="t().leave">
+              <i class="pi pi-sign-out"></i>
+            </button>
+          </div>
+        }
+      </header>
+
+      <div class="sw-body">
+
+        @if (!contents()) {
+          <!-- Список доступных папок -->
+          @if (loading()) {
+            <div class="sw-spin"><p-progressSpinner strokeWidth="3"/></div>
+          } @else if (isEmpty()) {
+            <div class="sw-empty">
+              <div class="sw-empty-ic"><i class="pi pi-users"></i></div>
+              <h3 class="sw-empty-title">{{ t().empty }}</h3>
+              <p class="sw-empty-sub">{{ t().emptySub }}</p>
+            </div>
+          } @else {
+            <div class="sw-grid">
+              @for (folder of roots(); track folder.id) {
+                <button class="sw-card sw-card--folder" (click)="openRoot(folder)">
+                  <div class="sw-card-ic"><i class="pi pi-folder"></i></div>
+                  <div class="sw-card-info">
+                    <span class="sw-card-name" [title]="folder.name">{{ folder.name | decodeURIComponent }}</span>
+                    <span class="sw-card-meta">
+                      {{ folder.ownerName }} · {{ folder.role === 'EDITOR' ? t().roleEditor : t().roleViewer }}
+                    </span>
+                  </div>
+                  <i class="pi pi-angle-right sw-card-go"></i>
+                </button>
+              }
+            </div>
+          }
+        } @else {
+          <!-- Содержимое открытой папки -->
+          <div class="sw-crumbs">
+            <button class="sw-crumb" (click)="backToList()"><i class="pi pi-users"></i> {{ t().title }}</button>
+            @for (seg of pathStack(); track seg.id; let i = $index) {
+              <i class="pi pi-angle-right sw-crumb-sep"></i>
+              <button class="sw-crumb" [class.sw-crumb--active]="i === pathStack().length - 1"
+                (click)="navigateToIndex(i)">{{ seg.name | decodeURIComponent }}</button>
+            }
+          </div>
+
+          @if (contentsLoading()) {
+            <div class="sw-spin"><p-progressSpinner strokeWidth="3"/></div>
+          } @else if (contents()!.folders.length === 0 && contents()!.files.length === 0) {
+            <div class="sw-empty">
+              <div class="sw-empty-ic"><i class="pi pi-inbox"></i></div>
+              <h3 class="sw-empty-title">{{ t().emptyFolder }}</h3>
+            </div>
+          } @else {
+            @if (contents()!.folders.length) {
+              <span class="sw-section-label">{{ t().foldersLabel }}</span>
+              <div class="sw-grid">
+                @for (sub of contents()!.folders; track sub.id) {
+                  <div class="sw-card sw-card--folder" (click)="openSubfolder(sub)">
+                    <div class="sw-card-ic"><i class="pi pi-folder"></i></div>
+                    <div class="sw-card-info">
+                      <span class="sw-card-name" [title]="sub.name">{{ sub.name | decodeURIComponent }}</span>
+                    </div>
+                    @if (canEdit()) {
+                      <button class="sw-act sw-act--danger" (click)="deleteFolder(sub); $event.stopPropagation()" [title]="t().delete">
+                        <i class="pi pi-trash"></i>
+                      </button>
+                    }
+                    <i class="pi pi-angle-right sw-card-go"></i>
+                  </div>
+                }
+              </div>
+            }
+
+            @if (contents()!.files.length) {
+              <span class="sw-section-label">{{ t().filesLabel }}</span>
+              <div class="sw-grid">
+                @for (file of contents()!.files; track file.id) {
+                  <div class="sw-card">
+                    <div class="sw-card-ic sw-card-ic--file"><i class="pi" [class]="getFileIcon(file.mimeType)"></i></div>
+                    <div class="sw-card-info">
+                      <span class="sw-card-name" [title]="file.name">{{ file.name | decodeURIComponent }}</span>
+                      <span class="sw-card-meta">{{ formatSize(file.size) }}</span>
+                    </div>
+                    <button class="sw-act" (click)="download(file)" [title]="t().download"><i class="pi pi-download"></i></button>
+                    @if (canEdit()) {
+                      <button class="sw-act sw-act--danger" (click)="deleteFile(file)" [title]="t().delete"><i class="pi pi-trash"></i></button>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          }
+        }
+
+      </div>
+    </div>
+  </main>
+</div>
+
+<p-dialog [header]="t().newFolder" [(visible)]="showNewFolder" [modal]="true" [style]="{width: '380px'}" [dismissableMask]="true">
+  <input pInputText [(ngModel)]="newFolderName" [placeholder]="t().folderNamePlaceholder"
+    (keyup.enter)="createFolder()" autofocus fluid/>
+  <ng-template pTemplate="footer">
+    <p-button [label]="t().cancel" severity="secondary" text (onClick)="showNewFolder.set(false)"/>
+    <p-button [label]="t().create" icon="pi pi-check" [disabled]="!newFolderName().trim() || busy()" (onClick)="createFolder()"/>
+  </ng-template>
+</p-dialog>
+
+<p-toast key="br" position="bottom-right"/>

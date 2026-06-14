@@ -1298,3 +1298,132 @@
   &:focus { border-color: var(--brand-accent) !important; box-shadow: none !important; }
   &::placeholder { color: var(--text3) !important; }
 }
+
+/* ─── Диалог «Доступ к папке для пользователей» ─── */
+.fa-form { display: flex; flex-direction: column; gap: 16px; }
+
+.fa-folder {
+  display: flex; align-items: center; gap: 11px;
+  padding-bottom: 2px;
+}
+.fa-folder-tile {
+  width: 38px; height: 38px; flex-shrink: 0; border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  background: color-mix(in srgb, var(--brand-accent) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--brand-accent) 30%, var(--border2));
+  i { font-size: 17px; color: var(--brand-accent); }
+}
+.fa-folder-name {
+  font-family: var(--brand-display); font-size: 17px; font-weight: 700; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.fa-invite {
+  display: flex; flex-direction: column; gap: 10px;
+  padding: 14px; border: 1px solid var(--border); border-radius: var(--radius-md);
+  background: var(--bg3);
+}
+.fa-invite-input { position: relative; display: flex; align-items: center; }
+.fa-invite-ic { position: absolute; left: 12px; font-size: 13px !important; color: var(--text3) !important; pointer-events: none; }
+.fa-email-input {
+  width: 100% !important;
+  padding-left: 36px !important;
+  background: var(--bg2) !important;
+  border: 1px solid var(--border2) !important;
+  border-radius: var(--radius-sm) !important;
+  font-family: var(--brand-mono) !important;
+  font-size: 13px !important;
+}
+.fa-invite-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+
+.fa-list-head { display: flex; align-items: center; gap: 10px; }
+.fa-list-rule { flex: 1; height: 1px; background: var(--border); }
+.fa-count {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-family: var(--brand-mono); font-size: 11px; font-weight: 700; color: var(--text2);
+  i { font-size: 10px !important; }
+}
+
+.fa-role-toggle { display: inline-flex; border: 1px solid var(--border2); border-radius: var(--radius-sm); overflow: hidden; }
+.fa-role-chip {
+  border: none; background: transparent; cursor: pointer;
+  padding: 7px 14px; font-family: var(--brand-mono); font-size: 12px; color: var(--text2);
+  transition: background .15s, color .15s;
+  & + .fa-role-chip { border-left: 1px solid var(--border2); }
+  &--active { background: var(--brand-accent); color: var(--brand-accent-ink); font-weight: 700; }
+  &:hover:not(.fa-role-chip--active) { color: var(--text); background: rgba(128,128,128,.08); }
+}
+.fa-role-toggle--sm .fa-role-chip { padding: 4px 10px; font-size: 11px; }
+
+.fa-list { display: flex; flex-direction: column; gap: 6px; max-height: 300px; overflow-y: auto; }
+.fa-empty { padding: 16px; text-align: center; font-family: var(--brand-mono); font-size: 12px; color: var(--text3); }
+.fa-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg2);
+}
+.fa-avatar {
+  width: 30px; height: 30px; flex-shrink: 0; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg4); border: 1px solid var(--border2);
+  font-family: var(--brand-mono); font-size: 12px; font-weight: 700; color: var(--text2);
+  &--owner { background: color-mix(in srgb, var(--brand-accent) 16%, transparent); border-color: color-mix(in srgb, var(--brand-accent) 35%, var(--border2)); color: var(--brand-accent); }
+}
+.fa-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+.fa-empty { display: flex; align-items: center; justify-content: center; gap: 8px; i { font-size: 12px !important; } }
+.fa-name { font-family: var(--brand-mono); font-size: 13px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fa-email { font-family: var(--brand-mono); font-size: 11px; color: var(--text3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fa-role-owner { font-family: var(--brand-mono); font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--brand-accent); white-space: nowrap; }
+.fa-controls { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.fa-remove {
+  width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+  border: none; background: transparent; border-radius: var(--radius-sm); color: var(--text3); cursor: pointer;
+  transition: color .15s, background .15s;
+  i { font-size: 12px !important; }
+  &:hover { color: #e05555; background: color-mix(in srgb, #e05555 12%, transparent); }
+}
+
+:host ::ng-deep .fa-invite .p-button {
+  border-radius: var(--radius-sm) !important;
+  font-family: var(--brand-mono) !important;
+  font-size: 13px !important;
+  white-space: nowrap !important;
+  background: var(--brand-accent) !important;
+  border: 1px solid var(--brand-accent) !important;
+  color: var(--brand-accent-ink) !important;
+  &:hover:not(:disabled) { opacity: .9 !important; }
+  &:disabled { opacity: .4 !important; }
+  .p-button-icon { font-size: 12px !important; }
+}
+
+/* Хром диалога «доступ к папке» — как у остальных диалогов (тема + шрифты) */
+:host ::ng-deep .fa-dialog.p-dialog {
+  background: var(--bg2) !important; border: 1px solid var(--border) !important;
+  border-radius: 16px !important; box-shadow: 0 24px 64px rgba(0,0,0,.6) !important;
+  overflow: hidden !important;
+
+  .p-dialog-header {
+    background: var(--bg2) !important; border-bottom: 1px solid var(--border) !important;
+    border-radius: 16px 16px 0 0 !important; padding: 16px 20px !important;
+    .p-dialog-title { font-family: var(--brand-display) !important; font-size: 15px !important; font-weight: 700 !important; color: var(--text) !important; letter-spacing: -.3px !important; }
+    .p-dialog-header-icon { color: var(--text3) !important; &:hover { color: var(--text2) !important; background: var(--bg3) !important; } }
+  }
+
+  .p-dialog-content { background: var(--bg2) !important; padding: 20px !important; }
+
+  .p-dialog-footer {
+    background: var(--bg2) !important; border-top: 1px solid var(--border) !important;
+    border-radius: 0 0 16px 16px !important; padding: 12px 20px !important;
+    display: flex !important; justify-content: flex-end !important; gap: 8px !important;
+    .p-button {
+      border-radius: 8px !important; font-family: var(--brand-mono) !important; font-size: 13px !important;
+      &.p-button-text { color: var(--text2) !important; background: transparent !important; border: none !important; &:hover { color: var(--text) !important; background: var(--bg3) !important; } }
+    }
+  }
+}
+
+:host ::ng-deep .fa-dialog .p-inputtext {
+  background: var(--bg2) !important; border: 1px solid var(--border2) !important;
+  border-radius: 8px !important; color: var(--text) !important; font-family: var(--brand-mono) !important;
+  &:focus { border-color: var(--brand-accent) !important; box-shadow: none !important; }
+  &::placeholder { color: var(--text3) !important; }
+}

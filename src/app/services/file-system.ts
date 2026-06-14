@@ -2,6 +2,7 @@ import { computed, effect, Injectable, signal } from '@angular/core';
 import { FileItem } from '../interfaces/file-system-interfeces/file-item.model';
 import { FolderItem } from '../interfaces/file-system-interfeces/folder-item.model';
 import { SharedFileItem, SharedFolderItem, ShareSettings } from '../interfaces/file-system-interfeces/shared-file.model';
+import { FolderMember, SharedWithMeFolder, SharedFolderContents } from '../interfaces/file-system-interfeces/folder-collab.model';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { catchError, firstValueFrom, forkJoin, tap, throwError } from 'rxjs';
 import { environment } from '../../environments/environment';
@@ -47,6 +48,9 @@ export class FileSystem {
   private _recentFiles   = signal<FileItem[]>([]);
   private _recentLoading = signal<boolean>(false);
 
+  private _sharedWithMe        = signal<SharedWithMeFolder[]>([]);
+  private _sharedWithMeLoading = signal<boolean>(false);
+
   files        = computed(() => this._files());
   folders      = computed(() => this._folders());
   trashFiles   = computed(() => this._trashFiles());
@@ -63,6 +67,8 @@ export class FileSystem {
   starredCount   = computed(() => this._starredFiles().length + this._starredFolders().length);
   recentFiles    = computed(() => this._recentFiles());
   recentLoading  = computed(() => this._recentLoading());
+  sharedWithMe        = computed(() => this._sharedWithMe());
+  sharedWithMeLoading = computed(() => this._sharedWithMeLoading());
   selectedItem = computed(() => this._selectedItem());
   loading      = computed(() => this._loading());
   error        = computed(() => this._error());
@@ -686,6 +692,89 @@ export class FileSystem {
       },
       error: () => { this._recentLoading.set(false); },
     });
+  }
+
+  // ─── Совместный доступ к папкам (между пользователями) ───
+
+  loadSharedWithMe() {
+    this._sharedWithMeLoading.set(true);
+    this.http.get<SharedWithMeFolder[]>(`${this.apiUrl}/file-system/shared-with-me`, { withCredentials: true }).pipe(
+      catchError(err => this.handleError(err, 'Не удалось загрузить общие папки'))
+    ).subscribe({
+      next: (list) => { this._sharedWithMe.set(list ?? []); this._sharedWithMeLoading.set(false); },
+      error: () => { this._sharedWithMeLoading.set(false); },
+    });
+  }
+
+  getFolderContents(folderId: string) {
+    return this.http.get<SharedFolderContents>(
+      `${this.apiUrl}/file-system/folder-access/${folderId}/contents`, { withCredentials: true }
+    ).pipe(catchError(err => this.handleError(err, 'Не удалось открыть папку')));
+  }
+
+  uploadToSharedFolder(folderId: string, files: FileList | File[]) {
+    const form = new FormData();
+    Array.from(files).forEach(f => form.append('file', f));
+    return this.http.post(
+      `${this.apiUrl}/file-system/folder-access/${folderId}/upload`, form, { withCredentials: true }
+    ).pipe(catchError(err => this.handleError(err, 'Не удалось загрузить файлы')));
+  }
+
+  createSubfolderInShared(parentId: string, name: string) {
+    return this.http.post(
+      `${this.apiUrl}/file-system/folder-access/${parentId}/create-folder`, { name }, { withCredentials: true }
+    ).pipe(catchError(err => this.handleError(err, 'Не удалось создать папку')));
+  }
+
+  deleteSharedItem(itemId: string, type: 'file' | 'folder') {
+    return this.http.delete(
+      `${this.apiUrl}/file-system/folder-access/item/${itemId}?type=${type}`, { withCredentials: true }
+    ).pipe(catchError(err => this.handleError(err, 'Не удалось удалить')));
+  }
+
+  downloadSharedFolderZip(folderId: string, name: string) {
+    this.http.get(`${this.apiUrl}/file-system/folder-access/${folderId}/download-zip`, {
+      responseType: 'blob', withCredentials: true,
+    }).pipe(catchError(err => this.handleError(err, 'Не удалось скачать папку'))).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url; link.download = `${name}.zip`; link.click();
+        window.URL.revokeObjectURL(url);
+      },
+    });
+  }
+
+  // ─── Управление участниками папки (для владельца) ───
+
+  listFolderMembers(folderId: string) {
+    return this.http.get<FolderMember[]>(`${this.apiUrl}/file-system/folders/${folderId}/members`, { withCredentials: true }).pipe(
+      catchError(err => this.handleError(err, 'Не удалось загрузить участников')),
+    );
+  }
+
+  inviteFolderMember(folderId: string, email: string, role: 'VIEWER' | 'EDITOR') {
+    return this.http.post<FolderMember>(
+      `${this.apiUrl}/file-system/folders/${folderId}/members`, { email, role }, { withCredentials: true },
+    ).pipe(catchError(err => this.handleError(err, 'Не удалось пригласить пользователя')));
+  }
+
+  updateFolderMemberRole(folderId: string, memberUserId: string, role: 'VIEWER' | 'EDITOR') {
+    return this.http.patch(
+      `${this.apiUrl}/file-system/folders/${folderId}/members/${memberUserId}`, { role }, { withCredentials: true },
+    ).pipe(catchError(err => this.handleError(err, 'Не удалось изменить роль')));
+  }
+
+  removeFolderMember(folderId: string, memberUserId: string) {
+    return this.http.delete(
+      `${this.apiUrl}/file-system/folders/${folderId}/members/${memberUserId}`, { withCredentials: true },
+    ).pipe(catchError(err => this.handleError(err, 'Не удалось удалить участника')));
+  }
+
+  leaveSharedFolder(folderId: string) {
+    return this.http.delete(
+      `${this.apiUrl}/file-system/folders/${folderId}/leave`, { withCredentials: true },
+    ).pipe(catchError(err => this.handleError(err, 'Не удалось покинуть папку')));
   }
 
   toggleStar(id: string, type: 'file' | 'folder') {
