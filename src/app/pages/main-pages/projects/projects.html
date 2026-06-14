@@ -32,12 +32,24 @@
                   <div class="project-card-head">
                     <h3 class="project-card-title">{{ project.name }}</h3>
                     <div class="project-card-actions" (click)="$event.stopPropagation()">
-                      <p-button icon="pi pi-pencil" text size="small"
-                        (onClick)="openRenameDialog(project, $event)" [pTooltip]="t().tooltipEdit"/>
-                      <p-button icon="pi pi-trash" text size="small" severity="danger"
-                        (onClick)="deleteProject(project, $event)" [pTooltip]="t().tooltipDelete"/>
+                      @if (isOwner(project)) {
+                        <p-button icon="pi pi-users" text size="small"
+                          (onClick)="openMembersDialog(project, $event)" [pTooltip]="t().membersTooltip"/>
+                        <p-button icon="pi pi-pencil" text size="small"
+                          (onClick)="openRenameDialog(project, $event)" [pTooltip]="t().tooltipEdit"/>
+                        <p-button icon="pi pi-trash" text size="small" severity="danger"
+                          (onClick)="deleteProject(project, $event)" [pTooltip]="t().tooltipDelete"/>
+                      } @else {
+                        <p-button icon="pi pi-sign-out" text size="small" severity="secondary"
+                          (onClick)="leaveProject(project, $event)" [pTooltip]="t().leaveTooltip"/>
+                      }
                     </div>
                   </div>
+                  @if (project.shared) {
+                    <span class="project-shared-badge">
+                      <i class="pi pi-users"></i> {{ t().sharedBadge }}{{ project.ownerName ? ' · ' + project.ownerName : '' }}
+                    </span>
+                  }
                   @if (project.description) {
                     <p class="project-card-desc">{{ project.description }}</p>
                   }
@@ -156,6 +168,65 @@
       <p-button [label]="t().deleteBtn" (onClick)="onConfirmAccept()" styleClass="confirm-btn-danger"/>
     </div>
   </div>
+</p-dialog>
+
+<p-dialog [header]="t().membersDialogTitle" [(visible)]="showMembersDialog" [modal]="true"
+  [style]="{width: '500px'}" [dismissableMask]="true">
+  @if (membersTarget(); as project) {
+    <div class="members-form">
+      <p class="members-sub">{{ project.name }}</p>
+
+      <!-- Приглашение -->
+      <div class="member-invite">
+        <input pInputText [(ngModel)]="inviteEmail" type="email"
+          [placeholder]="t().invitePlaceholder" (keyup.enter)="invite()" fluid/>
+        <div class="member-invite-row">
+          <div class="role-toggle">
+            <button type="button" class="role-chip" [class.role-chip--active]="inviteRole() === 'EDITOR'"
+              (click)="inviteRole.set('EDITOR')">{{ t().roleEditor }}</button>
+            <button type="button" class="role-chip" [class.role-chip--active]="inviteRole() === 'VIEWER'"
+              (click)="inviteRole.set('VIEWER')">{{ t().roleViewer }}</button>
+          </div>
+          <p-button [label]="t().inviteBtn" icon="pi pi-user-plus"
+            [loading]="inviting()" [disabled]="inviting() || !inviteEmail().trim()" (onClick)="invite()"/>
+        </div>
+      </div>
+
+      <!-- Список участников -->
+      <div class="members-list">
+        @if (membersLoading()) {
+          <div class="members-empty">{{ t().membersLoading }}</div>
+        } @else {
+          @for (m of members(); track m.userId) {
+            <div class="member-row">
+              <div class="member-info">
+                <span class="member-name">{{ m.username || m.email }}</span>
+                <span class="member-email">{{ m.email }}</span>
+              </div>
+              @if (m.isOwner) {
+                <span class="member-role member-role--owner">{{ t().roleOwner }}</span>
+              } @else {
+                <div class="member-controls">
+                  <div class="role-toggle role-toggle--sm">
+                    <button type="button" class="role-chip" [class.role-chip--active]="m.role === 'EDITOR'"
+                      (click)="changeMemberRole(m, 'EDITOR')">{{ t().roleEditor }}</button>
+                    <button type="button" class="role-chip" [class.role-chip--active]="m.role === 'VIEWER'"
+                      (click)="changeMemberRole(m, 'VIEWER')">{{ t().roleViewer }}</button>
+                  </div>
+                  <button type="button" class="member-remove" (click)="removeMember(m)" [title]="t().memberRemoveTooltip">
+                    <i class="pi pi-times"></i>
+                  </button>
+                </div>
+              }
+            </div>
+          }
+        }
+      </div>
+    </div>
+  }
+  <ng-template pTemplate="footer">
+    <p-button [label]="t().cancelBtn" severity="secondary" text (onClick)="showMembersDialog.set(false)"/>
+  </ng-template>
 </p-dialog>
 
 <p-toast position="bottom-right" key="br"></p-toast>

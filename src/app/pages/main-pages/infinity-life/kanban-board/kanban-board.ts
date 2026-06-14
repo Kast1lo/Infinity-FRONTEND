@@ -13,6 +13,7 @@ import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
 import { InfinityLife } from '../../../../services/infinity-life';
 import { ProjectService } from '../../../../services/project';
+import { ProjectMember } from '../../../../interfaces/project/project.model';
 import { MessageService, ConfirmationService, MenuItem } from 'primeng/api';
 import { CdkDragDrop, moveItemInArray, transferArrayItem, DragDropModule } from '@angular/cdk/drag-drop';
 import { Subtask, Task } from '../../../../interfaces/infinity-life/tasks.model';
@@ -74,6 +75,65 @@ export class KanbanBoard implements OnInit {
   readonly projectName = input<string>('');
 
   t = computed(() => this.langService.t().pages.kanban);
+  tp = computed(() => this.langService.t().pages.projects);
+
+  // Роль текущего пользователя на доске (владелец видит управление участниками)
+  isOwner = computed(() => !!this.projectService.currentProject()?.isOwner);
+
+  // ─── Участники доски ───
+  showMembersDialog = signal(false);
+  members        = signal<ProjectMember[]>([]);
+  membersLoading = signal(false);
+  inviteEmail    = signal('');
+  inviteRole     = signal<'VIEWER' | 'EDITOR'>('EDITOR');
+  inviting       = signal(false);
+
+  openMembersDialog() {
+    this.members.set([]);
+    this.inviteEmail.set('');
+    this.inviteRole.set('EDITOR');
+    this.showMembersDialog.set(true);
+    this.loadMembers();
+  }
+
+  private loadMembers() {
+    this.membersLoading.set(true);
+    this.projectService.listMembers(this.projectId()).subscribe({
+      next: (m) => { this.members.set(m); this.membersLoading.set(false); this.cdr.markForCheck(); },
+      error: () => { this.membersLoading.set(false); this.toast(this.tp().membersLoadFailed); },
+    });
+  }
+
+  invite() {
+    const email = this.inviteEmail().trim();
+    if (!email || this.inviting()) return;
+    this.inviting.set(true);
+    this.projectService.inviteMember(this.projectId(), email, this.inviteRole()).subscribe({
+      next: () => {
+        this.inviting.set(false);
+        this.inviteEmail.set('');
+        this.toast(this.tp().memberAdded, true);
+        this.loadMembers();
+      },
+      error: (err) => { this.inviting.set(false); this.toast(err?.message ?? this.tp().inviteFailed); },
+    });
+  }
+
+  changeMemberRole(member: ProjectMember, role: 'VIEWER' | 'EDITOR') {
+    if (member.isOwner || member.role === role) return;
+    this.projectService.updateMemberRole(this.projectId(), member.userId, role).subscribe({
+      next: () => this.loadMembers(),
+      error: (err) => this.toast(err?.message ?? this.tp().updateFailed),
+    });
+  }
+
+  removeMember(member: ProjectMember) {
+    if (member.isOwner) return;
+    this.projectService.removeMember(this.projectId(), member.userId).subscribe({
+      next: () => { this.toast(this.tp().memberRemoved, true); this.loadMembers(); },
+      error: (err) => this.toast(err?.message ?? this.tp().updateFailed),
+    });
+  }
 
   goToProjects() {
     this.router.navigate(['/projects']);

@@ -1,3 +1,5 @@
+export type ProjectRole = 'OWNER' | 'EDITOR' | 'VIEWER';
+
 export interface Project {
   id:          string;
   name:        string;
@@ -7,10 +9,21 @@ export interface Project {
   userId:      string;
   createdAt:   string;
   updatedAt:   string;
+  shared?:     boolean;
+  role?:       ProjectRole;
+  ownerName?:  string | null;
   _count?: {
     tasks:   number;
     columns: number;
   };
+}
+
+export interface ProjectMember {
+  userId:   string;
+  username: string | null;
+  email:    string;
+  role:     ProjectRole;
+  isOwner:  boolean;
 }
 
 export interface CreateProjectDto {

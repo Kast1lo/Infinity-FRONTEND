@@ -4,6 +4,7 @@ import { catchError, finalize, Observable, tap, throwError } from 'rxjs';
 
 import {
   Project,
+  ProjectMember,
   CreateProjectDto,
   UpdateProjectDto,
   AiGenerateTasksDto,
@@ -79,6 +80,38 @@ export class ProjectService {
       catchError(err => this.handleError(err, 'AI-генерация не удалась')),
       finalize(() => this.isLoading.set(false)),
     );
+  }
+
+  // ─── Совместный доступ к доске ───
+
+  listMembers(projectId: string): Observable<ProjectMember[]> {
+    return this.http.get<ProjectMember[]>(`${this.baseUrl}/projects/${projectId}/members`, { withCredentials: true }).pipe(
+      catchError(err => this.handleError(err, 'Не удалось загрузить участников')),
+    );
+  }
+
+  inviteMember(projectId: string, email: string, role: 'VIEWER' | 'EDITOR'): Observable<ProjectMember> {
+    return this.http.post<ProjectMember>(
+      `${this.baseUrl}/projects/${projectId}/members`, { email, role }, { withCredentials: true },
+    ).pipe(catchError(err => this.handleError(err, 'Не удалось пригласить пользователя')));
+  }
+
+  updateMemberRole(projectId: string, memberUserId: string, role: 'VIEWER' | 'EDITOR'): Observable<any> {
+    return this.http.patch(
+      `${this.baseUrl}/projects/${projectId}/members/${memberUserId}`, { role }, { withCredentials: true },
+    ).pipe(catchError(err => this.handleError(err, 'Не удалось изменить роль')));
+  }
+
+  removeMember(projectId: string, memberUserId: string): Observable<any> {
+    return this.http.delete(
+      `${this.baseUrl}/projects/${projectId}/members/${memberUserId}`, { withCredentials: true },
+    ).pipe(catchError(err => this.handleError(err, 'Не удалось удалить участника')));
+  }
+
+  leaveProject(projectId: string): Observable<any> {
+    return this.http.delete(
+      `${this.baseUrl}/projects/${projectId}/leave`, { withCredentials: true },
+    ).pipe(catchError(err => this.handleError(err, 'Не удалось покинуть доску')));
   }
 
   clearError(): void { this.error.set(null); }

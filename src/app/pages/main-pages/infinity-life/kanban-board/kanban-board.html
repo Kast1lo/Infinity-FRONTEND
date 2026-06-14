@@ -23,6 +23,8 @@
       }
     </div>
     <div class="toolbar-actions">
+      <p-button [label]="tp().membersTooltip" icon="pi pi-users" severity="secondary" [outlined]="true"
+        (onClick)="openMembersDialog()"/>
       <p-button label="AI-генерация задач" icon="pi pi-sparkles" severity="secondary"
         (onClick)="openAiDialog()"/>
     </div>
@@ -368,6 +370,65 @@
       [loading]="aiLoading()"
       [disabled]="aiLoading() || aiDescription().trim().length < 10"
       (onClick)="runAiGeneration()"/>
+  </ng-template>
+</p-dialog>
+
+<p-dialog [header]="tp().membersDialogTitle" [(visible)]="showMembersDialog" [modal]="true"
+  [style]="{width: '500px'}" [dismissableMask]="true">
+  <div class="members-form">
+    @if (projectName()) { <p class="members-sub">{{ projectName() }}</p> }
+
+    @if (isOwner()) {
+      <div class="member-invite">
+        <input pInputText [(ngModel)]="inviteEmail" type="email"
+          [placeholder]="tp().invitePlaceholder" (keyup.enter)="invite()" fluid/>
+        <div class="member-invite-row">
+          <div class="role-toggle">
+            <button type="button" class="role-chip" [class.role-chip--active]="inviteRole() === 'EDITOR'"
+              (click)="inviteRole.set('EDITOR')">{{ tp().roleEditor }}</button>
+            <button type="button" class="role-chip" [class.role-chip--active]="inviteRole() === 'VIEWER'"
+              (click)="inviteRole.set('VIEWER')">{{ tp().roleViewer }}</button>
+          </div>
+          <p-button [label]="tp().inviteBtn" icon="pi pi-user-plus"
+            [loading]="inviting()" [disabled]="inviting() || !inviteEmail().trim()" (onClick)="invite()"/>
+        </div>
+      </div>
+    }
+
+    <div class="members-list">
+      @if (membersLoading()) {
+        <div class="members-empty">{{ tp().membersLoading }}</div>
+      } @else {
+        @for (m of members(); track m.userId) {
+          <div class="member-row">
+            <div class="member-info">
+              <span class="member-name">{{ m.username || m.email }}</span>
+              <span class="member-email">{{ m.email }}</span>
+            </div>
+            @if (m.isOwner) {
+              <span class="member-role--owner">{{ tp().roleOwner }}</span>
+            } @else if (isOwner()) {
+              <div class="member-controls">
+                <div class="role-toggle role-toggle--sm">
+                  <button type="button" class="role-chip" [class.role-chip--active]="m.role === 'EDITOR'"
+                    (click)="changeMemberRole(m, 'EDITOR')">{{ tp().roleEditor }}</button>
+                  <button type="button" class="role-chip" [class.role-chip--active]="m.role === 'VIEWER'"
+                    (click)="changeMemberRole(m, 'VIEWER')">{{ tp().roleViewer }}</button>
+                </div>
+                <button type="button" class="member-remove" (click)="removeMember(m)" [title]="tp().memberRemoveTooltip">
+                  <i class="pi pi-times"></i>
+                </button>
+              </div>
+            } @else {
+              <span class="member-role--owner">{{ m.role === 'EDITOR' ? tp().roleEditor : tp().roleViewer }}</span>
+            }
+          </div>
+        }
+      }
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <p-button [label]="t().cancelBtn" severity="secondary" text (onClick)="showMembersDialog.set(false)"/>
   </ng-template>
 </p-dialog>
 

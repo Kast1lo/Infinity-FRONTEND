@@ -12,7 +12,7 @@ import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
 
 import { ProjectService } from '../../../services/project';
-import { Project } from '../../../interfaces/project/project.model';
+import { Project, ProjectMember } from '../../../interfaces/project/project.model';
 import { LangService } from '../../../services/lang';
 
 import { ButtonModule } from 'primeng/button';
@@ -76,6 +76,17 @@ export class Projects implements OnInit {
   confirmTitle = signal('');
   confirmMessage = signal('');
   private confirmCallback: (() => void) | null = null;
+
+  // ─── Участники доски ───
+  showMembersDialog = signal(false);
+  membersTarget  = signal<Project | null>(null);
+  members        = signal<ProjectMember[]>([]);
+  membersLoading = signal(false);
+  inviteEmail    = signal('');
+  inviteRole     = signal<'VIEWER' | 'EDITOR'>('EDITOR');
+  inviting       = signal(false);
+
+  isOwner(project: Project): boolean { return !project.shared; }
 
   readonly colors = [
     { value: null,      hex: 'transparent' },
@@ -214,6 +225,72 @@ export class Projects implements OnInit {
   onConfirmReject() {
     this.confirmVisible.set(false);
     this.confirmCallback = null;
+  }
+
+  openMembersDialog(project: Project, event: Event) {
+    event.stopPropagation();
+    this.membersTarget.set(project);
+    this.members.set([]);
+    this.inviteEmail.set('');
+    this.inviteRole.set('EDITOR');
+    this.showMembersDialog.set(true);
+    this.loadMembers(project.id);
+  }
+
+  private loadMembers(projectId: string) {
+    this.membersLoading.set(true);
+    this.projectService.listMembers(projectId).subscribe({
+      next: (m) => { this.members.set(m); this.membersLoading.set(false); },
+      error: () => { this.membersLoading.set(false); this.toast(this.t().membersLoadFailed); },
+    });
+  }
+
+  invite() {
+    const project = this.membersTarget();
+    const email = this.inviteEmail().trim();
+    if (!project || !email || this.inviting()) return;
+    this.inviting.set(true);
+    this.projectService.inviteMember(project.id, email, this.inviteRole()).subscribe({
+      next: () => {
+        this.inviting.set(false);
+        this.inviteEmail.set('');
+        this.toast(this.t().memberAdded, true);
+        this.loadMembers(project.id);
+      },
+      error: (err) => { this.inviting.set(false); this.toast(err?.message ?? this.t().inviteFailed); },
+    });
+  }
+
+  changeMemberRole(member: ProjectMember, role: 'VIEWER' | 'EDITOR') {
+    const project = this.membersTarget();
+    if (!project || member.isOwner || member.role === role) return;
+    this.projectService.updateMemberRole(project.id, member.userId, role).subscribe({
+      next: () => this.loadMembers(project.id),
+      error: (err) => this.toast(err?.message ?? this.t().updateFailed),
+    });
+  }
+
+  removeMember(member: ProjectMember) {
+    const project = this.membersTarget();
+    if (!project || member.isOwner) return;
+    this.projectService.removeMember(project.id, member.userId).subscribe({
+      next: () => { this.toast(this.t().memberRemoved, true); this.loadMembers(project.id); },
+      error: (err) => this.toast(err?.message ?? this.t().updateFailed),
+    });
+  }
+
+  leaveProject(project: Project, event: Event) {
+    event.stopPropagation();
+    this.openConfirm(
+      this.t().leaveTitle,
+      `${this.t().leaveMsgPrefix}${project.name}${this.t().leaveMsgSuffix}`,
+      () => {
+        this.projectService.leaveProject(project.id).subscribe({
+          next: () => { this.toast(this.t().leftProject, true); this.loadProjects(); },
+          error: (err) => this.toast(err?.message ?? this.t().updateFailed),
+        });
+      },
+    );
   }
 
   private toast(detail: string, success = false) {
