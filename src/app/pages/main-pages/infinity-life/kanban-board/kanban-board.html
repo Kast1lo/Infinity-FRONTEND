@@ -25,8 +25,10 @@
     <div class="toolbar-actions">
       <p-button [label]="tp().membersTooltip" icon="pi pi-users" severity="secondary" [outlined]="true"
         (onClick)="openMembersDialog()"/>
-      <p-button label="AI-генерация задач" icon="pi pi-sparkles" severity="secondary"
-        (onClick)="openAiDialog()"/>
+      @if (canEdit()) {
+        <p-button label="AI-генерация задач" icon="pi pi-sparkles" severity="secondary"
+          (onClick)="openAiDialog()"/>
+      }
     </div>
   </div>
 
@@ -36,7 +38,9 @@
         <i class="pi pi-objects-column" style="font-size: 2rem"></i>
         <h2>{{ t().noColumnsTitle }}</h2>
         <p>{{ t().noColumnsDesc }}</p>
-        <p-button [label]="t().noColumnsBtn" (onClick)="showCreateColumnDialog.set(true)"/>
+        @if (canEdit()) {
+          <p-button [label]="t().noColumnsBtn" (onClick)="showCreateColumnDialog.set(true)"/>
+        }
       </div>
     </div>
   } @else {
@@ -50,17 +54,19 @@
               <h2 class="name-columns">{{ column.name }}</h2>
               <span class="col-count">{{ (column.tasks || []).length }}</span>
             </div>
-            <div>
-              <p-button icon="pi pi-ellipsis-v" [text]="true" [outlined]="true" size="small"
-                (click)="openColumnMenu($event, column, columnMenu)"/>
-              <p-menu #columnMenu [popup]="true" appendTo="body"/>
-            </div>
+            @if (canEdit()) {
+              <div>
+                <p-button icon="pi pi-ellipsis-v" [text]="true" [outlined]="true" size="small"
+                  (click)="openColumnMenu($event, column, columnMenu)"/>
+                <p-menu #columnMenu [popup]="true" appendTo="body"/>
+              </div>
+            }
           </div>
 
           <div class="tasks">
             @for (task of column.tasks || []; track task.id) {
-              <div class="tasks-card" cdkDrag [cdkDragData]="task">
-                <p-checkbox [binary]="true" [ngModel]="task.isCompleted" (onChange)="toggleCompletion(task)"/>
+              <div class="tasks-card" cdkDrag [cdkDragData]="task" [cdkDragDisabled]="!canEdit()">
+                <p-checkbox [binary]="true" [ngModel]="task.isCompleted" [disabled]="!canEdit()" (onChange)="toggleCompletion(task)"/>
                 <p-card (click)="openTaskDetail(task)">
                   <div class="file-card-inner">
                     @if (task.color) {
@@ -78,22 +84,27 @@
                           </div>
                         }
                       </div>
-                      <p-button icon="pi pi-trash" text size="small"
-                        (onClick)="deleteTask(task.id); $event.stopPropagation()"/>
+                      @if (canEdit()) {
+                        <p-button icon="pi pi-trash" text size="small"
+                          (onClick)="deleteTask(task.id); $event.stopPropagation()"/>
+                      }
                     </div>
                   </div>
                 </p-card>
               </div>
             }
-            <div class="new-task-button">
-              <p-button [label]="t().createTaskBtn" icon="pi pi-plus" severity="secondary" text fluid
-                (onClick)="openCreateTaskDialog(column.id)"/>
-            </div>
+            @if (canEdit()) {
+              <div class="new-task-button">
+                <p-button [label]="t().createTaskBtn" icon="pi pi-plus" severity="secondary" text fluid
+                  (onClick)="openCreateTaskDialog(column.id)"/>
+              </div>
+            }
           </div>
 
         </div>
       }
 
+      @if (canEdit()) {
       <div class="add-column-card">
         <p-inplace #inplace>
           <ng-template #display>
@@ -113,6 +124,7 @@
           </ng-template>
         </p-inplace>
       </div>
+      }
 
     </div>
   }
@@ -219,6 +231,7 @@
           <p-datepicker
             [ngModel]="detailDueDate()"
             (ngModelChange)="onDetailDateChange($event)"
+            [disabled]="!canEdit()"
             [showIcon]="true"
             [showOnFocus]="false"
             [showClear]="true"
@@ -229,14 +242,15 @@
           />
         </div>
 
-        <div class="detail-meta-row">
+        <div class="detail-meta-row" [class.detail-meta-row--ro]="!canEdit()">
           <span class="meta-label"><i class="pi pi-tag"></i>{{ t().labelMeta }}</span>
-          <div class="color-picker">
+          <div class="color-picker" [class.color-picker--ro]="!canEdit()">
             @for (c of labelColors(); track c.value) {
               <button class="color-dot color-dot--sm"
                 [class.color-dot--active]="task.color === c.value"
                 [style.background]="c.hex === 'transparent' ? 'transparent' : c.hex"
                 [class.color-dot--empty]="!c.value"
+                [disabled]="!canEdit()"
                 (click)="saveTaskField('color', c.value)"
                 [title]="c.label">
                 @if (!c.value) { <i class="pi pi-times"></i> }
@@ -267,15 +281,18 @@
             @for (sub of task.subtasks; track sub.id) {
               <div class="subtask-item">
                 <div class="subtask-left">
-                  <p-checkbox [binary]="true" [ngModel]="sub.isCompleted" (onChange)="toggleCompletion(sub)"/>
+                  <p-checkbox [binary]="true" [ngModel]="sub.isCompleted" [disabled]="!canEdit()" (onChange)="toggleCompletion(sub)"/>
                   <span [class.line-through]="sub.isCompleted">{{ sub.title }}</span>
                 </div>
-                <p-button icon="pi pi-trash" text size="small" (onClick)="deleteSubtask(sub.id, task.id)"/>
+                @if (canEdit()) {
+                  <p-button icon="pi pi-trash" text size="small" (onClick)="deleteSubtask(sub.id, task.id)"/>
+                }
               </div>
             }
           </div>
         }
 
+        @if (canEdit()) {
         <p-inplace #subtaskInplace>
           <ng-template #display>
             <span class="add-subtask-hint">{{ t().addSubtaskHint }}</span>
@@ -297,6 +314,7 @@
             </div>
           </ng-template>
         </p-inplace>
+        }
       </div>
 
     </div>
@@ -304,8 +322,12 @@
 
   <ng-template pTemplate="footer">
     <div class="detail-footer">
-      <p-button icon="pi pi-trash" [text]="true" severity="danger"
-        (onClick)="selectedTask() && deleteTask(selectedTask()!.id)"/>
+      @if (canEdit()) {
+        <p-button icon="pi pi-trash" [text]="true" severity="danger"
+          (onClick)="selectedTask() && deleteTask(selectedTask()!.id)"/>
+      } @else {
+        <span></span>
+      }
       <p-button [label]="t().closeBtn" severity="secondary" (onClick)="showTaskDetailDialog.set(false)"/>
     </div>
   </ng-template>

@@ -79,6 +79,11 @@ export class KanbanBoard implements OnInit {
 
   // Роль текущего пользователя на доске (владелец видит управление участниками)
   isOwner = computed(() => !!this.projectService.currentProject()?.isOwner);
+  // Может ли редактировать доску (владелец/редактор). Пока роль неизвестна — не прячем контролы.
+  canEdit = computed(() => {
+    const r = this.projectService.currentProject()?.myRole;
+    return r ? (r === 'OWNER' || r === 'EDITOR') : true;
+  });
 
   // ─── Участники доски ───
   showMembersDialog = signal(false);

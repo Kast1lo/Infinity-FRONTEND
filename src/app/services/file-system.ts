@@ -732,6 +732,12 @@ export class FileSystem {
     ).pipe(catchError(err => this.handleError(err, 'Не удалось удалить')));
   }
 
+  renameSharedItem(itemId: string, type: 'file' | 'folder', name: string) {
+    return this.http.patch(
+      `${this.apiUrl}/file-system/folder-access/item/${itemId}/rename?type=${type}`, { name }, { withCredentials: true }
+    ).pipe(catchError(err => this.handleError(err, 'Не удалось переименовать')));
+  }
+
   downloadSharedFolderZip(folderId: string, name: string) {
     this.http.get(`${this.apiUrl}/file-system/folder-access/${folderId}/download-zip`, {
       responseType: 'blob', withCredentials: true,

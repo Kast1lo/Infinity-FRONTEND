@@ -46,6 +46,10 @@ export class SharedWithMe implements OnInit {
   newFolderName = signal('');
   busy = signal(false);
 
+  showRename   = signal(false);
+  renameName   = signal('');
+  renameTarget = signal<{ id: string; type: 'file' | 'folder' } | null>(null);
+
   isEmpty   = computed(() => this.roots().length === 0);
   canEdit   = computed(() => { const r = this.contents()?.role; return r === 'EDITOR' || r === 'OWNER'; });
   currentId = computed(() => this.pathStack().at(-1)?.id ?? null);
@@ -129,6 +133,23 @@ export class SharedWithMe implements OnInit {
     this.fileSystem.createSubfolderInShared(id, name).subscribe({
       next: () => { this.busy.set(false); this.showNewFolder.set(false); this.toast(this.t().folderCreated, true); this.reload(); },
       error: (err) => { this.busy.set(false); this.toast(err?.message ?? this.t().folderCreateFailed); },
+    });
+  }
+
+  openRename(id: string, type: 'file' | 'folder', name: string) {
+    this.renameTarget.set({ id, type });
+    this.renameName.set(name);
+    this.showRename.set(true);
+  }
+
+  submitRename() {
+    const tgt = this.renameTarget();
+    const name = this.renameName().trim();
+    if (!tgt || !name || this.busy()) return;
+    this.busy.set(true);
+    this.fileSystem.renameSharedItem(tgt.id, tgt.type, name).subscribe({
+      next: () => { this.busy.set(false); this.showRename.set(false); this.toast(this.t().renamed, true); this.reload(); },
+      error: (err) => { this.busy.set(false); this.toast(err?.message ?? this.t().renameFailed); },
     });
   }
 

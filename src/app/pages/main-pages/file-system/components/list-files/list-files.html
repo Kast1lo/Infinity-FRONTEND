@@ -494,7 +494,7 @@
   </ng-template>
 </p-dialog>
 
-<p-dialog [header]="tp().membersDialogTitle" [(visible)]="folderAccessVisible" [modal]="true"
+<p-dialog [header]="t().folderMembersTitle" [(visible)]="folderAccessVisible" [modal]="true"
     [draggable]="false" [resizable]="false" [dismissableMask]="true" [style]="{ width: '500px' }" styleClass="fa-dialog">
   @if (folderAccessTarget(); as folder) {
     <div class="fa-form">

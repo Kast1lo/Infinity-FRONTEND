@@ -86,6 +86,9 @@
                       <span class="sw-card-name" [title]="sub.name">{{ sub.name | decodeURIComponent }}</span>
                     </div>
                     @if (canEdit()) {
+                      <button class="sw-act" (click)="openRename(sub.id, 'folder', sub.name); $event.stopPropagation()" [title]="t().rename">
+                        <i class="pi pi-pencil"></i>
+                      </button>
                       <button class="sw-act sw-act--danger" (click)="deleteFolder(sub); $event.stopPropagation()" [title]="t().delete">
                         <i class="pi pi-trash"></i>
                       </button>
@@ -108,6 +111,7 @@
                     </div>
                     <button class="sw-act" (click)="download(file)" [title]="t().download"><i class="pi pi-download"></i></button>
                     @if (canEdit()) {
+                      <button class="sw-act" (click)="openRename(file.id, 'file', file.name)" [title]="t().rename"><i class="pi pi-pencil"></i></button>
                       <button class="sw-act sw-act--danger" (click)="deleteFile(file)" [title]="t().delete"><i class="pi pi-trash"></i></button>
                     }
                   </div>
@@ -128,6 +132,15 @@
   <ng-template pTemplate="footer">
     <p-button [label]="t().cancel" severity="secondary" text (onClick)="showNewFolder.set(false)"/>
     <p-button [label]="t().create" icon="pi pi-check" [disabled]="!newFolderName().trim() || busy()" (onClick)="createFolder()"/>
+  </ng-template>
+</p-dialog>
+
+<p-dialog [header]="t().rename" [(visible)]="showRename" [modal]="true" [style]="{width: '380px'}" [dismissableMask]="true">
+  <input pInputText [(ngModel)]="renameName" [placeholder]="t().folderNamePlaceholder"
+    (keyup.enter)="submitRename()" autofocus fluid/>
+  <ng-template pTemplate="footer">
+    <p-button [label]="t().cancel" severity="secondary" text (onClick)="showRename.set(false)"/>
+    <p-button [label]="t().create" icon="pi pi-check" [disabled]="!renameName().trim() || busy()" (onClick)="submitRename()"/>
   </ng-template>
 </p-dialog>
 
