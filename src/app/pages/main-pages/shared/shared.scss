@@ -68,6 +68,13 @@
 .sh-empty-sub { font-family: var(--brand-mono); font-size: 12.5px; color: var(--text2); margin: 0; }
 
 .sh-list { display: flex; flex-direction: column; gap: 10px; }
+.sh-section-label {
+  display: block;
+  font-family: var(--brand-mono); font-size: 11px; font-weight: 700;
+  letter-spacing: .14em; text-transform: uppercase; color: var(--text2);
+  margin: 4px 2px 8px;
+  &:not(:first-child) { margin-top: 22px; }
+}
 
 .sh-card {
   display: flex; align-items: center; gap: 12px;

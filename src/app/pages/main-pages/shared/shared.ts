@@ -3,7 +3,7 @@ import { DatePipe } from '@angular/common';
 import { FileSystem } from '../../../services/file-system';
 import { ShareService } from '../../../services/share';
 import { LangService } from '../../../services/lang';
-import { SharedFileItem } from '../../../interfaces/file-system-interfeces/shared-file.model';
+import { SharedFileItem, SharedFolderItem } from '../../../interfaces/file-system-interfeces/shared-file.model';
 import { ProgressSpinner } from 'primeng/progressspinner';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
@@ -26,8 +26,9 @@ export class Shared implements OnInit {
   t = computed(() => this.langService.t().pages.shared);
 
   files   = this.fileSystem.sharedFiles;
+  folders = this.fileSystem.sharedFolders;
   loading = this.fileSystem.sharedLoading;
-  isEmpty = computed(() => this.files().length === 0);
+  isEmpty = computed(() => this.files().length === 0 && this.folders().length === 0);
 
   ngOnInit() {
     this.fileSystem.loadSharedFiles();
@@ -56,6 +57,23 @@ export class Shared implements OnInit {
 
   revoke(file: SharedFileItem) {
     this.fileSystem.revokeShare(file.id).subscribe({
+      next: () => this.toast(this.t().revoked),
+      error: () => this.toast(this.t().toastError),
+    });
+  }
+
+  async copyFolder(folder: SharedFolderItem) {
+    if (!folder.slug) { this.toast(this.t().toastError); return; }
+    try {
+      await this.shareService.copyFolderShareLink(folder.slug);
+      this.toast(this.t().copied);
+    } catch {
+      this.toast(this.t().toastError);
+    }
+  }
+
+  revokeFolder(folder: SharedFolderItem) {
+    this.fileSystem.revokeFolderShare(folder.id).subscribe({
       next: () => this.toast(this.t().revoked),
       error: () => this.toast(this.t().toastError),
     });

@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, HostListener, OnInit, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
-import { AvatarModule } from 'primeng/avatar';
 import { UserService } from '../../services/user-service';
 import { AuthService } from '../../services/auth';
 import { ThemeService } from '../../services/theme';
@@ -12,7 +11,7 @@ import { SearchBar } from '../search-bar/search-bar';
 
 @Component({
   selector: 'app-top-bar',
-  imports: [RouterLink, RouterLinkActive, AvatarModule, DatePipe, SearchBar],
+  imports: [RouterLink, RouterLinkActive, DatePipe, SearchBar],
   templateUrl: './top-bar.html',
   styleUrl: './top-bar.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -28,6 +27,11 @@ export class TopBar implements OnInit {
   profile   = this.userService.profile;
   avatarUrl = computed(() => this.profile()?.avatarUrl || '');
   username  = computed(() => this.profile()?.username || '');
+  initials  = computed(() => {
+    const name = this.profile()?.username;
+    if (!name) return '∞';
+    return name.substring(0, 2).toUpperCase();
+  });
 
   // Напоминания
   reminders     = this.infinityLife.reminders;

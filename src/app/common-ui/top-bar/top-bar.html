@@ -72,7 +72,13 @@
     </a>
 
     <a class="tb-account" routerLink="/profile" [attr.aria-label]="t().profile">
-      <p-avatar [image]="avatarUrl()" icon="pi pi-user" shape="circle"/>
+      <span class="tb-avatar">
+        @if (avatarUrl()) {
+          <img class="tb-avatar-img" [src]="avatarUrl()" alt="" />
+        } @else {
+          <span class="tb-avatar-initials">{{ initials() }}</span>
+        }
+      </span>
       <span class="tb-account-name">{{ username() || '—' }}</span>
     </a>
 

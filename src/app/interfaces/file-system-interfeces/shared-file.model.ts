@@ -14,3 +14,13 @@ export interface ShareSettings {
   expiresInDays?: number | null;
   password?: string | null;
 }
+
+export interface SharedFolderItem {
+  id: string;
+  name: string;
+  slug: string | null;
+  sharedAt: string | null;
+  shareExpiresAt: string | null;
+  hasPassword: boolean;
+  isExpired: boolean;
+}

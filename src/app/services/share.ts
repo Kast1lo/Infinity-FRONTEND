@@ -25,4 +25,12 @@ export class ShareService {
     const downloadUrl = `${window.location.origin}/share/download/${username}/${this.encodeForRoute(fileName)}`;
     await navigator.clipboard.writeText(downloadUrl);
   }
+
+  folderShareUrl(slug: string): string {
+    return `${window.location.origin}/share-folder/${slug}`;
+  }
+
+  async copyFolderShareLink(slug: string): Promise<void> {
+    await navigator.clipboard.writeText(this.folderShareUrl(slug));
+  }
 }

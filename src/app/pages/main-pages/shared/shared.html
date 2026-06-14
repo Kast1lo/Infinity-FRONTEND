@@ -20,6 +20,44 @@
             <p class="sh-empty-sub">{{ t().emptySub }}</p>
           </div>
         } @else {
+          @if (folders().length) {
+            <span class="sh-section-label">{{ t().foldersLabel }}</span>
+            <div class="sh-list">
+              @for (folder of folders(); track folder.id) {
+                <article class="sh-card" [class.sh-card--expired]="folder.isExpired">
+                  <div class="sh-card-ic"><i class="pi pi-folder"></i></div>
+
+                  <div class="sh-card-info">
+                    <span class="sh-card-name" [title]="folder.name">{{ folder.name | decodeURIComponent }}</span>
+                    <div class="sh-card-meta">
+                      @if (folder.isExpired) {
+                        <span class="sh-tag sh-tag--expired"><i class="pi pi-clock"></i> {{ t().expired }}</span>
+                      } @else if (folder.shareExpiresAt) {
+                        <span class="sh-tag"><i class="pi pi-clock"></i> {{ t().expires }} {{ folder.shareExpiresAt | date:'dd MMM yyyy' }}</span>
+                      } @else {
+                        <span class="sh-tag">{{ t().noExpiry }}</span>
+                      }
+                      @if (folder.hasPassword) {
+                        <span class="sh-tag sh-tag--lock"><i class="pi pi-lock"></i> {{ t().protected }}</span>
+                      }
+                    </div>
+                  </div>
+
+                  <div class="sh-card-actions">
+                    <button class="sh-act sh-act--copy" (click)="copyFolder(folder)" [title]="t().copyLink">
+                      <i class="pi pi-copy"></i>
+                    </button>
+                    <button class="sh-act sh-act--revoke" (click)="revokeFolder(folder)" [title]="t().revoke">
+                      <i class="pi pi-times"></i>
+                    </button>
+                  </div>
+                </article>
+              }
+            </div>
+          }
+
+          @if (files().length) {
+          @if (folders().length) { <span class="sh-section-label">{{ t().filesLabel }}</span> }
           <div class="sh-list">
             @for (file of files(); track file.id) {
               <article class="sh-card" [class.sh-card--expired]="file.isExpired">
@@ -52,6 +90,7 @@
               </article>
             }
           </div>
+          }
         }
       </div>
 

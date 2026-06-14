@@ -1,7 +1,7 @@
 import { computed, effect, Injectable, signal } from '@angular/core';
 import { FileItem } from '../interfaces/file-system-interfeces/file-item.model';
 import { FolderItem } from '../interfaces/file-system-interfeces/folder-item.model';
-import { SharedFileItem, ShareSettings } from '../interfaces/file-system-interfeces/shared-file.model';
+import { SharedFileItem, SharedFolderItem, ShareSettings } from '../interfaces/file-system-interfeces/shared-file.model';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { catchError, firstValueFrom, forkJoin, tap, throwError } from 'rxjs';
 import { environment } from '../../environments/environment';
@@ -33,6 +33,7 @@ export class FileSystem {
   private _trashLoading = signal<boolean>(false);
 
   private _sharedFiles   = signal<SharedFileItem[]>([]);
+  private _sharedFolders = signal<SharedFolderItem[]>([]);
   private _sharedLoading = signal<boolean>(false);
 
   private _starredFiles   = signal<FileItem[]>([]);
@@ -46,7 +47,9 @@ export class FileSystem {
   trashLoading = computed(() => this._trashLoading());
   trashCount   = computed(() => this._trashFiles().length + this._trashFolders().length);
   sharedFiles   = computed(() => this._sharedFiles());
+  sharedFolders = computed(() => this._sharedFolders());
   sharedLoading = computed(() => this._sharedLoading());
+  sharedCount   = computed(() => this._sharedFiles().length + this._sharedFolders().length);
   starredFiles   = computed(() => this._starredFiles());
   starredFolders = computed(() => this._starredFolders());
   starredLoading = computed(() => this._starredLoading());
@@ -459,10 +462,19 @@ export class FileSystem {
 
   loadSharedFiles() {
     this._sharedLoading.set(true);
-    this.http.get<SharedFileItem[]>(`${this.apiUrl}/file-system/shared`, { withCredentials: true }).pipe(
-      catchError(err => this.handleError(err, 'Не удалось загрузить список ссылок'))
-    ).subscribe({
-      next: (files) => { this._sharedFiles.set(files ?? []); this._sharedLoading.set(false); },
+    forkJoin({
+      files: this.http.get<SharedFileItem[]>(`${this.apiUrl}/file-system/shared`, { withCredentials: true }).pipe(
+        catchError(err => this.handleError(err, 'Не удалось загрузить список ссылок'))
+      ),
+      folders: this.http.get<SharedFolderItem[]>(`${this.apiUrl}/file-system/shared-folders`, { withCredentials: true }).pipe(
+        catchError(err => this.handleError(err, 'Не удалось загрузить список ссылок'))
+      ),
+    }).subscribe({
+      next: ({ files, folders }) => {
+        this._sharedFiles.set(files ?? []);
+        this._sharedFolders.set(folders ?? []);
+        this._sharedLoading.set(false);
+      },
       error: () => { this._sharedLoading.set(false); },
     });
   }
@@ -476,6 +488,47 @@ export class FileSystem {
       tap(() => {
         this._sharedFiles.update(files => files.filter(f => f.id !== fileId));
         this._files.update(files => files.map(f => (f.id === fileId ? { ...f, isShared: false } : f)));
+      }),
+    );
+  }
+
+  // ─── Шаринг папок ───
+
+  // Настроить публичную ссылку папки. Возвращает slug для копирования.
+  async setFolderShare(folderId: string, opts: ShareSettings): Promise<{ isShared: boolean; slug: string | null; shareExpiresAt: string | null; hasPassword: boolean }> {
+    const body: any = { isShared: opts.isShared };
+    if (opts.isShared) {
+      if (opts.expiresInDays != null) body.expiresInDays = opts.expiresInDays;
+      if (opts.password !== undefined) body.password = opts.password;
+    }
+    const res: any = await firstValueFrom(
+      this.http.patch(`${this.apiUrl}/file-system/share-folder/${folderId}`, body, { withCredentials: true })
+    );
+    const data = res?.data ?? {};
+    this._folders.update(folders =>
+      folders.map(f => (f.id === folderId ? { ...f, isShared: opts.isShared } : f))
+    );
+    const selected = this._selectedItem();
+    if (selected && selected.id === folderId && !('mimeType' in selected)) {
+      this._selectedItem.set({ ...selected, isShared: opts.isShared } as FolderItem);
+    }
+    return {
+      isShared: data.isShared ?? opts.isShared,
+      slug: data.slug ?? null,
+      shareExpiresAt: data.shareExpiresAt ?? null,
+      hasPassword: !!data.hasPassword,
+    };
+  }
+
+  // Отозвать публичную ссылку папки
+  revokeFolderShare(folderId: string) {
+    return this.http.patch(
+      `${this.apiUrl}/file-system/share-folder/${folderId}`, { isShared: false }, { withCredentials: true }
+    ).pipe(
+      catchError(err => this.handleError(err, 'Не удалось отозвать ссылку')),
+      tap(() => {
+        this._sharedFolders.update(folders => folders.filter(f => f.id !== folderId));
+        this._folders.update(folders => folders.map(f => (f.id === folderId ? { ...f, isShared: false } : f)));
       }),
     );
   }

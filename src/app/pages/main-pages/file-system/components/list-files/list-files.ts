@@ -230,10 +230,12 @@ export class ListFiles implements OnInit {
 
       return menuItems;
     } else {
+      const folder = selected as FolderItem;
       return [
         { label: lf.menuDownload, icon: PrimeIcons.DOWNLOAD, command: () => this.fileSystem.downloadFolder(selected.id, selected.name) },
         starItem,
         renameItem,
+        { label: lf.menuShare, icon: PrimeIcons.SEND, command: () => this.openFolderShareDialog(folder) },
         deleteItem,
       ];
     }
@@ -1180,6 +1182,70 @@ export class ListFiles implements OnInit {
       this.messageService.add({ severity: 'secondary', summary: lf.toastError, detail: lf.shareFailed, life: 1600, key: 'br' });
     } finally {
       this.shareSaving.set(false);
+    }
+  }
+
+  // ─── Диалог настройки публичной ссылки на папку ───
+
+  folderShareDialogVisible = signal(false);
+  folderShareTarget   = signal<FolderItem | null>(null);
+  folderShareExpiry   = signal<number | null>(7);
+  folderSharePassword = signal('');
+  folderShareSaving   = signal(false);
+
+  openFolderShareDialog(folder: FolderItem) {
+    this.folderShareTarget.set(folder);
+    this.folderShareExpiry.set(7);
+    this.folderSharePassword.set('');
+    this.folderShareDialogVisible.set(true);
+  }
+
+  closeFolderShareDialog() {
+    this.folderShareDialogVisible.set(false);
+    this.folderShareTarget.set(null);
+    this.folderSharePassword.set('');
+  }
+
+  setFolderShareExpiry(value: number | null) { this.folderShareExpiry.set(value); }
+
+  onFolderSharePasswordInput(event: Event) {
+    this.folderSharePassword.set((event.target as HTMLInputElement).value);
+  }
+
+  async submitFolderShare() {
+    const folder = this.folderShareTarget();
+    if (!folder || this.folderShareSaving()) return;
+    const lf = this.langService.t().pages.listFiles;
+    this.folderShareSaving.set(true);
+    try {
+      const res = await this.fileSystem.setFolderShare(folder.id, {
+        isShared: true,
+        expiresInDays: this.folderShareExpiry(),
+        password: this.folderSharePassword().trim() || null,
+      });
+      if (res.slug) await this.shareService.copyFolderShareLink(res.slug);
+      this.messageService.add({ severity: 'secondary', summary: lf.toastDone, detail: lf.shareCopied, life: 1600, key: 'br' });
+      this.closeFolderShareDialog();
+    } catch {
+      this.messageService.add({ severity: 'secondary', summary: lf.toastError, detail: lf.shareFailed, life: 1600, key: 'br' });
+    } finally {
+      this.folderShareSaving.set(false);
+    }
+  }
+
+  async revokeFolderShareFromDialog() {
+    const folder = this.folderShareTarget();
+    if (!folder || this.folderShareSaving()) return;
+    const lf = this.langService.t().pages.listFiles;
+    this.folderShareSaving.set(true);
+    try {
+      await this.fileSystem.setFolderShare(folder.id, { isShared: false });
+      this.messageService.add({ severity: 'secondary', summary: lf.toastDone, detail: lf.shareRevoked, life: 1600, key: 'br' });
+      this.closeFolderShareDialog();
+    } catch {
+      this.messageService.add({ severity: 'secondary', summary: lf.toastError, detail: lf.shareFailed, life: 1600, key: 'br' });
+    } finally {
+      this.folderShareSaving.set(false);
     }
   }
 

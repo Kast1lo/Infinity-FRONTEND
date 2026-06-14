@@ -11,6 +11,7 @@ import { Trash } from './pages/main-pages/trash/trash';
 import { Shared } from './pages/main-pages/shared/shared';
 import { Starred } from './pages/main-pages/starred/starred';
 import { ShareFile } from './common-ui/share-file/share-file';
+import { ShareFolder } from './common-ui/share-folder/share-folder';
 import { MainPage } from './common-ui/main-page/main-page';
 import { UiKit } from './common-ui/ui-kit/ui-kit';
 import { Shell } from './common-ui/shell/shell';
@@ -32,6 +33,10 @@ export const routes: Routes = [
     {
         path: 'share/:username/:filename',
         component: ShareFile
+    },
+    {
+        path: 'share-folder/:slug',
+        component: ShareFolder
     },
     {
         path: 'ui-kit',
