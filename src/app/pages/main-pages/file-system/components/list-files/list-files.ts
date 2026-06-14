@@ -1026,6 +1026,41 @@ export class ListFiles implements OnInit {
     this.fileSystem.clearSelection();
   }
 
+  // ─── Групповые действия над выделением ───
+
+  private selectedFiles(): FileItem[] {
+    const ids = this.selectedFileIds();
+    return this.fileSystem.files().filter(f => ids.has(f.id));
+  }
+
+  downloadSelected() {
+    const files = this.selectedFiles();
+    if (files.length === 0) return;
+    // Браузер может ограничить пачку загрузок — разносим по времени
+    files.forEach((file, i) => setTimeout(() => this.fileSystem.downloadFile(file), i * 350));
+  }
+
+  starSelected() {
+    const ids = Array.from(this.selectedFileIds());
+    if (ids.length === 0) return;
+    const lf = this.langService.t().pages.listFiles;
+    this.fileSystem.starFiles(ids).subscribe({
+      next: () => this.messageService.add({ severity: 'secondary', summary: lf.toastDone, detail: lf.menuStar, life: 1600, key: 'br' }),
+      error: () => this.messageService.add({ severity: 'secondary', summary: lf.toastError, detail: lf.menuStar, life: 1600, key: 'br' }),
+    });
+  }
+
+  deleteSelectedFiles() {
+    const ids = Array.from(this.selectedFileIds());
+    if (ids.length === 0) return;
+    const lf = this.langService.t().pages.listFiles;
+    this.clearAllSelection();
+    this.fileSystem.deleteFiles(ids).subscribe({
+      next: () => this.messageService.add({ severity: 'secondary', summary: lf.toastDone, detail: lf.menuDelete, life: 1600, key: 'br' }),
+      error: () => this.messageService.add({ severity: 'secondary', summary: lf.toastError, detail: lf.menuDelete, life: 1600, key: 'br' }),
+    });
+  }
+
   // ─── Выделение рамкой ───
 
   onBoardMouseDown(event: MouseEvent) {

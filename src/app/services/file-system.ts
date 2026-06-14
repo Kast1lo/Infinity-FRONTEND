@@ -461,6 +461,49 @@ export class FileSystem {
     );
   }
 
+  // Удаляет несколько файлов одним пакетом (мягко, в корзину) и обновляет один раз
+  deleteFiles(fileIds: string[]) {
+    this._loading.set(true);
+    this._error.set(null);
+    const requests = fileIds.map(id =>
+      this.http.delete(`${this.apiUrl}/file-system/delete/${id}?type=file`, { withCredentials: true })
+    );
+    return forkJoin(requests).pipe(
+      catchError(err => this.handleError(err, 'Не удалось удалить файлы')),
+      tap({
+        next: () => {
+          this.loadTree();
+          this.loadFiles(this.currentFolderId());
+          this._loading.set(false);
+        },
+        error: () => { this._loading.set(false); },
+      }),
+    );
+  }
+
+  // Добавляет несколько файлов в избранное (только те, что ещё не помечены)
+  starFiles(fileIds: string[]) {
+    const toStar = fileIds.filter(id => {
+      const f = this._files().find(file => file.id === id);
+      return f ? !f.isStarred : false;
+    });
+    if (toStar.length === 0) return forkJoin([]);
+    const requests = toStar.map(id =>
+      this.http.patch<{ isStarred: boolean }>(
+        `${this.apiUrl}/file-system/star/${id}?type=file`, {}, { withCredentials: true }
+      )
+    );
+    return forkJoin(requests).pipe(
+      catchError(err => this.handleError(err, 'Не удалось изменить избранное')),
+      tap(() => {
+        this._files.update(files =>
+          files.map(f => (toStar.includes(f.id) ? { ...f, isStarred: true } : f))
+        );
+        this.loadStarred();
+      }),
+    );
+  }
+
   // Перемещает несколько файлов одним пакетом и обновляет дерево один раз
   moveFiles(fileIds: string[], targetFolderId: string | null) {
     const requests = fileIds.map(id =>

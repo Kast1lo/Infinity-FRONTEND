@@ -26,6 +26,19 @@
       <span class="fs-selbar-label">{{ t().selectionLabel }}</span>
       <span class="fs-selbar-dot">·</span>
       <span class="fs-selbar-hint"><i class="pi pi-arrow-right"></i> {{ t().selectionHint }}</span>
+
+      <div class="fs-selbar-actions">
+        <button class="fs-selbar-act" (click)="downloadSelected()" [title]="t().menuDownload">
+          <i class="pi pi-download"></i>
+        </button>
+        <button class="fs-selbar-act" (click)="starSelected()" [title]="t().menuStar">
+          <i class="pi pi-star"></i>
+        </button>
+        <button class="fs-selbar-act fs-selbar-act--danger" (click)="deleteSelectedFiles()" [title]="t().menuDelete">
+          <i class="pi pi-trash"></i>
+        </button>
+      </div>
+
       <button class="fs-selbar-clear" (click)="clearAllSelection()">
         <i class="pi pi-times"></i> {{ t().selectionClear }}
       </button>

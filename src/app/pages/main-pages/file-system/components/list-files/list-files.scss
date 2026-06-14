@@ -111,6 +111,41 @@
   i { font-size: 11px !important; color: var(--brand-accent) !important; }
 }
 
+.fs-selbar-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding-left: 9px;
+  margin-left: 3px;
+  border-left: 1px solid var(--border2);
+}
+
+.fs-selbar-act {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text2);
+  cursor: pointer;
+  transition: color .15s, background .15s, border-color .15s;
+
+  i { font-size: 13px !important; color: inherit !important; }
+
+  &:hover {
+    color: var(--brand-accent);
+    background: color-mix(in srgb, var(--brand-accent) 10%, transparent);
+  }
+
+  &--danger:hover {
+    color: var(--danger, #e05555);
+    background: color-mix(in srgb, #e05555 12%, transparent);
+  }
+}
+
 .fs-selbar-clear {
   display: inline-flex;
   align-items: center;
