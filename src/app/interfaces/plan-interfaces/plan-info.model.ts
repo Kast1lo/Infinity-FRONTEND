@@ -13,4 +13,7 @@ export interface PlanInfo {
   daysLeft:       number | null;    // для spark — дней до конца триала
   freezeDaysLeft: number | null;    // для frozen — дней до удаления данных
   storage:        StorageInfo;
+  cardBound:      boolean;          // привязана ли карта
+  cardLast4:      string | null;    // последние 4 цифры
+  autoRenew:      boolean;          // включено ли автопродление
 }

@@ -9,7 +9,7 @@ import {
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { AvatarModule } from 'primeng/avatar';
 import { KnobModule } from 'primeng/knob';
 import { ButtonModule } from 'primeng/button';
@@ -47,6 +47,8 @@ export class ProfileCard implements OnInit {
   protected readonly langService  = inject(LangService);
   private   readonly messageService = inject(MessageService);
   private   readonly cdr = inject(ChangeDetectorRef);
+  private   readonly route  = inject(ActivatedRoute);
+  private   readonly router = inject(Router);
 
   t = computed(() => this.langService.t().pages.profile);
 
@@ -71,6 +73,18 @@ export class ProfileCard implements OnInit {
   promoLoading    = signal(false);
   showPromoInput  = signal(false);
 
+  subscribeLoading = signal<string | null>(null);   // plan id, пока идёт переход к оплате
+  pricing          = this.planService.pricing;
+
+  private readonly planRank: Record<string, number> = { spark: 0, pulse: 1, horizon: 2, eternal: 3 };
+
+  /** Тарифы выше текущего — на них можно перейти. */
+  upgradePlans = computed(() => {
+    const current = this.planInfo()?.planType ?? 'spark';
+    const rank = this.planRank[current] ?? 0;
+    return this.pricing().filter(p => (this.planRank[p.plan] ?? 0) > rank);
+  });
+
   readonly planBadgeMap: Record<string, { label: string; class: string }> = {
     spark:   { label: 'Spark',   class: 'badge--spark'   },
     pulse:   { label: 'Pulse',   class: 'badge--pulse'   },
@@ -90,6 +104,61 @@ export class ProfileCard implements OnInit {
     this.infinityLife.loadAllUserTasks().subscribe();
     this.fs.loadFilesStats();
     this.planService.loadPlanInfo().subscribe();
+    this.planService.loadPricing().subscribe();
+    this.handlePaymentResult();
+  }
+
+  /** Реакция на возврат с Robokassa (?payment=success|fail). */
+  private handlePaymentResult() {
+    const status = this.route.snapshot.queryParamMap.get('payment');
+    if (!status) return;
+    const t = this.langService.t().pages.profile;
+
+    if (status === 'success') {
+      this.messageService.add({
+        severity: 'success',
+        summary:  t.payToastTitle,
+        detail:   t.paySuccess,
+        life:     5000,
+      });
+      // подтянуть актуальный тариф (ResultURL мог уже активировать)
+      this.planService.loadPlanInfo().subscribe();
+    } else if (status === 'fail') {
+      this.messageService.add({
+        severity: 'warn',
+        summary:  t.payToastTitle,
+        detail:   t.payFail,
+        life:     5000,
+      });
+    }
+    // убрать query-параметр из URL
+    this.router.navigate([], { queryParams: {}, replaceUrl: true });
+  }
+
+  subscribePlan(plan: 'pulse' | 'horizon' | 'eternal') {
+    this.subscribeLoading.set(plan);
+    const t = this.langService.t().pages.profile;
+    const obs = plan === 'eternal'
+      ? this.planService.buyEternal()
+      : this.planService.subscribe(plan);
+
+    obs.subscribe({
+      next: () => { /* редирект на Robokassa произойдёт в сервисе */ },
+      error: (err) => {
+        this.subscribeLoading.set(null);
+        this.messageService.add({
+          severity: 'error',
+          summary:  t.toastError,
+          detail:   err.error?.message || t.payError,
+          life:     4000,
+        });
+      },
+    });
+  }
+
+  periodLabel(period: string): string {
+    const t = this.langService.t().pages.profile;
+    return period === 'month' ? t.perMonth : period === 'year' ? t.perYear : t.forever;
   }
 
   get storageUsedLabel(): string {

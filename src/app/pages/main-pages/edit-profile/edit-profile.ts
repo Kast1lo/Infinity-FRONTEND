@@ -5,12 +5,14 @@ import {
   computed,
   ElementRef,
   inject,
+  OnInit,
   signal,
   ViewChild,
 } from '@angular/core';
 import Cropper from 'cropperjs';
 import { UserService } from '../../../services/user-service';
 import { BackgroundService } from '../../../services/background';
+import { PlanService } from '../../../services/plan';
 import { LangService } from '../../../services/lang';
 import { UpdateProfile } from '../../../interfaces/profile-interfaces/update-profile.model';
 import { FormsModule } from '@angular/forms';
@@ -36,9 +38,10 @@ import { MessageService } from 'primeng/api';
   styleUrl: './edit-profile.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class EditProfile {
+export class EditProfile implements OnInit {
   userService    = inject(UserService);
   bgService      = inject(BackgroundService);
+  planService    = inject(PlanService);
   messageService = inject(MessageService);
   cdr            = inject(ChangeDetectorRef);
   langService    = inject(LangService);
@@ -47,6 +50,48 @@ export class EditProfile {
 
   profile   = this.userService.profile;
   isLoading = this.userService.isLoading;
+
+  // ─── Платёжная карта ───
+  planInfo    = this.planService.planInfo;
+  cardLoading = signal(false);
+
+  ngOnInit() {
+    this.planService.loadPlanInfo().subscribe();
+  }
+
+  toggleAutoRenew() {
+    const info = this.planInfo();
+    if (!info || !info.cardBound) return;
+    this.cardLoading.set(true);
+    const t = this.langService.t().pages.editProfile;
+
+    this.planService.setAutoRenew(!info.autoRenew).subscribe({
+      next: () => {
+        this.cardLoading.set(false);
+        this.messageService.add({ severity: 'secondary', summary: t.toastDone, detail: t.cardAutoRenewSaved, life: 3000 });
+      },
+      error: (err: any) => {
+        this.cardLoading.set(false);
+        this.messageService.add({ severity: 'secondary', summary: t.toastError, detail: err.error?.message || t.cardFailed, life: 4000 });
+      },
+    });
+  }
+
+  unbindCard() {
+    this.cardLoading.set(true);
+    const t = this.langService.t().pages.editProfile;
+
+    this.planService.unbindCard().subscribe({
+      next: () => {
+        this.cardLoading.set(false);
+        this.messageService.add({ severity: 'secondary', summary: t.toastDone, detail: t.cardUnbound, life: 3000 });
+      },
+      error: (err: any) => {
+        this.cardLoading.set(false);
+        this.messageService.add({ severity: 'secondary', summary: t.toastError, detail: err.error?.message || t.cardFailed, life: 4000 });
+      },
+    });
+  }
 
   newUsername = signal('');
 

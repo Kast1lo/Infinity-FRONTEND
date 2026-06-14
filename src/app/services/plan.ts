@@ -4,6 +4,15 @@ import { catchError, Observable, tap, throwError } from 'rxjs';
 import { PlanInfo } from '../interfaces/plan-interfaces/plan-info.model';
 import { environment } from '../../environments/environment';
 
+export interface PlanPricing {
+  plan:      'pulse' | 'horizon' | 'eternal';
+  label:     string;
+  amount:    number;
+  period:    'month' | 'year' | 'once';
+  recurring: boolean;
+  storageGb: number;
+}
+
 
 @Injectable({
   providedIn: 'root',
@@ -14,12 +23,20 @@ export class PlanService {
   private readonly http = inject(HttpClient);
 
   private _planInfo  = signal<PlanInfo | null>(null);
+  private _pricing   = signal<PlanPricing[]>([]);
   private _isLoading = signal(false);
   private _error     = signal<string | null>(null);
 
   planInfo  = computed(() => this._planInfo());
+  pricing   = computed(() => this._pricing());
   isLoading = computed(() => this._isLoading());
   error     = computed(() => this._error());
+
+  loadPricing(): Observable<PlanPricing[]> {
+    return this.http
+      .get<PlanPricing[]>(`${this.apiUrl}/plan/pricing`, { withCredentials: true })
+      .pipe(tap(p => this._pricing.set(p)));
+  }
 
   loadPlanInfo(): Observable<PlanInfo> {
     this._isLoading.set(true);
@@ -58,6 +75,60 @@ export class PlanService {
         catchError(err => {
           this._isLoading.set(false);
           this._error.set(err.error?.message || 'Ошибка активации промокода');
+          return throwError(() => err);
+        }),
+      );
+  }
+
+  /** Оформить Pulse/Horizon — редирект на Robokassa (первый платёж привяжет карту). */
+  subscribe(plan: 'pulse' | 'horizon'): Observable<{ url: string }> {
+    this._error.set(null);
+    return this.http
+      .post<{ url: string }>(`${this.apiUrl}/payment/subscribe`, { plan }, { withCredentials: true })
+      .pipe(
+        tap(({ url }) => { window.location.href = url; }),
+        catchError(err => {
+          this._error.set(err.error?.message || 'Не удалось перейти к оплате');
+          return throwError(() => err);
+        }),
+      );
+  }
+
+  /** Купить Eternal — разовая оплата через СБП. */
+  buyEternal(): Observable<{ url: string }> {
+    this._error.set(null);
+    return this.http
+      .post<{ url: string }>(`${this.apiUrl}/payment/eternal`, {}, { withCredentials: true })
+      .pipe(
+        tap(({ url }) => { window.location.href = url; }),
+        catchError(err => {
+          this._error.set(err.error?.message || 'Не удалось перейти к оплате');
+          return throwError(() => err);
+        }),
+      );
+  }
+
+  /** Включить/выключить автопродление. */
+  setAutoRenew(enabled: boolean): Observable<{ autoRenew: boolean }> {
+    return this.http
+      .post<{ autoRenew: boolean }>(`${this.apiUrl}/payment/auto-renew`, { enabled }, { withCredentials: true })
+      .pipe(
+        tap(() => { this.loadPlanInfo().subscribe(); }),
+        catchError(err => {
+          this._error.set(err.error?.message || 'Не удалось изменить автопродление');
+          return throwError(() => err);
+        }),
+      );
+  }
+
+  /** Отвязать карту. */
+  unbindCard(): Observable<{ cardBound: boolean }> {
+    return this.http
+      .delete<{ cardBound: boolean }>(`${this.apiUrl}/payment/card`, { withCredentials: true })
+      .pipe(
+        tap(() => { this.loadPlanInfo().subscribe(); }),
+        catchError(err => {
+          this._error.set(err.error?.message || 'Не удалось отвязать карту');
           return throwError(() => err);
         }),
       );

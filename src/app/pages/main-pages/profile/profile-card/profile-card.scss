@@ -279,6 +279,84 @@
 
 // ─── Промокод ───
 
+.pf-upgrade {
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+  margin-top: 4px;
+
+  .pf-eyebrow { display: block; margin-bottom: 12px; }
+}
+
+.pf-upgrade-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 12px;
+}
+
+.pf-up-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  transition: border-color .2s, transform .2s;
+
+  &:hover { border-color: var(--brand-accent); transform: translateY(-2px); }
+}
+
+.pf-up-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.pf-up-name {
+  font-family: var(--brand-display);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.pf-up-price {
+  font-family: var(--brand-mono);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--brand-accent);
+  white-space: nowrap;
+
+  small { font-size: 11px; font-weight: 500; color: var(--text3); }
+}
+
+.pf-up-meta {
+  font-family: var(--brand-mono);
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--text3);
+  flex: 1;
+}
+
+.pf-up-btn {
+  height: 36px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--brand-accent);
+  color: var(--brand-accent-ink, #0a0a0a);
+  font-family: var(--brand-mono);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity .2s;
+
+  &:hover:not(:disabled) { opacity: .88; }
+  &:disabled { opacity: .4; cursor: not-allowed; }
+  &:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg2), 0 0 0 4px var(--brand-accent); }
+
+  i { font-size: 13px !important; }
+}
+
 .pf-promo { border-top: 1px solid var(--border); padding-top: 16px; }
 
 .pf-promo-toggle {

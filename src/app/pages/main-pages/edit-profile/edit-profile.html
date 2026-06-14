@@ -319,6 +319,59 @@
             </div>
           </section>
 
+          <!-- 05 — Платёжная карта -->
+          <section class="ep-card ep-card--wide">
+            <div class="ep-sec-head">
+              <span class="ep-sec-idx">05</span>
+              <span class="ep-sec-label">{{ t().cardSectionTitle }}</span>
+              <span class="ep-sec-rule"></span>
+            </div>
+
+            @if (planInfo(); as plan) {
+              @if (plan.planType === 'eternal') {
+                <div class="ep-eternal-note">
+                  <div class="ep-eternal-glow" aria-hidden="true"></div>
+                  <div class="ep-eternal-ic"><i class="pi pi-infinity"></i></div>
+                  <div class="ep-eternal-text">
+                    <span class="ep-eternal-title">{{ t().eternalCardTitle }}</span>
+                    <span class="ep-eternal-sub">{{ t().eternalCardText }}</span>
+                  </div>
+                </div>
+              } @else if (plan.cardBound) {
+                <div class="ep-card-bound">
+                  <i class="pi pi-credit-card"></i>
+                  <div class="ep-card-bound-text">
+                    <span class="ep-card-bound-line">{{ t().cardBoundLine }}</span>
+                    @if (plan.cardLast4) {
+                      <span class="ep-card-bound-sub">{{ t().cardEnding }} •••• {{ plan.cardLast4 }}</span>
+                    }
+                  </div>
+                </div>
+
+                <div class="ep-autorenew">
+                  <div class="ep-autorenew-text">
+                    <span class="ep-label">{{ t().autoRenewTitle }}</span>
+                    <span class="ep-autorenew-desc">{{ t().autoRenewDesc }}</span>
+                  </div>
+                  <p-button
+                    [label]="plan.autoRenew ? t().autoRenewOffBtn : t().autoRenewOnBtn"
+                    [icon]="plan.autoRenew ? 'pi pi-pause' : 'pi pi-sync'"
+                    [outlined]="true" severity="secondary"
+                    [disabled]="cardLoading()" [loading]="cardLoading()"
+                    (onClick)="toggleAutoRenew()" />
+                </div>
+
+                <div class="ep-actions">
+                  <p-button [label]="t().unbindBtn" icon="pi pi-times-circle"
+                    [text]="true" severity="danger"
+                    [disabled]="cardLoading()" (onClick)="unbindCard()" />
+                </div>
+              } @else {
+                <p class="ep-email-hint">{{ t().cardNotBound }}</p>
+              }
+            }
+          </section>
+
         </div>
       </div>
     </main>

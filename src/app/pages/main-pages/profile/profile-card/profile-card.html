@@ -60,6 +60,12 @@
                 <i class="pi pi-infinity"></i> {{ t().eternalF4 }}
               </span>
             }
+            @if (plan.cardBound && plan.planType !== 'eternal') {
+              <span class="pf-status pf-status--ok">
+                <i class="pi pi-credit-card"></i>
+                {{ plan.autoRenew ? t().autoRenewOn : t().autoRenewOff }}
+              </span>
+            }
           </div>
         </div>
 
@@ -80,6 +86,32 @@
             {{ t().storageAvailable }} {{ plan.planLabel }}
           </div>
         </div>
+
+        @if (upgradePlans().length) {
+          <div class="pf-upgrade">
+            <span class="pf-eyebrow">{{ t().upgradeTitle }}</span>
+            <div class="pf-upgrade-grid">
+              @for (p of upgradePlans(); track p.plan) {
+                <div class="pf-up-card" [ngClass]="'up--' + p.plan">
+                  <div class="pf-up-head">
+                    <span class="pf-up-name">{{ p.label }}</span>
+                    <span class="pf-up-price">{{ p.amount }} <small>{{ periodLabel(p.period) }}</small></span>
+                  </div>
+                  <div class="pf-up-meta">
+                    {{ p.storageGb }} ГБ · {{ p.recurring ? t().recurringHint : t().eternalHint }}
+                  </div>
+                  <button class="pf-up-btn" [disabled]="subscribeLoading() !== null" (click)="subscribePlan(p.plan)">
+                    @if (subscribeLoading() === p.plan) {
+                      <i class="pi pi-spinner pi-spin"></i>
+                    } @else {
+                      {{ t().upgradeBtn }}
+                    }
+                  </button>
+                </div>
+              }
+            </div>
+          </div>
+        }
 
         @if (plan.planType !== 'eternal') {
           <div class="pf-promo">
