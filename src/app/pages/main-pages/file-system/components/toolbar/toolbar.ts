@@ -5,8 +5,9 @@ import { InputIconModule } from 'primeng/inputicon';
 import { SplitButtonModule } from 'primeng/splitbutton';
 import { ToolbarModule } from 'primeng/toolbar';
 import { InputTextModule } from 'primeng/inputtext';
-import { FileSystem, FileFilter } from '../../../../../services/file-system';
+import { FileSystem, FileFilter, SortKey } from '../../../../../services/file-system';
 import { FileUploadModule } from 'primeng/fileupload';
+import { MenuModule } from 'primeng/menu';
 import { ToastModule } from 'primeng/toast';
 import { MenuItem, PrimeIcons, MessageService } from 'primeng/api';
 import { DialogModule } from 'primeng/dialog';
@@ -23,7 +24,7 @@ import { LangService } from '../../../../../services/lang';
   imports: [
     ToolbarModule, ButtonModule, IconFieldModule, InputIconModule,
     SplitButtonModule, InputTextModule, FileUploadModule,
-    ToastModule, DialogModule, FormsModule, MessageModule, TooltipModule,
+    ToastModule, DialogModule, FormsModule, MessageModule, TooltipModule, MenuModule,
   ],
   templateUrl: './toolbar.html',
   styleUrl: './toolbar.scss',
@@ -62,8 +63,35 @@ export class Toolbar implements OnInit {
 
   searchQuery  = this.fileSystem.searchQuery;
   activeFilter = this.fileSystem.activeFilter;
+  sortKey      = this.fileSystem.sortKey;
+  sortDir      = this.fileSystem.sortDir;
 
   filters = computed(() => this.langService.t().pages.toolbar.filters as unknown as { label: string; value: FileFilter; icon: string }[]);
+
+  private readonly sortOptions: { key: SortKey; icon: string; labelKey: 'sortName' | 'sortDate' | 'sortSize' | 'sortType' }[] = [
+    { key: 'name', icon: 'pi pi-sort-alpha-down', labelKey: 'sortName' },
+    { key: 'date', icon: 'pi pi-calendar',        labelKey: 'sortDate' },
+    { key: 'size', icon: 'pi pi-database',         labelKey: 'sortSize' },
+    { key: 'type', icon: 'pi pi-tag',              labelKey: 'sortType' },
+  ];
+
+  sortMenuItems = computed<MenuItem[]>(() => {
+    const t = this.langService.t().pages.toolbar;
+    const active = this.sortKey();
+    return this.sortOptions.map(o => ({
+      label: t[o.labelKey],
+      icon: active === o.key ? 'pi pi-check' : o.icon,
+      command: () => this.fileSystem.setSortKey(o.key),
+    }));
+  });
+
+  sortLabel = computed(() => {
+    const t = this.langService.t().pages.toolbar;
+    const opt = this.sortOptions.find(o => o.key === this.sortKey());
+    return opt ? t[opt.labelKey] : t.sortName;
+  });
+
+  toggleSortDir() { this.fileSystem.toggleSortDir(); }
 
   items: MenuItem[] | undefined;
 

@@ -7,6 +7,8 @@ import { catchError, firstValueFrom, forkJoin, tap, throwError } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 export type FileFilter = 'all' | 'image' | 'video' | 'audio' | 'document' | 'archive' | 'other';
+export type SortKey = 'name' | 'date' | 'size' | 'type';
+export type SortDir = 'asc' | 'desc';
 
 @Injectable({
   providedIn: 'root',
@@ -27,6 +29,8 @@ export class FileSystem {
 
   readonly searchQuery  = signal<string>('');
   readonly activeFilter = signal<FileFilter>('all');
+  readonly sortKey      = signal<SortKey>('name');
+  readonly sortDir      = signal<SortDir>('asc');
 
   private _trashFiles   = signal<FileItem[]>([]);
   private _trashFolders = signal<FolderItem[]>([]);
@@ -68,7 +72,7 @@ export class FileSystem {
     const query  = this.searchQuery().toLowerCase().trim();
     const filter = this.activeFilter();
 
-    return files.filter(file => {
+    const result = files.filter(file => {
       const name = decodeURIComponent(file.name).toLowerCase();
       const matchesQuery = !query || name.includes(query);
 
@@ -99,14 +103,49 @@ export class FileSystem {
 
       return matchesQuery && matchesFilter;
     });
+
+    const dir = this.sortDir() === 'asc' ? 1 : -1;
+    const key = this.sortKey();
+    return [...result].sort((a, b) => dir * this.compareFiles(a, b, key));
   });
 
   readonly filteredFolders = computed(() => {
-    const folders = this._folders();
     const query   = this.searchQuery().toLowerCase().trim();
-    if (!query) return folders;
-    return folders.filter(f => f.name.toLowerCase().includes(query));
+    const folders = query
+      ? this._folders().filter(f => f.name.toLowerCase().includes(query))
+      : this._folders();
+
+    const dir = this.sortDir() === 'asc' ? 1 : -1;
+    const key = this.sortKey();
+    return [...folders].sort((a, b) => dir * this.compareFolders(a, b, key));
   });
+
+  // Папки сортируются по имени/дате; для size/type — откат к имени (у папок нет типа/размера)
+  private compareFolders(a: FolderItem, b: FolderItem, key: SortKey): number {
+    if (key === 'date') {
+      return new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
+    }
+    return this.compareName(a.name, b.name);
+  }
+
+  private compareFiles(a: FileItem, b: FileItem, key: SortKey): number {
+    switch (key) {
+      case 'date': return new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
+      case 'size': return (parseInt(a.size, 10) || 0) - (parseInt(b.size, 10) || 0);
+      case 'type': {
+        const byType = (a.mimeType || '').localeCompare(b.mimeType || '');
+        return byType !== 0 ? byType : this.compareName(a.name, b.name);
+      }
+      default: return this.compareName(a.name, b.name);
+    }
+  }
+
+  private compareName(a: string, b: string): number {
+    return decodeURIComponent(a).localeCompare(decodeURIComponent(b), undefined, { numeric: true, sensitivity: 'base' });
+  }
+
+  setSortKey(key: SortKey) { this.sortKey.set(key); }
+  toggleSortDir() { this.sortDir.update(d => (d === 'asc' ? 'desc' : 'asc')); }
 
   private _pathStack = signal<string[]>([]);
 

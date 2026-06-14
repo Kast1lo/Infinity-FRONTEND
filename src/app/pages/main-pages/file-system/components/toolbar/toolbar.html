@@ -91,20 +91,36 @@
       }
     </div>
 
-    <div class="fs-search">
-      <i class="pi pi-search fs-search-ic"></i>
-      <input
-        class="fs-search-input"
-        type="text"
-        [placeholder]="t().searchPlaceholder"
-        [value]="searchQuery()"
-        (input)="onSearchInput($event)"
-      />
-      @if (searchQuery()) {
-        <button class="fs-search-clear" (click)="clearSearch()" aria-label="Очистить">
-          <i class="pi pi-times"></i>
+    <div class="fs-tail">
+      <div class="fs-sort">
+        <button class="fs-sort-key" (click)="sortMenu.toggle($event)"
+          [pTooltip]="t().sortLabel" tooltipPosition="bottom" aria-haspopup="true">
+          <i class="pi pi-sort-alt"></i>
+          <span>{{ sortLabel() }}</span>
         </button>
-      }
+        <button class="fs-sort-dir" (click)="toggleSortDir()"
+          [pTooltip]="sortDir() === 'asc' ? t().sortAsc : t().sortDesc" tooltipPosition="bottom"
+          [attr.aria-label]="sortDir() === 'asc' ? t().sortAsc : t().sortDesc">
+          <i [class]="sortDir() === 'asc' ? 'pi pi-arrow-up' : 'pi pi-arrow-down'"></i>
+        </button>
+        <p-menu #sortMenu [model]="sortMenuItems()" [popup]="true" appendTo="body"/>
+      </div>
+
+      <div class="fs-search">
+        <i class="pi pi-search fs-search-ic"></i>
+        <input
+          class="fs-search-input"
+          type="text"
+          [placeholder]="t().searchPlaceholder"
+          [value]="searchQuery()"
+          (input)="onSearchInput($event)"
+        />
+        @if (searchQuery()) {
+          <button class="fs-search-clear" (click)="clearSearch()" aria-label="Очистить">
+            <i class="pi pi-times"></i>
+          </button>
+        }
+      </div>
     </div>
   </div>
 </div>
