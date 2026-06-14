@@ -213,7 +213,7 @@ export const TRANSLATIONS = {
     },
     sidebar: {
       profile: 'Профиль',
-      kanban: 'Kanban',
+      kanban: 'Задачи',
       files: 'Файлы',
       recent: 'Недавние',
       starred: 'Избранное',
@@ -990,7 +990,7 @@ export const TRANSLATIONS = {
     },
     sidebar: {
       profile: 'Profile',
-      kanban: 'Kanban',
+      kanban: 'Tasks',
       files: 'Files',
       recent: 'Recent',
       starred: 'Starred',
