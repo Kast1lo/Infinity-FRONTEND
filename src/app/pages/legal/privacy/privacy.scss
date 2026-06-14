@@ -1,0 +1,99 @@
+:host {
+  --bg:      #0a0a0a;
+  --bg2:     #111111;
+  --border:  #222222;
+  --text:    #f0f0f0;
+  --text2:   #9a9a9a;
+  --text3:   #5a5a5a;
+
+  display: block;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+}
+
+:host-context(.light-theme) {
+  --bg:      #f8f8f8;
+  --bg2:     #ffffff;
+  --border:  #e6e6e6;
+  --text:    #15171a;
+  --text2:   #51565d;
+  --text3:   #9aa0a6;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+.lg-nav {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 28px;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+}
+.lg-brand { display: inline-flex; }
+.lg-logo { height: 26px; width: auto; display: block; }
+.lg-back {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: var(--brand-mono); font-size: 13px; color: var(--text2);
+  text-decoration: none; transition: color .15s;
+  i { font-size: 12px; }
+  &:hover { color: var(--brand-accent); }
+}
+
+.lg-doc {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 40px 24px 72px;
+}
+
+.lg-title {
+  font-family: var(--brand-display);
+  font-size: clamp(24px, 4vw, 34px);
+  font-weight: 700;
+  line-height: 1.15;
+  margin: 0 0 28px;
+  color: var(--text);
+}
+
+.lg-sec { margin-bottom: 30px; }
+
+.lg-sec h2 {
+  font-family: var(--brand-display);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 12px;
+}
+
+.lg-sec p {
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+  font-size: 14.5px;
+  line-height: 1.7;
+  color: var(--text2);
+  margin: 0 0 10px;
+  word-break: break-word;
+
+  strong { color: var(--text); font-weight: 600; }
+}
+
+.lg-sec ul {
+  margin: 0 0 12px;
+  padding-left: 22px;
+}
+.lg-sec li {
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+  font-size: 14.5px;
+  line-height: 1.7;
+  color: var(--text2);
+  margin-bottom: 7px;
+}
+
+@media (max-width: 600px) {
+  .lg-nav { padding: 12px 16px; }
+  .lg-doc { padding: 28px 16px 56px; }
+}

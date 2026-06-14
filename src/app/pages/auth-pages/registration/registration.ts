@@ -81,6 +81,14 @@ export class Registration implements OnDestroy {
   isSubmitting = signal(false);
   errorMessage = signal<string | null>(null);
 
+  consent      = signal(false);
+  consentError = signal(false);
+
+  toggleConsent() {
+    this.consent.update(v => !v);
+    if (this.consent()) this.consentError.set(false);
+  }
+
   get usernameField() { return this.registerForm.username(); }
   get emailField()    { return this.registerForm.email(); }
   get passwordField() { return this.registerForm.passwordHash(); }
@@ -100,6 +108,12 @@ export class Registration implements OnDestroy {
     this.passwordField.markAsTouched();
     this.cdr.markForCheck();
     if (!this.registerForm().valid()) return;
+
+    if (!this.consent()) {
+      this.consentError.set(true);
+      this.cdr.markForCheck();
+      return;
+    }
 
     this.isSubmitting.set(true);
     this.errorMessage.set(null);

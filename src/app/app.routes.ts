@@ -14,6 +14,7 @@ import { Recent } from './pages/main-pages/recent/recent';
 import { SharedWithMe } from './pages/main-pages/shared-with-me/shared-with-me';
 import { ShareFile } from './common-ui/share-file/share-file';
 import { ShareFolder } from './common-ui/share-folder/share-folder';
+import { Privacy } from './pages/legal/privacy/privacy';
 import { MainPage } from './common-ui/main-page/main-page';
 import { UiKit } from './common-ui/ui-kit/ui-kit';
 import { Shell } from './common-ui/shell/shell';
@@ -39,6 +40,10 @@ export const routes: Routes = [
     {
         path: 'share-folder/:slug',
         component: ShareFolder
+    },
+    {
+        path: 'privacy',
+        component: Privacy
     },
     {
         path: 'ui-kit',

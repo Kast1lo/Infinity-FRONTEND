@@ -92,6 +92,16 @@
           <div class="error-msg">{{ errorMessage() }}</div>
         }
 
+        <label class="consent" [class.consent--error]="consentError()">
+          <input type="checkbox" class="consent__box" [checked]="consent()" (change)="toggleConsent()"/>
+          <span class="consent__text">
+            {{ t().consentPrefix }}
+            <a href="/legal/oferta.pdf" target="_blank" rel="noopener noreferrer">{{ t().consentOffer }}</a>
+            {{ t().consentAnd }}
+            <a href="/privacy" target="_blank" rel="noopener noreferrer">{{ t().consentPrivacy }}</a>
+          </span>
+        </label>
+
         <div class="btn-submit">
           <p-button
             type="submit"
