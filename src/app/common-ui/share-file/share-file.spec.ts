@@ -1,23 +1,19 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { ShareFile } from './share-file';
+import { commonTestProviders } from '../../testing/test-setup';
 
 describe('ShareFile', () => {
-  let component: ShareFile;
   let fixture: ComponentFixture<ShareFile>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ShareFile]
-    })
-    .compileComponents();
-
+      imports: [ShareFile],
+      providers: commonTestProviders(),
+    }).compileComponents();
     fixture = TestBed.createComponent(ShareFile);
-    component = fixture.componentInstance;
-    await fixture.whenStable();
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  it('создаётся без ошибок', () => {
+    expect(fixture.componentInstance).toBeTruthy();
   });
 });

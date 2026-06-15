@@ -1,17 +1,46 @@
 import { TestBed } from '@angular/core/testing';
-import { CanActivateFn } from '@angular/router';
+import { Router } from '@angular/router';
+import { of, throwError } from 'rxjs';
+import { authGuard } from './auth-guard-guard';
+import { UserService } from '../services/user-service';
 
-import { authGuardGuard } from './auth-guard-guard';
+describe('authGuard', () => {
+  let userService: { getProfile: ReturnType<typeof vi.fn> };
+  let router: { navigate: ReturnType<typeof vi.fn> };
 
-describe('authGuardGuard', () => {
-  const executeGuard: CanActivateFn = (...guardParameters) => 
-      TestBed.runInInjectionContext(() => authGuardGuard(...guardParameters));
+  const run = (url = '/file-system') =>
+    TestBed.runInInjectionContext(() => authGuard({} as any, { url } as any));
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    userService = { getProfile: vi.fn() };
+    router = { navigate: vi.fn() };
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: UserService, useValue: userService },
+        { provide: Router, useValue: router },
+      ],
+    });
   });
 
-  it('should be created', () => {
-    expect(executeGuard).toBeTruthy();
-  });
+  it('пропускает (true), когда профиль загружается успешно', () =>
+    new Promise<void>((resolve) => {
+      userService.getProfile.mockReturnValue(of({ id: 'u1' }));
+      (run() as any).subscribe((allowed: boolean) => {
+        expect(allowed).toBe(true);
+        expect(router.navigate).not.toHaveBeenCalled();
+        resolve();
+      });
+    }));
+
+  it('блокирует (false) и редиректит на /login с returnUrl при ошибке профиля', () =>
+    new Promise<void>((resolve) => {
+      userService.getProfile.mockReturnValue(throwError(() => ({ status: 401 })));
+      (run('/profile') as any).subscribe((allowed: boolean) => {
+        expect(allowed).toBe(false);
+        expect(router.navigate).toHaveBeenCalledWith(['/login'], {
+          queryParams: { returnUrl: '/profile' },
+        });
+        resolve();
+      });
+    }));
 });

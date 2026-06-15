@@ -1,23 +1,19 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { FileSystem } from './file-system';
+import { commonTestProviders } from '../../../testing/test-setup';
 
 describe('FileSystem', () => {
-  let component: FileSystem;
   let fixture: ComponentFixture<FileSystem>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [FileSystem]
-    })
-    .compileComponents();
-
+      imports: [FileSystem],
+      providers: commonTestProviders(),
+    }).compileComponents();
     fixture = TestBed.createComponent(FileSystem);
-    component = fixture.componentInstance;
-    await fixture.whenStable();
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  it('создаётся без ошибок', () => {
+    expect(fixture.componentInstance).toBeTruthy();
   });
 });

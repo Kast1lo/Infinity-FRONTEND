@@ -1,23 +1,19 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { EditProfile } from './edit-profile';
+import { commonTestProviders } from '../../../testing/test-setup';
 
 describe('EditProfile', () => {
-  let component: EditProfile;
   let fixture: ComponentFixture<EditProfile>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [EditProfile]
-    })
-    .compileComponents();
-
+      imports: [EditProfile],
+      providers: commonTestProviders(),
+    }).compileComponents();
     fixture = TestBed.createComponent(EditProfile);
-    component = fixture.componentInstance;
-    await fixture.whenStable();
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  it('создаётся без ошибок', () => {
+    expect(fixture.componentInstance).toBeTruthy();
   });
 });
