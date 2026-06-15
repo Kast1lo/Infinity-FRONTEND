@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { FileSystem } from '../../../services/file-system';
 import { LangService } from '../../../services/lang';
 import { FileItem } from '../../../interfaces/file-system-interfeces/file-item.model';
@@ -10,13 +11,20 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { DecodeURIComponentPipe } from '../../../pipes/decode-uri.pipe';
 
+const RETENTION_DAYS = 30;
+
+type Row =
+  | ({ kind: 'folder' } & FolderItem)
+  | ({ kind: 'file' } & FileItem);
+
 type ConfirmAction =
   | { kind: 'delete'; id: string; type: 'file' | 'folder'; name: string }
-  | { kind: 'empty' };
+  | { kind: 'empty' }
+  | { kind: 'bulkDelete'; keys: string[] };
 
 @Component({
   selector: 'app-trash',
-  imports: [ProgressSpinner, DialogModule, ToastModule, DatePipe, DecodeURIComponentPipe],
+  imports: [FormsModule, ProgressSpinner, DialogModule, ToastModule, DatePipe, DecodeURIComponentPipe],
   templateUrl: './trash.html',
   styleUrl: './trash.scss',
   providers: [MessageService],
@@ -29,16 +37,62 @@ export class Trash implements OnInit {
 
   t = computed(() => this.langService.t().pages.trash);
 
-  files   = this.fileSystem.trashFiles;
-  folders = this.fileSystem.trashFolders;
+  private allFiles   = this.fileSystem.trashFiles;
+  private allFolders = this.fileSystem.trashFolders;
   loading = this.fileSystem.trashLoading;
-  isEmpty = computed(() => this.files().length === 0 && this.folders().length === 0);
+
+  search   = signal('');
+  selected = signal<Set<string>>(new Set());
 
   confirmVisible = signal(false);
   private confirmAction: ConfirmAction | null = null;
 
+  private match = (name: string) =>
+    !this.search().trim() || decodeURIComponent(name).toLowerCase().includes(this.search().trim().toLowerCase());
+
+  rows = computed<Row[]>(() => {
+    const folders: Row[] = this.allFolders().filter(f => this.match(f.name)).map(f => ({ kind: 'folder', ...f }));
+    const files:   Row[] = this.allFiles().filter(f => this.match(f.name)).map(f => ({ kind: 'file', ...f }));
+    return [...folders, ...files];
+  });
+
+  totalCount = computed(() => this.allFiles().length + this.allFolders().length);
+  isEmpty    = computed(() => this.totalCount() === 0);
+  noMatches  = computed(() => !this.isEmpty() && this.rows().length === 0);
+
+  selectedCount = computed(() => this.selected().size);
+  allSelected   = computed(() => this.rows().length > 0 && this.rows().every(r => this.selected().has(this.key(r.id, r.kind))));
+
   ngOnInit() {
     this.fileSystem.loadTrash();
+  }
+
+  clearSearch() { this.search.set(''); }
+
+  // ── Выбор ──
+  key(id: string, type: 'file' | 'folder') { return `${type}:${id}`; }
+  isSelected(id: string, type: 'file' | 'folder') { return this.selected().has(this.key(id, type)); }
+  toggleSelect(id: string, type: 'file' | 'folder') {
+    const set = new Set(this.selected());
+    const k = this.key(id, type);
+    set.has(k) ? set.delete(k) : set.add(k);
+    this.selected.set(set);
+  }
+  toggleSelectAll() {
+    if (this.allSelected()) { this.selected.set(new Set()); return; }
+    this.selected.set(new Set(this.rows().map(r => this.key(r.id, r.kind))));
+  }
+  clearSelection() { this.selected.set(new Set()); }
+
+  // ── Срок хранения ──
+  daysLeft(deletedAt: string | null | undefined): number | null {
+    if (!deletedAt) return null;
+    const expires = new Date(deletedAt).getTime() + RETENTION_DAYS * 86400000;
+    return Math.max(0, Math.ceil((expires - Date.now()) / 86400000));
+  }
+  expiryClass(deletedAt: string | null | undefined): string {
+    const d = this.daysLeft(deletedAt);
+    return d !== null && d <= 3 ? 'tr-expiry--soon' : '';
   }
 
   getFileIcon(mimeType: string | null | undefined): string {
@@ -62,6 +116,7 @@ export class Trash implements OnInit {
     return `${(bytes / 1024 ** 3).toFixed(1)} ГБ`;
   }
 
+  // ── Действия ──
   restore(id: string, type: 'file' | 'folder') {
     this.fileSystem.restoreItem(id, type).subscribe({
       next: () => this.toast(this.t().toastRestored),
@@ -69,22 +124,43 @@ export class Trash implements OnInit {
     });
   }
 
+  restoreSelected() {
+    const keys = [...this.selected()];
+    if (!keys.length) return;
+    keys.forEach((k, i) => {
+      const [type, id] = k.split(':') as ['file' | 'folder', string];
+      this.fileSystem.restoreItem(id, type).subscribe({
+        next: () => { if (i === keys.length - 1) this.toast(this.t().toastRestored); },
+        error: () => this.toast(this.t().toastError),
+      });
+    });
+    this.clearSelection();
+  }
+
   askDelete(item: FileItem | FolderItem, type: 'file' | 'folder') {
     this.confirmAction = { kind: 'delete', id: item.id, type, name: item.name };
     this.confirmVisible.set(true);
   }
-
-  askEmpty() {
-    this.confirmAction = { kind: 'empty' };
+  askEmpty() { this.confirmAction = { kind: 'empty' }; this.confirmVisible.set(true); }
+  askBulkDelete() {
+    const keys = [...this.selected()];
+    if (!keys.length) return;
+    this.confirmAction = { kind: 'bulkDelete', keys };
     this.confirmVisible.set(true);
   }
 
-  confirmTitle = computed(() =>
-    this.confirmAction?.kind === 'empty' ? this.t().confirmEmptyTitle : this.t().confirmDeleteTitle,
-  );
-  confirmMessage = computed(() =>
-    this.confirmAction?.kind === 'empty' ? this.t().confirmEmptyMsg : this.t().confirmDeleteMsg,
-  );
+  confirmTitle = computed(() => {
+    const a = this.confirmAction?.kind;
+    if (a === 'empty') return this.t().confirmEmptyTitle;
+    if (a === 'bulkDelete') return this.t().confirmBulkTitle;
+    return this.t().confirmDeleteTitle;
+  });
+  confirmMessage = computed(() => {
+    const a = this.confirmAction?.kind;
+    if (a === 'empty') return this.t().confirmEmptyMsg;
+    if (a === 'bulkDelete') return this.t().confirmBulkMsg;
+    return this.t().confirmDeleteMsg;
+  });
 
   confirmYes() {
     const action = this.confirmAction;
@@ -94,6 +170,15 @@ export class Trash implements OnInit {
         next: () => this.toast(this.t().toastEmptied),
         error: () => this.toast(this.t().toastError),
       });
+    } else if (action.kind === 'bulkDelete') {
+      action.keys.forEach((k, i) => {
+        const [type, id] = k.split(':') as ['file' | 'folder', string];
+        this.fileSystem.permanentDelete(id, type).subscribe({
+          next: () => { if (i === action.keys.length - 1) this.toast(this.t().toastDeleted); },
+          error: () => this.toast(this.t().toastError),
+        });
+      });
+      this.clearSelection();
     } else {
       this.fileSystem.permanentDelete(action.id, action.type).subscribe({
         next: () => this.toast(this.t().toastDeleted),
@@ -103,10 +188,7 @@ export class Trash implements OnInit {
     this.closeConfirm();
   }
 
-  closeConfirm() {
-    this.confirmVisible.set(false);
-    this.confirmAction = null;
-  }
+  closeConfirm() { this.confirmVisible.set(false); this.confirmAction = null; }
 
   private toast(detail: string) {
     this.messageService.add({ severity: 'secondary', summary: detail, key: 'br', life: 1800 });

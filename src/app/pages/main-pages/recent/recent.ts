@@ -1,17 +1,27 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { FileSystem } from '../../../services/file-system';
 import { LangService } from '../../../services/lang';
 import { FileItem } from '../../../interfaces/file-system-interfeces/file-item.model';
 import { ProgressSpinner } from 'primeng/progressspinner';
+import { DialogModule } from 'primeng/dialog';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { DecodeURIComponentPipe } from '../../../pipes/decode-uri.pipe';
 
+type SortField = 'date' | 'name' | 'size';
+
+interface DateGroup {
+  key:   string;
+  label: string;
+  items: FileItem[];
+}
+
 @Component({
   selector: 'app-recent',
-  imports: [ProgressSpinner, ToastModule, DatePipe, DecodeURIComponentPipe],
+  imports: [FormsModule, ProgressSpinner, DialogModule, ToastModule, DatePipe, DecodeURIComponentPipe],
   templateUrl: './recent.html',
   styleUrl: './recent.scss',
   providers: [MessageService],
@@ -25,13 +35,83 @@ export class Recent implements OnInit {
 
   t = computed(() => this.langService.t().pages.recent);
 
-  files   = this.fileSystem.recentFiles;
+  private all = this.fileSystem.recentFiles;
   loading = this.fileSystem.recentLoading;
-  isEmpty = computed(() => this.files().length === 0);
+
+  search    = signal('');
+  sortField = signal<SortField>('date');
+  sortDir   = signal<'asc' | 'desc'>('desc');
+
+  // Превью изображения
+  previewVisible = signal(false);
+  previewUrl     = signal<string | null>(null);
+  previewTitle   = signal('');
+
+  // Переименование
+  renameVisible = signal(false);
+  renameValue   = signal('');
+  private renameTarget: FileItem | null = null;
+
+  filtered = computed(() => {
+    const q = this.search().trim().toLowerCase();
+    let list = this.all();
+    if (q) list = list.filter(f => decodeURIComponent(f.name).toLowerCase().includes(q));
+    const dir = this.sortDir() === 'asc' ? 1 : -1;
+    const field = this.sortField();
+    return [...list].sort((a, b) => {
+      let r = 0;
+      if (field === 'name') r = decodeURIComponent(a.name).localeCompare(decodeURIComponent(b.name));
+      else if (field === 'size') r = (+a.size || 0) - (+b.size || 0);
+      else r = new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
+      return r * dir;
+    });
+  });
+
+  totalCount = computed(() => this.all().length);
+  isEmpty    = computed(() => this.all().length === 0);
+  noMatches  = computed(() => !this.isEmpty() && this.filtered().length === 0);
+
+  /** Группировка по дате — только при сортировке по дате; иначе одна группа. */
+  groups = computed<DateGroup[]>(() => {
+    const items = this.filtered();
+    if (this.sortField() !== 'date') {
+      return items.length ? [{ key: 'all', label: this.t().filesLabel, items }] : [];
+    }
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const dayMs = 86400000;
+    const buckets: Record<string, FileItem[]> = { today: [], yesterday: [], week: [], earlier: [] };
+    for (const f of items) {
+      const t = new Date(f.updatedAt).getTime();
+      if (t >= startOfToday) buckets['today'].push(f);
+      else if (t >= startOfToday - dayMs) buckets['yesterday'].push(f);
+      else if (t >= startOfToday - 7 * dayMs) buckets['week'].push(f);
+      else buckets['earlier'].push(f);
+    }
+    const labels = this.t();
+    const order: { key: string; label: string }[] = [
+      { key: 'today',     label: labels.groupToday },
+      { key: 'yesterday', label: labels.groupYesterday },
+      { key: 'week',      label: labels.groupWeek },
+      { key: 'earlier',   label: labels.groupEarlier },
+    ];
+    return order
+      .filter(o => buckets[o.key].length)
+      .map(o => ({ key: o.key, label: o.label, items: buckets[o.key] }));
+  });
 
   ngOnInit() {
     this.fileSystem.loadRecent();
   }
+
+  setSort(field: SortField) {
+    if (this.sortField() === field) this.sortDir.update(d => (d === 'asc' ? 'desc' : 'asc'));
+    else { this.sortField.set(field); this.sortDir.set(field === 'name' ? 'asc' : 'desc'); }
+  }
+
+  clearSearch() { this.search.set(''); }
+
+  isImage(f: FileItem): boolean { return (f.mimeType ?? '').startsWith('image/'); }
 
   getFileIcon(mimeType: string | null | undefined): string {
     const m = mimeType ?? '';
@@ -54,13 +134,51 @@ export class Recent implements OnInit {
     return `${(bytes / 1024 ** 3).toFixed(1)} ГБ`;
   }
 
-  download(file: FileItem) {
-    this.fileSystem.downloadFile(file);
+  /** Клик по строке: изображение → лайтбокс, иначе → открыть расположение. */
+  open(file: FileItem) {
+    if (this.isImage(file)) {
+      this.previewUrl.set(file.downloadUrl);
+      this.previewTitle.set(decodeURIComponent(file.name));
+      this.previewVisible.set(true);
+    } else {
+      this.openLocation(file);
+    }
   }
+
+  closePreview() { this.previewVisible.set(false); this.previewUrl.set(null); }
+
+  openLocation(file: FileItem) {
+    this.router.navigate(['/file-system']).then(() => this.fileSystem.revealFolder(file.folderId));
+  }
+
+  download(file: FileItem) { this.fileSystem.downloadFile(file); }
 
   toggleStar(file: FileItem) {
     this.fileSystem.toggleStar(file.id, 'file').subscribe({
       next: () => this.toast(file.isStarred ? this.t().toastUnstarred : this.t().toastStarred),
+      error: () => this.toast(this.t().toastError),
+    });
+  }
+
+  openRename(file: FileItem) {
+    this.renameTarget = file;
+    this.renameValue.set(decodeURIComponent(file.name));
+    this.renameVisible.set(true);
+  }
+
+  submitRename() {
+    const file = this.renameTarget;
+    const name = this.renameValue().trim();
+    if (!file || !name) return;
+    this.fileSystem.renameItem(file.id, 'file', name).subscribe({
+      next: () => { this.renameVisible.set(false); this.fileSystem.loadRecent(); this.toast(this.t().toastRenamed); },
+      error: () => this.toast(this.t().toastError),
+    });
+  }
+
+  deleteToTrash(file: FileItem) {
+    this.fileSystem.deleteItem(file.id, 'file').subscribe({
+      next: () => { this.fileSystem.loadRecent(); this.toast(this.t().toastTrashed); },
       error: () => this.toast(this.t().toastError),
     });
   }

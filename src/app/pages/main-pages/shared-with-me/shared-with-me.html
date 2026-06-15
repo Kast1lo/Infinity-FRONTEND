@@ -4,7 +4,7 @@
 
       <header class="sw-head">
         <div class="sw-head-text">
-          <span class="sw-eyebrow">{{ t().eyebrow }}</span>
+          <span class="sw-eyebrow"><i class="pi pi-users"></i>{{ t().eyebrow }}</span>
           <h1 class="sw-title">{{ t().title }}</h1>
           <p class="sw-subtitle">{{ t().subtitle }}</p>
         </div>
@@ -22,8 +22,8 @@
                 <input type="file" multiple hidden (change)="onUpload($event)" [disabled]="busy()"/>
               </label>
             }
-            <button class="sw-btn sw-btn--ghost" (click)="leave()" [title]="t().leave">
-              <i class="pi pi-sign-out"></i>
+            <button class="sw-btn sw-btn--danger" (click)="leave()" [title]="t().leave">
+              <i class="pi pi-sign-out"></i> {{ t().leave }}
             </button>
           </div>
         }
@@ -42,17 +42,22 @@
               <p class="sw-empty-sub">{{ t().emptySub }}</p>
             </div>
           } @else {
-            <div class="sw-grid">
+            <div class="sw-roots">
               @for (folder of roots(); track folder.id) {
-                <button class="sw-card sw-card--folder" (click)="openRoot(folder)">
-                  <div class="sw-card-ic"><i class="pi pi-folder"></i></div>
-                  <div class="sw-card-info">
-                    <span class="sw-card-name" [title]="folder.name">{{ folder.name | decodeURIComponent }}</span>
-                    <span class="sw-card-meta">
-                      {{ folder.ownerName }} · {{ folder.role === 'EDITOR' ? t().roleEditor : t().roleViewer }}
+                <button class="sw-root-card" (click)="openRoot(folder)">
+                  <span class="sw-root-ic"><i class="pi pi-folder"></i></span>
+                  <span class="sw-root-info">
+                    <span class="sw-root-name" [title]="folder.name">{{ folder.name | decodeURIComponent }}</span>
+                    <span class="sw-root-owner">
+                      <span class="sw-owner-av">{{ (folder.ownerName || '?').charAt(0) }}</span>
+                      {{ folder.ownerName }}
                     </span>
-                  </div>
-                  <i class="pi pi-angle-right sw-card-go"></i>
+                  </span>
+                  <span class="sw-role" [class.sw-role--editor]="folder.role === 'EDITOR'">
+                    <i class="pi" [class.pi-pencil]="folder.role === 'EDITOR'" [class.pi-eye]="folder.role !== 'EDITOR'"></i>
+                    {{ folder.role === 'EDITOR' ? t().roleEditor : t().roleViewer }}
+                  </span>
+                  <i class="pi pi-angle-right sw-root-go"></i>
                 </button>
               }
             </div>
@@ -66,6 +71,9 @@
               <button class="sw-crumb" [class.sw-crumb--active]="i === pathStack().length - 1"
                 (click)="navigateToIndex(i)">{{ seg.name | decodeURIComponent }}</button>
             }
+            <span class="sw-crumb-role" [class.sw-crumb-role--editor]="canEdit()">
+              {{ canEdit() ? t().roleEditor : t().roleViewer }}
+            </span>
           </div>
 
           @if (contentsLoading()) {
@@ -74,49 +82,64 @@
             <div class="sw-empty">
               <div class="sw-empty-ic"><i class="pi pi-inbox"></i></div>
               <h3 class="sw-empty-title">{{ t().emptyFolder }}</h3>
+              @if (canEdit()) { <p class="sw-empty-sub">{{ t().emptyFolderHint }}</p> }
             </div>
           } @else {
             @if (contents()!.folders.length) {
-              <span class="sw-section-label">{{ t().foldersLabel }}</span>
-              <div class="sw-grid">
-                @for (sub of contents()!.folders; track sub.id) {
-                  <div class="sw-card sw-card--folder" (click)="openSubfolder(sub)">
-                    <div class="sw-card-ic"><i class="pi pi-folder"></i></div>
-                    <div class="sw-card-info">
-                      <span class="sw-card-name" [title]="sub.name">{{ sub.name | decodeURIComponent }}</span>
-                    </div>
-                    @if (canEdit()) {
-                      <button class="sw-act" (click)="openRename(sub.id, 'folder', sub.name); $event.stopPropagation()" [title]="t().rename">
-                        <i class="pi pi-pencil"></i>
+              <section class="sw-section">
+                <div class="sw-sec-head">
+                  <span class="sw-sec-label">{{ t().foldersLabel }}</span>
+                  <span class="sw-sec-count">{{ contents()!.folders.length }}</span>
+                  <span class="sw-sec-rule"></span>
+                </div>
+                <div class="sw-list">
+                  @for (sub of contents()!.folders; track sub.id) {
+                    <article class="sw-row">
+                      <button class="sw-row-main" (click)="openSubfolder(sub)" [title]="t().openHint">
+                        <span class="sw-row-ic sw-row-ic--folder"><i class="pi pi-folder"></i></span>
+                        <span class="sw-row-name" [title]="sub.name">{{ sub.name | decodeURIComponent }}</span>
                       </button>
-                      <button class="sw-act sw-act--danger" (click)="deleteFolder(sub); $event.stopPropagation()" [title]="t().delete">
-                        <i class="pi pi-trash"></i>
-                      </button>
-                    }
-                    <i class="pi pi-angle-right sw-card-go"></i>
-                  </div>
-                }
-              </div>
+                      <div class="sw-row-actions">
+                        <button class="sw-act" (click)="openSubfolder(sub)" [title]="t().openHint"><i class="pi pi-folder-open"></i></button>
+                        @if (canEdit()) {
+                          <button class="sw-act" (click)="openRename(sub.id, 'folder', sub.name)" [title]="t().rename"><i class="pi pi-pencil"></i></button>
+                          <button class="sw-act sw-act--danger" (click)="deleteFolder(sub)" [title]="t().delete"><i class="pi pi-trash"></i></button>
+                        }
+                      </div>
+                    </article>
+                  }
+                </div>
+              </section>
             }
 
             @if (contents()!.files.length) {
-              <span class="sw-section-label">{{ t().filesLabel }}</span>
-              <div class="sw-grid">
-                @for (file of contents()!.files; track file.id) {
-                  <div class="sw-card">
-                    <div class="sw-card-ic sw-card-ic--file"><i class="pi" [class]="getFileIcon(file.mimeType)"></i></div>
-                    <div class="sw-card-info">
-                      <span class="sw-card-name" [title]="file.name">{{ file.name | decodeURIComponent }}</span>
-                      <span class="sw-card-meta">{{ formatSize(file.size) }}</span>
-                    </div>
-                    <button class="sw-act" (click)="download(file)" [title]="t().download"><i class="pi pi-download"></i></button>
-                    @if (canEdit()) {
-                      <button class="sw-act" (click)="openRename(file.id, 'file', file.name)" [title]="t().rename"><i class="pi pi-pencil"></i></button>
-                      <button class="sw-act sw-act--danger" (click)="deleteFile(file)" [title]="t().delete"><i class="pi pi-trash"></i></button>
-                    }
-                  </div>
-                }
-              </div>
+              <section class="sw-section">
+                <div class="sw-sec-head">
+                  <span class="sw-sec-label">{{ t().filesLabel }}</span>
+                  <span class="sw-sec-count">{{ contents()!.files.length }}</span>
+                  <span class="sw-sec-rule"></span>
+                </div>
+                <div class="sw-list">
+                  @for (file of contents()!.files; track file.id) {
+                    <article class="sw-row">
+                      <button class="sw-row-main" (click)="download(file)" [title]="t().download">
+                        <span class="sw-row-ic"><i class="pi" [class]="getFileIcon(file.mimeType)"></i></span>
+                        <span class="sw-row-info">
+                          <span class="sw-row-name" [title]="file.name">{{ file.name | decodeURIComponent }}</span>
+                          <span class="sw-row-meta">{{ formatSize(file.size) }}</span>
+                        </span>
+                      </button>
+                      <div class="sw-row-actions">
+                        <button class="sw-act" (click)="download(file)" [title]="t().download"><i class="pi pi-download"></i></button>
+                        @if (canEdit()) {
+                          <button class="sw-act" (click)="openRename(file.id, 'file', file.name)" [title]="t().rename"><i class="pi pi-pencil"></i></button>
+                          <button class="sw-act sw-act--danger" (click)="deleteFile(file)" [title]="t().delete"><i class="pi pi-trash"></i></button>
+                        }
+                      </div>
+                    </article>
+                  }
+                </div>
+              </section>
             }
           }
         }

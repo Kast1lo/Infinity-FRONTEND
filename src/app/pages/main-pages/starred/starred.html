@@ -5,11 +5,49 @@
       <!-- Шапка -->
       <header class="st-head">
         <div class="st-head-text">
-          <span class="st-eyebrow">{{ t().eyebrow }}</span>
+          <span class="st-eyebrow"><i class="pi pi-star-fill"></i>{{ t().eyebrow }}</span>
           <h1 class="st-title">{{ t().title }}</h1>
           <p class="st-subtitle">{{ t().subtitle }}</p>
         </div>
+        @if (!isEmpty()) {
+          <div class="st-count">
+            <span class="st-count-num">{{ totalCount() }}</span>
+            <span class="st-count-lbl">{{ t().itemsLabel }}</span>
+          </div>
+        }
       </header>
+
+      <!-- Тулбар -->
+      @if (!isEmpty()) {
+        <div class="st-toolbar">
+          <div class="st-search">
+            <i class="pi pi-search"></i>
+            <input type="text" [ngModel]="search()" (ngModelChange)="search.set($event)" [placeholder]="t().searchPlaceholder" />
+            @if (search()) { <button class="st-search-clear" (click)="clearSearch()" [title]="t().clear"><i class="pi pi-times"></i></button> }
+          </div>
+          <div class="st-sort">
+            <span class="st-sort-lbl">{{ t().sortBy }}</span>
+            @for (s of [{k:'name',l:t().sortName},{k:'date',l:t().sortDate},{k:'size',l:t().sortSize}]; track s.k) {
+              <button class="st-sort-btn" [class.st-sort-btn--on]="sortField() === s.k" (click)="setSort($any(s.k))">
+                {{ s.l }}
+                @if (sortField() === s.k) { <i class="pi" [class.pi-arrow-up]="sortDir()==='asc'" [class.pi-arrow-down]="sortDir()==='desc'"></i> }
+              </button>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Панель массовых действий -->
+      @if (selectedCount() > 0) {
+        <div class="st-bulk">
+          <span class="st-bulk-info"><i class="pi pi-check-circle"></i>{{ selectedCount() }} {{ t().selected }}</span>
+          <div class="st-bulk-actions">
+            <button class="st-bulk-btn" (click)="downloadSelected()"><i class="pi pi-download"></i>{{ t().download }}</button>
+            <button class="st-bulk-btn st-bulk-btn--warn" (click)="unstarSelected()"><i class="pi pi-star"></i>{{ t().unstar }}</button>
+            <button class="st-bulk-btn st-bulk-btn--ghost" (click)="clearSelection()"><i class="pi pi-times"></i>{{ t().clearSel }}</button>
+          </div>
+        </div>
+      }
 
       <!-- Тело -->
       <div class="st-body">
@@ -21,10 +59,16 @@
             <h3 class="st-empty-title">{{ t().empty }}</h3>
             <p class="st-empty-sub">{{ t().emptySub }}</p>
           </div>
+        } @else if (noMatches()) {
+          <div class="st-empty">
+            <div class="st-empty-ic"><i class="pi pi-search"></i></div>
+            <h3 class="st-empty-title">{{ t().noMatches }}</h3>
+            <p class="st-empty-sub">{{ t().noMatchesSub }}</p>
+          </div>
         } @else {
 
           <!-- Папки -->
-          @if (folders().length > 0) {
+          @if (folders().length) {
             <section class="st-section">
               <div class="st-sec-head">
                 <span class="st-sec-label">{{ t().foldersLabel }}</span>
@@ -33,16 +77,20 @@
               </div>
               <div class="st-grid">
                 @for (folder of folders(); track folder.id) {
-                  <article class="st-card st-card--clickable" (click)="openFolder(folder)">
-                    <div class="st-card-ic st-card-ic--folder"><i class="pi pi-folder"></i></div>
-                    <div class="st-card-info">
+                  <article class="st-card st-card--folder" [class.st-card--sel]="isSelected(folder.id,'folder')">
+                    <button class="st-check" [class.st-check--on]="isSelected(folder.id,'folder')"
+                      (click)="toggleSelect(folder.id,'folder')" [title]="t().select">
+                      <i class="pi pi-check"></i>
+                    </button>
+                    <button class="st-card-main" (click)="openFolder(folder)" [title]="t().folderHint">
+                      <span class="st-card-ic st-card-ic--folder"><i class="pi pi-folder"></i></span>
                       <span class="st-card-name" [title]="folder.name">{{ folder.name | decodeURIComponent }}</span>
-                      <span class="st-card-meta">{{ t().folderHint }}</span>
-                    </div>
+                    </button>
                     <div class="st-card-actions">
-                      <button class="st-act st-act--unstar" (click)="unstar(folder, 'folder'); $event.stopPropagation()" [title]="t().unstar">
-                        <i class="pi pi-star-fill"></i>
-                      </button>
+                      <button class="st-act" (click)="openFolder(folder)" [title]="t().folderHint"><i class="pi pi-folder-open"></i></button>
+                      <button class="st-act" (click)="downloadFolder(folder)" [title]="t().downloadZip"><i class="pi pi-download"></i></button>
+                      <button class="st-act" (click)="openRename(folder,'folder')" [title]="t().rename"><i class="pi pi-pencil"></i></button>
+                      <button class="st-act st-act--on" (click)="unstar(folder,'folder')" [title]="t().unstar"><i class="pi pi-star-fill"></i></button>
                     </div>
                   </article>
                 }
@@ -51,7 +99,7 @@
           }
 
           <!-- Файлы -->
-          @if (files().length > 0) {
+          @if (files().length) {
             <section class="st-section">
               <div class="st-sec-head">
                 <span class="st-sec-label">{{ t().filesLabel }}</span>
@@ -60,19 +108,21 @@
               </div>
               <div class="st-grid">
                 @for (file of files(); track file.id) {
-                  <article class="st-card">
-                    <div class="st-card-ic"><i [class]="'pi ' + getFileIcon(file.mimeType)"></i></div>
-                    <div class="st-card-info">
+                  <article class="st-card" [class.st-card--sel]="isSelected(file.id,'file')">
+                    <button class="st-check" [class.st-check--on]="isSelected(file.id,'file')"
+                      (click)="toggleSelect(file.id,'file')" [title]="t().select">
+                      <i class="pi pi-check"></i>
+                    </button>
+                    <button class="st-card-main" (click)="openFile(file)" [title]="t().openHint">
+                      <span class="st-card-ic" [class.st-card-ic--img]="isImage(file)"><i [class]="'pi ' + getFileIcon(file.mimeType)"></i></span>
                       <span class="st-card-name" [title]="file.name">{{ file.name | decodeURIComponent }}</span>
                       <span class="st-card-meta">{{ formatSize(file.size) }}</span>
-                    </div>
+                    </button>
                     <div class="st-card-actions">
-                      <button class="st-act st-act--download" (click)="download(file)" [title]="t().download">
-                        <i class="pi pi-download"></i>
-                      </button>
-                      <button class="st-act st-act--unstar" (click)="unstar(file, 'file')" [title]="t().unstar">
-                        <i class="pi pi-star-fill"></i>
-                      </button>
+                      <button class="st-act" (click)="download(file)" [title]="t().download"><i class="pi pi-download"></i></button>
+                      <button class="st-act" (click)="openRename(file,'file')" [title]="t().rename"><i class="pi pi-pencil"></i></button>
+                      <button class="st-act" (click)="openLocation(file)" [title]="t().openLocation"><i class="pi pi-folder-open"></i></button>
+                      <button class="st-act st-act--on" (click)="unstar(file,'file')" [title]="t().unstar"><i class="pi pi-star-fill"></i></button>
                     </div>
                   </article>
                 }
@@ -86,5 +136,31 @@
     </div>
   </main>
 </div>
+
+<!-- Превью изображения -->
+<p-dialog [(visible)]="previewVisible" [modal]="true" [closable]="false" [draggable]="false"
+  [dismissableMask]="true" [style]="{ width: 'auto', maxWidth: '90vw' }" styleClass="st-preview" (onHide)="closePreview()">
+  <ng-template pTemplate="header"><span></span></ng-template>
+  <div class="st-preview-body">
+    <div class="st-preview-bar">
+      <span class="st-preview-title">{{ previewTitle() }}</span>
+      <button class="st-preview-x" (click)="closePreview()"><i class="pi pi-times"></i></button>
+    </div>
+    @if (previewUrl()) { <img [src]="previewUrl()!" [alt]="previewTitle()" /> }
+  </div>
+</p-dialog>
+
+<!-- Переименование -->
+<p-dialog [(visible)]="renameVisible" [modal]="true" [draggable]="false" [resizable]="false"
+  [header]="t().rename" [style]="{ width: '380px' }" styleClass="st-rename">
+  <div class="st-rename-body">
+    <input type="text" [ngModel]="renameValue()" (ngModelChange)="renameValue.set($event)"
+      (keyup.enter)="submitRename()" [placeholder]="t().renamePlaceholder" autofocus />
+    <div class="st-rename-actions">
+      <button class="st-btn st-btn--ghost" (click)="renameVisible.set(false)">{{ t().cancel }}</button>
+      <button class="st-btn st-btn--solid" (click)="submitRename()">{{ t().save }}</button>
+    </div>
+  </div>
+</p-dialog>
 
 <p-toast key="br" position="bottom-right"/>

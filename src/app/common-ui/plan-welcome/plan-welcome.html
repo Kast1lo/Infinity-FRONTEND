@@ -32,6 +32,15 @@
       <p class="pw-tagline">{{ data().tagline }}</p>
     </div>
 
+    <div class="pw-stats">
+      @for (s of data().stats; track s.label) {
+        <div class="pw-stat">
+          <span class="pw-stat-value">{{ s.value }}</span>
+          <span class="pw-stat-label">{{ s.label }}</span>
+        </div>
+      }
+    </div>
+
     <div class="pw-features">
       <div class="pw-features-title">{{ t().featuresTitle }}</div>
       <ul>

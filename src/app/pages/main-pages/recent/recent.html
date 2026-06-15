@@ -1,59 +1,129 @@
-<div class="st-root">
-  <main class="st-main">
-    <div class="st-shell">
+<div class="rc-root">
+  <main class="rc-main">
+    <div class="rc-shell">
 
       <!-- Шапка -->
-      <header class="st-head">
-        <div class="st-head-text">
-          <span class="st-eyebrow">{{ t().eyebrow }}</span>
-          <h1 class="st-title">{{ t().title }}</h1>
-          <p class="st-subtitle">{{ t().subtitle }}</p>
+      <header class="rc-head">
+        <div class="rc-head-text">
+          <span class="rc-eyebrow"><i class="pi pi-clock"></i>{{ t().eyebrow }}</span>
+          <h1 class="rc-title">{{ t().title }}</h1>
+          <p class="rc-subtitle">{{ t().subtitle }}</p>
         </div>
+        @if (!isEmpty()) {
+          <div class="rc-count">
+            <span class="rc-count-num">{{ totalCount() }}</span>
+            <span class="rc-count-lbl">{{ t().filesLabel }}</span>
+          </div>
+        }
       </header>
 
+      <!-- Панель: поиск + сортировка -->
+      @if (!isEmpty()) {
+        <div class="rc-toolbar">
+          <div class="rc-search">
+            <i class="pi pi-search"></i>
+            <input type="text" [ngModel]="search()" (ngModelChange)="search.set($event)"
+              [placeholder]="t().searchPlaceholder" />
+            @if (search()) {
+              <button class="rc-search-clear" (click)="clearSearch()" [title]="t().clear"><i class="pi pi-times"></i></button>
+            }
+          </div>
+          <div class="rc-sort">
+            <span class="rc-sort-lbl">{{ t().sortBy }}</span>
+            @for (s of [{k:'date',l:t().sortDate},{k:'name',l:t().sortName},{k:'size',l:t().sortSize}]; track s.k) {
+              <button class="rc-sort-btn" [class.rc-sort-btn--on]="sortField() === s.k" (click)="setSort($any(s.k))">
+                {{ s.l }}
+                @if (sortField() === s.k) {
+                  <i class="pi" [class.pi-arrow-up]="sortDir() === 'asc'" [class.pi-arrow-down]="sortDir() === 'desc'"></i>
+                }
+              </button>
+            }
+          </div>
+        </div>
+      }
+
       <!-- Тело -->
-      <div class="st-body">
+      <div class="rc-body">
         @if (loading()) {
-          <div class="st-spin"><p-progressSpinner strokeWidth="3"/></div>
+          <div class="rc-spin"><p-progressSpinner strokeWidth="3"/></div>
         } @else if (isEmpty()) {
-          <div class="st-empty">
-            <div class="st-empty-ic"><i class="pi pi-clock"></i></div>
-            <h3 class="st-empty-title">{{ t().empty }}</h3>
-            <p class="st-empty-sub">{{ t().emptySub }}</p>
+          <div class="rc-empty">
+            <div class="rc-empty-ic"><i class="pi pi-clock"></i></div>
+            <h3 class="rc-empty-title">{{ t().empty }}</h3>
+            <p class="rc-empty-sub">{{ t().emptySub }}</p>
+          </div>
+        } @else if (noMatches()) {
+          <div class="rc-empty">
+            <div class="rc-empty-ic"><i class="pi pi-search"></i></div>
+            <h3 class="rc-empty-title">{{ t().noMatches }}</h3>
+            <p class="rc-empty-sub">{{ t().noMatchesSub }}</p>
           </div>
         } @else {
-          <section class="st-section">
-            <div class="st-sec-head">
-              <span class="st-sec-label">{{ t().filesLabel }}</span>
-              <span class="st-sec-count">{{ files().length }}</span>
-              <span class="st-sec-rule"></span>
-            </div>
-            <div class="st-grid">
-              @for (file of files(); track file.id) {
-                <article class="st-card">
-                  <div class="st-card-ic"><i [class]="'pi ' + getFileIcon(file.mimeType)"></i></div>
-                  <div class="st-card-info">
-                    <span class="st-card-name" [title]="file.name">{{ file.name | decodeURIComponent }}</span>
-                    <span class="st-card-meta">{{ formatSize(file.size) }} · {{ file.updatedAt | date:'dd MMM, HH:mm' }}</span>
-                  </div>
-                  <div class="st-card-actions">
-                    <button class="st-act st-act--download" (click)="download(file)" [title]="t().download">
-                      <i class="pi pi-download"></i>
+          @for (group of groups(); track group.key) {
+            <section class="rc-group">
+              <div class="rc-group-head">
+                <span class="rc-group-label">{{ group.label }}</span>
+                <span class="rc-group-count">{{ group.items.length }}</span>
+                <span class="rc-group-rule"></span>
+              </div>
+              <div class="rc-list">
+                @for (file of group.items; track file.id) {
+                  <article class="rc-row">
+                    <button class="rc-row-main" (click)="open(file)" [title]="t().openHint">
+                      <span class="rc-row-ic" [class.rc-row-ic--img]="isImage(file)">
+                        <i [class]="'pi ' + getFileIcon(file.mimeType)"></i>
+                      </span>
+                      <span class="rc-row-info">
+                        <span class="rc-row-name" [title]="file.name">{{ file.name | decodeURIComponent }}</span>
+                        <span class="rc-row-meta">{{ formatSize(file.size) }} · {{ file.updatedAt | date:'dd MMM, HH:mm' }}</span>
+                      </span>
                     </button>
-                    <button class="st-act" [class.st-act--unstar]="file.isStarred" (click)="toggleStar(file)"
-                      [title]="file.isStarred ? t().unstar : t().star">
-                      <i class="pi" [class.pi-star-fill]="file.isStarred" [class.pi-star]="!file.isStarred"></i>
-                    </button>
-                  </div>
-                </article>
-              }
-            </div>
-          </section>
+                    <div class="rc-row-actions">
+                      <button class="rc-act" (click)="download(file)" [title]="t().download"><i class="pi pi-download"></i></button>
+                      <button class="rc-act" [class.rc-act--on]="file.isStarred" (click)="toggleStar(file)"
+                        [title]="file.isStarred ? t().unstar : t().star">
+                        <i class="pi" [class.pi-star-fill]="file.isStarred" [class.pi-star]="!file.isStarred"></i>
+                      </button>
+                      <button class="rc-act" (click)="openRename(file)" [title]="t().rename"><i class="pi pi-pencil"></i></button>
+                      <button class="rc-act" (click)="openLocation(file)" [title]="t().openLocation"><i class="pi pi-folder-open"></i></button>
+                      <button class="rc-act rc-act--danger" (click)="deleteToTrash(file)" [title]="t().toTrash"><i class="pi pi-trash"></i></button>
+                    </div>
+                  </article>
+                }
+              </div>
+            </section>
+          }
         }
       </div>
 
     </div>
   </main>
 </div>
+
+<!-- Превью изображения -->
+<p-dialog [(visible)]="previewVisible" [modal]="true" [closable]="false" [draggable]="false"
+  [dismissableMask]="true" [style]="{ width: 'auto', maxWidth: '90vw' }" styleClass="rc-preview" (onHide)="closePreview()">
+  <ng-template pTemplate="header"><span></span></ng-template>
+  <div class="rc-preview-body">
+    <div class="rc-preview-bar">
+      <span class="rc-preview-title">{{ previewTitle() }}</span>
+      <button class="rc-preview-x" (click)="closePreview()"><i class="pi pi-times"></i></button>
+    </div>
+    @if (previewUrl()) { <img [src]="previewUrl()!" [alt]="previewTitle()" /> }
+  </div>
+</p-dialog>
+
+<!-- Переименование -->
+<p-dialog [(visible)]="renameVisible" [modal]="true" [draggable]="false" [resizable]="false"
+  [header]="t().rename" [style]="{ width: '380px' }" styleClass="rc-rename">
+  <div class="rc-rename-body">
+    <input type="text" [ngModel]="renameValue()" (ngModelChange)="renameValue.set($event)"
+      (keyup.enter)="submitRename()" [placeholder]="t().renamePlaceholder" autofocus />
+    <div class="rc-rename-actions">
+      <button class="rc-btn rc-btn--ghost" (click)="renameVisible.set(false)">{{ t().cancel }}</button>
+      <button class="rc-btn rc-btn--solid" (click)="submitRename()">{{ t().save }}</button>
+    </div>
+  </div>
+</p-dialog>
 
 <p-toast key="br" position="bottom-right"/>

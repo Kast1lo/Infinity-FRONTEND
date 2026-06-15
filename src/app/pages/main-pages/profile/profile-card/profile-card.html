@@ -36,6 +36,9 @@
           <div class="pf-plan-id">
             <span class="pf-eyebrow">{{ t().planSectionLabel }}</span>
             <div class="pf-plan-name">{{ plan.planLabel }}</div>
+            <button class="pf-plan-details" type="button" (click)="planInfoVisible.set(true)">
+              <i class="pi pi-info-circle"></i>{{ t().planDetailsBtn }}
+            </button>
           </div>
 
           <div class="pf-plan-status">
@@ -209,3 +212,5 @@
 
   </div>
 }
+
+<app-plan-welcome [(visible)]="planInfoVisible" [plan]="currentPlanKind()" />

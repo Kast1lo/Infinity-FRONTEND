@@ -186,6 +186,15 @@ export class FileSystem {
     this.loadFiles(null);
   }
 
+  /** Открыть конкретную папку «с нуля» — для перехода в Файлы из других разделов. */
+  revealFolder(folderId: string | null) {
+    if (folderId === null) { this.navigateToRoot(); return; }
+    this._pathStack.set([folderId]);
+    this.loadFiles(folderId);
+    this.searchQuery.set('');
+    this.activeFilter.set('all');
+  }
+
   navigateToIndex(index: number) {
     const newStack = this._pathStack().slice(0, index + 1);
     this._pathStack.set(newStack);

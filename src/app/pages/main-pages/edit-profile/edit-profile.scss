@@ -829,6 +829,8 @@
 
 /* ─── Плашка Eternal ─── */
 .ep-eternal-note {
+  // Тот же золотой акцент, что и у Eternal в окне «Что входит в тариф».
+  --ep-eternal: #d4b84a;
   position: relative;
   overflow: hidden;
   display: flex;
@@ -838,9 +840,9 @@
   border-radius: 16px;
   background:
     linear-gradient(135deg,
-      color-mix(in srgb, var(--brand-accent) 14%, transparent),
-      color-mix(in srgb, var(--brand-accent) 4%, transparent));
-  border: 1px solid color-mix(in srgb, var(--brand-accent) 35%, transparent);
+      color-mix(in srgb, var(--ep-eternal) 14%, transparent),
+      color-mix(in srgb, var(--ep-eternal) 4%, transparent));
+  border: 1px solid color-mix(in srgb, var(--ep-eternal) 35%, transparent);
 }
 
 .ep-eternal-glow {
@@ -850,7 +852,7 @@
   width: 220px;
   height: 220px;
   border-radius: 50%;
-  background: radial-gradient(circle, color-mix(in srgb, var(--brand-accent) 40%, transparent), transparent 70%);
+  background: radial-gradient(circle, color-mix(in srgb, var(--ep-eternal) 40%, transparent), transparent 70%);
   filter: blur(28px);
   pointer-events: none;
   animation: epEternalPulse 5s ease-in-out infinite;
@@ -869,11 +871,13 @@
   align-items: center;
   justify-content: center;
   border-radius: 14px;
-  background: var(--brand-accent);
+  background: var(--ep-eternal);
   color: var(--brand-accent-ink, #0a0a0a);
-  box-shadow: 0 6px 22px color-mix(in srgb, var(--brand-accent) 45%, transparent);
+  box-shadow: 0 6px 22px color-mix(in srgb, var(--ep-eternal) 45%, transparent);
 
   i { font-size: 24px; }
+
+  svg { width: 26px; height: 26px; display: block; }
 }
 
 .ep-eternal-text {

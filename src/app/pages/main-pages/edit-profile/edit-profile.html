@@ -331,7 +331,12 @@
               @if (plan.planType === 'eternal') {
                 <div class="ep-eternal-note">
                   <div class="ep-eternal-glow" aria-hidden="true"></div>
-                  <div class="ep-eternal-ic"><i class="pi pi-infinity"></i></div>
+                  <div class="ep-eternal-ic">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M12 12c-2-2.67-4-4-6-4a4 4 0 1 0 0 8c2 0 4-1.33 6-4Zm0 0c2 2.67 4 4 6 4a4 4 0 0 0 0-8c-2 0-4 1.33-6 4Z"/>
+                    </svg>
+                  </div>
                   <div class="ep-eternal-text">
                     <span class="ep-eternal-title">{{ t().eternalCardTitle }}</span>
                     <span class="ep-eternal-sub">{{ t().eternalCardText }}</span>

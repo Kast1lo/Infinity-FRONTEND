@@ -23,6 +23,7 @@ import { AuthService } from '../../../../services/auth';
 import { UserService } from '../../../../services/user-service';
 import { PlanService } from '../../../../services/plan';
 import { LangService } from '../../../../services/lang';
+import { PlanWelcome, PlanKind } from '../../../../common-ui/plan-welcome/plan-welcome';
 
 
 @Component({
@@ -30,7 +31,7 @@ import { LangService } from '../../../../services/lang';
   imports:         [
     AvatarModule, AvatarGroupModule, KnobModule,
     ButtonModule, FormsModule, RouterModule,
-    CommonModule, ToastModule,
+    CommonModule, ToastModule, PlanWelcome,
   ],
   providers:       [MessageService],
   templateUrl:     './profile-card.html',
@@ -75,6 +76,10 @@ export class ProfileCard implements OnInit {
 
   subscribeLoading = signal<string | null>(null);   // plan id, пока идёт переход к оплате
   pricing          = this.planService.pricing;
+
+  // Окно «Что входит в тариф» для текущего плана пользователя.
+  planInfoVisible = signal(false);
+  currentPlanKind = computed<PlanKind>(() => (this.planInfo()?.planType ?? 'spark') as PlanKind);
 
   private readonly planRank: Record<string, number> = { spark: 0, pulse: 1, horizon: 2, eternal: 3 };
 

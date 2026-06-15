@@ -1,17 +1,21 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { FileSystem } from '../../../services/file-system';
 import { LangService } from '../../../services/lang';
 import { FileItem } from '../../../interfaces/file-system-interfeces/file-item.model';
 import { FolderItem } from '../../../interfaces/file-system-interfeces/folder-item.model';
 import { ProgressSpinner } from 'primeng/progressspinner';
+import { DialogModule } from 'primeng/dialog';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { DecodeURIComponentPipe } from '../../../pipes/decode-uri.pipe';
 
+type SortField = 'name' | 'date' | 'size';
+
 @Component({
   selector: 'app-starred',
-  imports: [ProgressSpinner, ToastModule, DecodeURIComponentPipe],
+  imports: [FormsModule, ProgressSpinner, DialogModule, ToastModule, DecodeURIComponentPipe],
   templateUrl: './starred.html',
   styleUrl: './starred.scss',
   providers: [MessageService],
@@ -25,14 +29,95 @@ export class Starred implements OnInit {
 
   t = computed(() => this.langService.t().pages.starred);
 
-  files   = this.fileSystem.starredFiles;
-  folders = this.fileSystem.starredFolders;
+  private allFiles   = this.fileSystem.starredFiles;
+  private allFolders = this.fileSystem.starredFolders;
   loading = this.fileSystem.starredLoading;
-  isEmpty = computed(() => this.files().length === 0 && this.folders().length === 0);
+
+  search    = signal('');
+  sortField = signal<SortField>('name');
+  sortDir   = signal<'asc' | 'desc'>('asc');
+
+  // Выбор для массовых действий — ключи вида "file:<id>" / "folder:<id>"
+  selected = signal<Set<string>>(new Set());
+
+  // Превью изображения
+  previewVisible = signal(false);
+  previewUrl     = signal<string | null>(null);
+  previewTitle   = signal('');
+
+  // Переименование
+  renameVisible = signal(false);
+  renameValue   = signal('');
+  private renameTarget: { id: string; type: 'file' | 'folder' } | null = null;
+
+  private sortFn<T extends { name: string; updatedAt: string; size?: string }>(list: T[]): T[] {
+    const dir = this.sortDir() === 'asc' ? 1 : -1;
+    const field = this.sortField();
+    return [...list].sort((a, b) => {
+      let r = 0;
+      if (field === 'size') r = (+(a.size ?? 0) || 0) - (+(b.size ?? 0) || 0);
+      else if (field === 'date') r = new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
+      else r = decodeURIComponent(a.name).localeCompare(decodeURIComponent(b.name));
+      return r * dir;
+    });
+  }
+
+  private match = (name: string) =>
+    !this.search().trim() || decodeURIComponent(name).toLowerCase().includes(this.search().trim().toLowerCase());
+
+  folders = computed(() => this.sortFn(this.allFolders().filter(f => this.match(f.name))));
+  files   = computed(() => this.sortFn(this.allFiles().filter(f => this.match(f.name))));
+
+  totalCount = computed(() => this.allFiles().length + this.allFolders().length);
+  isEmpty    = computed(() => this.totalCount() === 0);
+  noMatches  = computed(() => !this.isEmpty() && this.folders().length === 0 && this.files().length === 0);
+
+  selectedCount = computed(() => this.selected().size);
 
   ngOnInit() {
     this.fileSystem.loadStarred();
   }
+
+  setSort(field: SortField) {
+    if (this.sortField() === field) this.sortDir.update(d => (d === 'asc' ? 'desc' : 'asc'));
+    else { this.sortField.set(field); this.sortDir.set(field === 'name' ? 'asc' : 'desc'); }
+  }
+
+  clearSearch() { this.search.set(''); }
+
+  // ── Выбор ──
+  key(id: string, type: 'file' | 'folder') { return `${type}:${id}`; }
+  isSelected(id: string, type: 'file' | 'folder') { return this.selected().has(this.key(id, type)); }
+  toggleSelect(id: string, type: 'file' | 'folder') {
+    const set = new Set(this.selected());
+    const k = this.key(id, type);
+    set.has(k) ? set.delete(k) : set.add(k);
+    this.selected.set(set);
+  }
+  clearSelection() { this.selected.set(new Set()); }
+
+  unstarSelected() {
+    const keys = [...this.selected()];
+    if (!keys.length) return;
+    keys.forEach((k, i) => {
+      const [type, id] = k.split(':') as ['file' | 'folder', string];
+      this.fileSystem.toggleStar(id, type).subscribe({
+        next: () => { if (i === keys.length - 1) { this.fileSystem.loadStarred(); this.toast(this.t().toastUnstarred); } },
+        error: () => this.toast(this.t().toastError),
+      });
+    });
+    this.clearSelection();
+  }
+
+  downloadSelected() {
+    const files = this.allFiles().filter(f => this.selected().has(this.key(f.id, 'file')));
+    files.forEach(f => this.fileSystem.downloadFile(f));
+    const folders = this.allFolders().filter(f => this.selected().has(this.key(f.id, 'folder')));
+    folders.forEach(f => this.fileSystem.downloadFolder(f.id, f.name));
+  }
+
+  // ── Действия ──
+  isImage(f: FileItem): boolean { return (f.mimeType ?? '').startsWith('image/'); }
 
   getFileIcon(mimeType: string | null | undefined): string {
     const m = mimeType ?? '';
@@ -59,13 +144,44 @@ export class Starred implements OnInit {
     this.router.navigate(['/file-system']).then(() => this.fileSystem.openFolder(folder.id));
   }
 
-  download(file: FileItem) {
-    this.fileSystem.downloadFile(file);
+  openFile(file: FileItem) {
+    if (this.isImage(file)) {
+      this.previewUrl.set(file.downloadUrl);
+      this.previewTitle.set(decodeURIComponent(file.name));
+      this.previewVisible.set(true);
+    } else {
+      this.openLocation(file);
+    }
   }
+
+  closePreview() { this.previewVisible.set(false); this.previewUrl.set(null); }
+
+  openLocation(file: FileItem) {
+    this.router.navigate(['/file-system']).then(() => this.fileSystem.revealFolder(file.folderId));
+  }
+
+  download(file: FileItem) { this.fileSystem.downloadFile(file); }
+  downloadFolder(folder: FolderItem) { this.fileSystem.downloadFolder(folder.id, folder.name); }
 
   unstar(item: FileItem | FolderItem, type: 'file' | 'folder') {
     this.fileSystem.toggleStar(item.id, type).subscribe({
       next: () => this.toast(this.t().toastUnstarred),
+      error: () => this.toast(this.t().toastError),
+    });
+  }
+
+  openRename(item: FileItem | FolderItem, type: 'file' | 'folder') {
+    this.renameTarget = { id: item.id, type };
+    this.renameValue.set(decodeURIComponent(item.name));
+    this.renameVisible.set(true);
+  }
+
+  submitRename() {
+    const tgt = this.renameTarget;
+    const name = this.renameValue().trim();
+    if (!tgt || !name) return;
+    this.fileSystem.renameItem(tgt.id, tgt.type, name).subscribe({
+      next: () => { this.renameVisible.set(false); this.fileSystem.loadStarred(); this.toast(this.t().toastRenamed); },
       error: () => this.toast(this.t().toastError),
     });
   }

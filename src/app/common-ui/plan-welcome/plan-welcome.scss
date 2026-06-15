@@ -22,6 +22,8 @@
   padding: 30px 28px 26px;
   color: var(--text);
   overflow: hidden;
+  // Фирменная связка: тело — JetBrains Mono, крупные акценты — Tektur.
+  font-family: var(--brand-mono), ui-monospace, monospace;
 }
 
 /* Мягкое свечение акцентного цвета сверху */
@@ -107,6 +109,7 @@
 }
 
 .pw-greeting {
+  font-family: var(--brand-display), system-ui, sans-serif;
   margin: 14px 0 4px;
   font-size: 22px;
   font-weight: 700;
@@ -114,7 +117,7 @@
 }
 
 .pw-plan {
-  font-family: var(--brand-display, system-ui), sans-serif;
+  font-family: var(--brand-display), system-ui, sans-serif;
   font-size: 26px;
   font-weight: 800;
   letter-spacing: .01em;
@@ -134,10 +137,47 @@
   color: var(--text2);
 }
 
+.pw-stats {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.pw-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 6px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.pw-stat-value {
+  font-family: var(--brand-display), system-ui, sans-serif;
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--pw-accent);
+}
+
+.pw-stat-label {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--text3);
+  text-align: center;
+}
+
 .pw-features {
   position: relative;
   z-index: 1;
-  margin: 22px 0 16px;
+  margin: 16px 0 16px;
   padding: 16px 16px 6px;
   background: var(--bg3);
   border: 1px solid var(--border);
@@ -218,6 +258,7 @@
   justify-content: center;
   gap: 8px;
   padding: 13px 18px;
+  font-family: var(--brand-mono), ui-monospace, monospace;
   font-size: 14px;
   font-weight: 700;
   color: var(--brand-accent-ink, #0a0a0a);
