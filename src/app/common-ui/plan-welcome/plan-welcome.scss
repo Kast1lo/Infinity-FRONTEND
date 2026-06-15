@@ -1,0 +1,234 @@
+:host ::ng-deep .pw-dialog {
+  border: none;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, .45);
+
+  .p-dialog-header { display: none; }
+  .p-dialog-content {
+    padding: 0;
+    border-radius: 18px;
+    overflow: hidden;
+    background: transparent;
+  }
+}
+
+.pw {
+  --pw-accent: #ff7a00;
+  position: relative;
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: 18px;
+  padding: 30px 28px 26px;
+  color: var(--text);
+  overflow: hidden;
+}
+
+/* Мягкое свечение акцентного цвета сверху */
+.pw-glow {
+  position: absolute;
+  top: -120px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 320px;
+  height: 220px;
+  background: radial-gradient(closest-side,
+    color-mix(in srgb, var(--pw-accent) 30%, transparent),
+    transparent);
+  filter: blur(8px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.pw-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  background: var(--bg3);
+  color: var(--text2);
+  cursor: pointer;
+  transition: color .15s, border-color .15s, background .15s;
+
+  i { font-size: 13px; }
+
+  &:hover {
+    color: var(--text);
+    border-color: var(--pw-accent);
+    background: var(--bg4);
+  }
+}
+
+.pw-top {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+}
+
+.pw-icon {
+  width: 56px;
+  height: 56px;
+  margin: 4px auto 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--pw-accent) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--pw-accent) 45%, transparent);
+  color: var(--pw-accent);
+
+  i { font-size: 26px; }
+
+  .pw-svg {
+    width: 30px;
+    height: 30px;
+    display: block;
+  }
+}
+
+.pw-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--pw-accent);
+  background: color-mix(in srgb, var(--pw-accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--pw-accent) 35%, transparent);
+  padding: 4px 12px;
+  border-radius: 999px;
+}
+
+.pw-greeting {
+  margin: 14px 0 4px;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.pw-plan {
+  font-family: var(--brand-display, system-ui), sans-serif;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: .01em;
+  margin-bottom: 8px;
+
+  em {
+    font-style: normal;
+    color: var(--pw-accent);
+  }
+}
+
+.pw-tagline {
+  margin: 0 auto;
+  max-width: 380px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text2);
+}
+
+.pw-features {
+  position: relative;
+  z-index: 1;
+  margin: 22px 0 16px;
+  padding: 16px 16px 6px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.pw-features-title {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 12px;
+}
+
+.pw-features ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.pw-features li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 7px 0;
+  font-size: 13.5px;
+  line-height: 1.4;
+
+  & + li { border-top: 1px solid var(--border); }
+
+  i {
+    flex-shrink: 0;
+    margin-top: 1px;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--pw-accent);
+    background: color-mix(in srgb, var(--pw-accent) 16%, transparent);
+  }
+}
+
+.pw-footnote {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text3);
+  margin: 0 0 16px;
+  text-align: center;
+}
+
+.pw-upgrade {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--text2);
+  background: color-mix(in srgb, var(--pw-accent) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--pw-accent) 28%, transparent);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin: 0 0 18px;
+
+  i { color: var(--pw-accent); margin-top: 1px; }
+}
+
+.pw-cta {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px 18px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--brand-accent-ink, #0a0a0a);
+  background: var(--pw-accent);
+  border: none;
+  border-radius: 11px;
+  cursor: pointer;
+  transition: filter .15s, transform .1s;
+
+  i { font-size: 13px; }
+
+  &:hover { filter: brightness(1.08); }
+  &:active { transform: translateY(1px); }
+}

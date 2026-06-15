@@ -183,3 +183,8 @@
   </main>
 
 </div>
+
+<app-plan-welcome
+  [(visible)]="welcomeVisible"
+  plan="spark"
+  (confirm)="finishWelcome()" />

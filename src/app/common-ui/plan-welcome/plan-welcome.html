@@ -1,0 +1,54 @@
+<p-dialog
+  [(visible)]="visible"
+  [modal]="true"
+  [closable]="false"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '480px', maxWidth: '94vw' }"
+  styleClass="pw-dialog">
+  <ng-template pTemplate="header"><span></span></ng-template>
+
+  <div class="pw" [style.--pw-accent]="theme().accent">
+    <button class="pw-close" type="button" (click)="onConfirm()" aria-label="Закрыть">
+      <i class="pi pi-times"></i>
+    </button>
+
+    <div class="pw-glow"></div>
+
+    <div class="pw-top">
+      <div class="pw-icon">
+        @if (theme().infinity) {
+          <svg class="pw-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 12c-2-2.67-4-4-6-4a4 4 0 1 0 0 8c2 0 4-1.33 6-4Zm0 0c2 2.67 4 4 6 4a4 4 0 0 0 0-8c-2 0-4 1.33-6 4Z"/>
+          </svg>
+        } @else {
+          <i class="pi {{ theme().icon }}"></i>
+        }
+      </div>
+      <span class="pw-badge">{{ t().badge }} · {{ data().tag }}</span>
+      <h2 class="pw-greeting">{{ t().greeting }}</h2>
+      <div class="pw-plan">Infinity <em>{{ data().label }}</em></div>
+      <p class="pw-tagline">{{ data().tagline }}</p>
+    </div>
+
+    <div class="pw-features">
+      <div class="pw-features-title">{{ t().featuresTitle }}</div>
+      <ul>
+        @for (f of data().features; track f) {
+          <li><i class="pi pi-check"></i><span>{{ f }}</span></li>
+        }
+      </ul>
+    </div>
+
+    <p class="pw-footnote">{{ data().footnote }}</p>
+
+    @if (plan() === 'spark') {
+      <p class="pw-upgrade"><i class="pi pi-arrow-up-right"></i>{{ t().upgradeHint }}</p>
+    }
+
+    <button class="pw-cta" type="button" (click)="onConfirm()">
+      {{ t().cta }} <i class="pi pi-arrow-right"></i>
+    </button>
+  </div>
+</p-dialog>

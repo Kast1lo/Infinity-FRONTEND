@@ -20,6 +20,7 @@ import { email, form, FormField, maxLength, minLength, required } from '@angular
 import { AuthService } from '../../../services/auth';
 import { ThemeService } from '../../../services/theme';
 import { LangService } from '../../../services/lang';
+import { PlanWelcome } from '../../../common-ui/plan-welcome/plan-welcome';
 
 @Component({
   selector: 'app-registration',
@@ -33,6 +34,7 @@ import { LangService } from '../../../services/lang';
     PasswordModule,
     InputTextModule,
     TooltipModule,
+    PlanWelcome,
   ],
   templateUrl: './registration.html',
   styleUrl:    './registration.scss',
@@ -49,8 +51,9 @@ export class Registration implements OnDestroy {
   imagePath = computed(() => this.isDark() ? 'infinityLogo.svg' : 'infinity.svg');
   t         = computed(() => this.langService.t().pages.auth.registration);
 
-  screen       = signal<'register' | 'verify'>('register');
-  pendingEmail = signal('');
+  screen        = signal<'register' | 'verify'>('register');
+  pendingEmail  = signal('');
+  welcomeVisible = signal(false);
 
   codeDigits     = signal<string[]>(['', '', '', '', '', '']);
   codeError      = signal<string | null>(null);
@@ -179,7 +182,13 @@ export class Registration implements OnDestroy {
     this.codeError.set(null);
     this.cdr.markForCheck();
     this.authService.verifyEmail(this.pendingEmail(), code).subscribe({
-      next: () => { this.isVerifying.set(false); this.cdr.markForCheck(); },
+      next: () => {
+        this.isVerifying.set(false);
+        // Новый аккаунт всегда на тарифе Spark — показываем приветственное
+        // окно с возможностями, навигация после нажатия «Начать работу».
+        this.welcomeVisible.set(true);
+        this.cdr.markForCheck();
+      },
       error: (err) => {
         this.isVerifying.set(false);
         this.codeDigits.set(['', '', '', '', '', '']);
@@ -235,5 +244,10 @@ export class Registration implements OnDestroy {
     this.screen.set('register');
     this.codeDigits.set(['', '', '', '', '', '']);
     this.codeError.set(null);
+  }
+
+  finishWelcome() {
+    this.welcomeVisible.set(false);
+    this.router.navigate(['/file-system']);
   }
 }

@@ -260,4 +260,22 @@
     </div>
   </section>
 
+  <div class="uk-divider"></div>
+
+  <!-- Plan welcome dialogs -->
+  <section class="uk-section">
+    <div class="uk-section-head">
+      <span class="uk-section-label">Диалоги</span>
+      <h2 class="uk-section-title">Приветствие по тарифу</h2>
+    </div>
+    <p class="uk-hint">Окно показывается после регистрации (тариф Spark). Нажмите, чтобы посмотреть вариант для каждого тарифа.</p>
+    <div class="uk-row">
+      @for (p of planButtons; track p.kind) {
+        <p-button [label]="p.label" variant="outlined" severity="secondary" (onClick)="openPlan(p.kind)" />
+      }
+    </div>
+  </section>
+
 </div>
+
+<app-plan-welcome [(visible)]="previewVisible" [plan]="previewPlan()" />

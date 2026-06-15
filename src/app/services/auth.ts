@@ -91,7 +91,8 @@ export class AuthService {
         switchMap(() => this.userService.getProfile()),
         tap(() => {
           this._isLoading.set(false);
-          this.router.navigate(['/profile']);
+          // Навигацию выполняет компонент регистрации после показа
+          // приветственного окна с возможностями тарифа.
         }),
         catchError(err => {
           this._isLoading.set(false);

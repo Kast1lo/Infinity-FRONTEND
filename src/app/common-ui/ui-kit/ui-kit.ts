@@ -1,18 +1,34 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { TagModule } from 'primeng/tag';
 import { AvatarModule } from 'primeng/avatar';
 import { BadgeModule } from 'primeng/badge';
+import { PlanWelcome, PlanKind } from '../plan-welcome/plan-welcome';
 
 @Component({
   selector: 'app-ui-kit',
-  imports: [ButtonModule, InputTextModule, TagModule, AvatarModule, BadgeModule],
+  imports: [ButtonModule, InputTextModule, TagModule, AvatarModule, BadgeModule, PlanWelcome],
   templateUrl: './ui-kit.html',
   styleUrl: './ui-kit.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UiKit {
+  // --- Превью приветственных окон по тарифам ---
+  readonly planButtons: { kind: PlanKind; label: string }[] = [
+    { kind: 'spark',   label: '⚡ Spark' },
+    { kind: 'pulse',   label: '➤ Pulse' },
+    { kind: 'horizon', label: '◎ Horizon' },
+    { kind: 'eternal', label: '∞ Eternal' },
+  ];
+  previewPlan    = signal<PlanKind>('spark');
+  previewVisible = signal(false);
+
+  openPlan(kind: PlanKind): void {
+    this.previewPlan.set(kind);
+    this.previewVisible.set(true);
+  }
+
   readonly icons = [
     'pi-arrow-left', 'pi-chevron-right', 'pi-arrow-right-arrow-left', 'pi-home',
     'pi-check', 'pi-times', 'pi-trash', 'pi-pencil', 'pi-download', 'pi-upload',
