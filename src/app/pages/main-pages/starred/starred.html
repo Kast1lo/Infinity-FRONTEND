@@ -34,6 +34,10 @@
               </button>
             }
           </div>
+          <button class="st-selectall" [class.st-selectall--on]="allSelected()" (click)="toggleSelectAll()">
+            <i class="pi" [class.pi-check-square]="allSelected()" [class.pi-stop]="!allSelected()"></i>
+            {{ allSelected() ? t().clearSel : t().selectAll }}
+          </button>
         </div>
       }
 
@@ -83,7 +87,7 @@
                       <i class="pi pi-check"></i>
                     </button>
                     <button class="st-card-main" (click)="openFolder(folder)" [title]="t().folderHint">
-                      <span class="st-card-ic st-card-ic--folder"><i class="pi pi-folder"></i></span>
+                      <span class="st-card-thumb st-card-thumb--icon st-card-thumb--folder"><i class="pi pi-folder"></i></span>
                       <span class="st-card-name" [title]="folder.name">{{ folder.name | decodeURIComponent }}</span>
                     </button>
                     <div class="st-card-actions">
@@ -114,7 +118,18 @@
                       <i class="pi pi-check"></i>
                     </button>
                     <button class="st-card-main" (click)="openFile(file)" [title]="t().openHint">
-                      <span class="st-card-ic" [class.st-card-ic--img]="isImage(file)"><i [class]="'pi ' + getFileIcon(file.mimeType)"></i></span>
+                      @if (isImage(file)) {
+                        <span class="st-card-thumb">
+                          <img [src]="file.downloadUrl" loading="lazy" [alt]="file.name | decodeURIComponent"/>
+                        </span>
+                      } @else if (isVideo(file)) {
+                        <span class="st-card-thumb st-card-thumb--video">
+                          <video [src]="file.downloadUrl" preload="metadata" muted playsinline></video>
+                          <span class="st-thumb-play"><i class="pi pi-play"></i></span>
+                        </span>
+                      } @else {
+                        <span class="st-card-thumb st-card-thumb--icon"><i [class]="'pi ' + getFileIcon(file.mimeType)"></i></span>
+                      }
                       <span class="st-card-name" [title]="file.name">{{ file.name | decodeURIComponent }}</span>
                       <span class="st-card-meta">{{ formatSize(file.size) }}</span>
                     </button>
@@ -139,15 +154,32 @@
 
 <!-- Превью изображения -->
 <p-dialog [(visible)]="previewVisible" [modal]="true" [closable]="false" [draggable]="false"
-  [dismissableMask]="true" [style]="{ width: 'auto', maxWidth: '90vw' }" styleClass="st-preview" (onHide)="closePreview()">
+  [dismissableMask]="true"
+  [style]="previewKind() === 'video' ? { width: '900px', maxWidth: '96vw' } : { width: 'auto', maxWidth: '90vw' }"
+  styleClass="st-preview" (onHide)="closePreview()">
   <ng-template pTemplate="header"><span></span></ng-template>
-  <div class="st-preview-body">
-    <div class="st-preview-bar">
-      <span class="st-preview-title">{{ previewTitle() }}</span>
-      <button class="st-preview-x" (click)="closePreview()"><i class="pi pi-times"></i></button>
+
+  @if (previewKind() === 'video') {
+    <app-video-player [src]="previewUrl()" [title]="previewTitle()" (close)="closePreview()"/>
+  } @else if (previewKind() === 'audio') {
+    <app-audio-player [src]="previewUrl()" [title]="previewTitle()" (close)="closePreview()"/>
+  } @else {
+    <div class="st-preview-body">
+      <div class="st-preview-bar">
+        <span class="st-preview-title">{{ previewTitle() }}</span>
+        <div class="st-preview-tools">
+          <a class="st-preview-x" [href]="previewUrl()" target="_blank" rel="noopener" download [title]="t().download"><i class="pi pi-download"></i></a>
+          <button class="st-preview-x" (click)="closePreview()"><i class="pi pi-times"></i></button>
+        </div>
+      </div>
+      @if (previewUrl()) {
+        @switch (previewKind()) {
+          @case ('image') { <img [src]="previewUrl()!" [alt]="previewTitle()" /> }
+          @case ('pdf') { <iframe class="st-preview-frame" [src]="previewSafeUrl()" title="PDF"></iframe> }
+        }
+      }
     </div>
-    @if (previewUrl()) { <img [src]="previewUrl()!" [alt]="previewTitle()" /> }
-  </div>
+  }
 </p-dialog>
 
 <!-- Переименование -->

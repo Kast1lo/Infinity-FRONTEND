@@ -67,6 +67,39 @@
 
   <div class="sb-spacer"></div>
 
+  <!-- Лимиты тарифа: задачи и AI-генерации -->
+  @if (tasks(); as tk) {
+    <div class="sb-limits">
+      <div class="sb-limit">
+        <div class="sb-limit-head">
+          <span class="sb-limit-name"><i class="pi pi-check-square"></i>{{ t().tasksLimit }}</span>
+          <span class="sb-limit-val">
+            @if (tasksUnlim()) { <b>{{ tk.used }}</b> / <span class="sb-inf" [title]="t().unlimited">∞</span> }
+            @else { <b>{{ tasksLeft() }}</b> {{ t().leftWord }} }
+          </span>
+        </div>
+        @if (!tasksUnlim()) {
+          <div class="sb-limit-track"><span class="sb-limit-fill" [style.width.%]="tasksPercent()"></span></div>
+        }
+      </div>
+
+      @if (ai(); as a) {
+        <div class="sb-limit">
+          <div class="sb-limit-head">
+            <span class="sb-limit-name"><i class="pi pi-sparkles"></i>{{ t().aiLimit }}</span>
+            <span class="sb-limit-val">
+              @if (aiUnlim()) { <b>{{ a.used }}</b> / <span class="sb-inf" [title]="t().unlimited">∞</span> }
+              @else { <b>{{ aiLeft() }}</b> {{ t().leftWord }} }
+            </span>
+          </div>
+          @if (!aiUnlim()) {
+            <div class="sb-limit-track"><span class="sb-limit-fill" [style.width.%]="aiPercent()"></span></div>
+          }
+        </div>
+      }
+    </div>
+  }
+
   <!-- Хранилище -->
   @if (storage(); as st) {
     <a class="sb-storage" routerLink="/profile" [class.sb-storage--warn]="showUpsell()">

@@ -14,6 +14,7 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { finalize, forkJoin } from 'rxjs';
 import { InfinityLife } from '../../../../services/infinity-life';
 import { ProjectService } from '../../../../services/project';
+import { PlanService } from '../../../../services/plan';
 import { ProjectMember } from '../../../../interfaces/project/project.model';
 import { MessageService, ConfirmationService, MenuItem } from 'primeng/api';
 import { CdkDragDrop, moveItemInArray, transferArrayItem, DragDropModule } from '@angular/cdk/drag-drop';
@@ -68,6 +69,7 @@ import { LangService } from '../../../../services/lang';
 export class KanbanBoard implements OnInit {
   private tasksService = inject(InfinityLife);
   private projectService = inject(ProjectService);
+  private planService = inject(PlanService);
   private messageService = inject(MessageService);
   private cdr = inject(ChangeDetectorRef);
   private router = inject(Router);
@@ -677,6 +679,7 @@ export class KanbanBoard implements OnInit {
       this.creatingTaskBusy.set(false);
       this.toast(this.langService.t().pages.kanban.taskCreated, true);
       this.loadBoard();
+      this.refreshPlan();
       this.showCreateTaskDialog.set(false);
     };
 
@@ -743,6 +746,7 @@ export class KanbanBoard implements OnInit {
         next: () => {
           this.toast(k.taskDeleted, true);
           this.loadBoard();
+          this.refreshPlan();
           this.showTaskDetailDialog.set(false);
         },
         error: () => this.toast(k.taskDeleteFailed),
@@ -927,9 +931,15 @@ export class KanbanBoard implements OnInit {
           const count = res.tasks?.length ?? 0;
           this.toast(`Создано ${count} задач(и) через AI`, true);
           this.loadBoard();
+          this.refreshPlan();
         },
         error: (err) => this.toast(err?.message ?? 'AI-генерация не удалась'),
       });
+  }
+
+  // Обновляет инфо о тарифе (остаток задач/AI в сайдбаре) после изменений.
+  private refreshPlan() {
+    this.planService.loadPlanInfo().subscribe({ error: () => {} });
   }
 
   private toast(detail: string, success = false) {

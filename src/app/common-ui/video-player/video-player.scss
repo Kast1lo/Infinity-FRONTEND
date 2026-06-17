@@ -1,0 +1,77 @@
+.vp-root { position: relative; width: 100%; background: #000; user-select: none; line-height: 0; font-size: 0; }
+.vp-video { width: 100%; max-height: 78vh; display: block; cursor: pointer; vertical-align: bottom; line-height: 0; }
+
+.vp-center-btn {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; opacity: 1; transition: opacity .25s; pointer-events: auto;
+
+  &.vp-hidden { opacity: 0; pointer-events: none; }
+}
+
+.vp-center-icon {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: rgba(0,0,0,.6); border: 1.5px solid rgba(255,255,255,.15);
+  display: flex; align-items: center; justify-content: center;
+  transition: background .2s, transform .15s;
+
+  i { font-size: 1.3rem !important; color: #fff !important; }
+  &:hover { background: var(--brand-accent); border-color: var(--brand-accent); transform: scale(1.06); i { color: var(--brand-accent-ink) !important; } }
+}
+
+.vp-controls {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: linear-gradient(to top, rgba(0,0,0,.9) 0%, rgba(0,0,0,.3) 60%, transparent 100%);
+  padding: 48px 14px 12px; transition: opacity .3s;
+  box-sizing: border-box; line-height: normal; font-size: 14px;
+
+  &.vp-hidden { opacity: 0; pointer-events: none; }
+}
+
+.vp-progress {
+  position: relative; height: 18px;
+  display: flex; align-items: center;
+  cursor: pointer; margin-bottom: 8px;
+
+  &:hover .vp-progress-thumb { opacity: 1; transform: translateX(-50%) scale(1); }
+  &:hover .vp-progress-bg { background: rgba(255,255,255,.25); }
+}
+
+.vp-progress-bg { position: absolute; inset: 7px 0; background: rgba(255,255,255,.15); border-radius: 100px; transition: background .2s; }
+.vp-progress-fill { position: absolute; left: 0; top: 7px; bottom: 7px; background: var(--brand-accent); border-radius: 100px; pointer-events: none; will-change: width; }
+.vp-progress-thumb { position: absolute; top: 50%; margin-top: -7px; width: 14px; height: 14px; border-radius: 50%; background: var(--brand-accent); transform: translateX(-50%) scale(0); transition: transform .15s, opacity .15s; opacity: 0; pointer-events: none; box-shadow: 0 0 6px rgba(0,0,0,.5); }
+
+.vp-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.vp-bar-left, .vp-bar-right { display: flex; align-items: center; gap: 2px; }
+.vp-bar-center { flex: 1; text-align: center; min-width: 0; }
+
+.vp-btn {
+  width: 34px; height: 34px; padding: 0; border-radius: 8px;
+  background: transparent; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: rgba(255,255,255,.7); transition: background .15s, color .15s; flex-shrink: 0;
+
+  i { font-size: 14px !important; color: inherit !important; }
+  &:hover { background: rgba(255,255,255,.1); color: var(--brand-accent); }
+}
+
+.vp-divider { width: 1px; height: 18px; background: rgba(255,255,255,.12); margin: 0 4px; flex-shrink: 0; }
+
+.vp-volume-wrap { width: 72px; display: flex; align-items: center; margin: 0 4px; }
+
+.vp-volume {
+  -webkit-appearance: none; appearance: none; width: 100%; height: 3px;
+  border-radius: 100px; outline: none; cursor: pointer;
+  background: linear-gradient(to right,
+    var(--brand-accent) 0%,
+    var(--brand-accent) var(--volume-pct, 100%),
+    rgba(255,255,255,.22) var(--volume-pct, 100%),
+    rgba(255,255,255,.22) 100%);
+
+  &::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: var(--brand-accent); cursor: pointer; box-shadow: 0 0 4px rgba(0,0,0,.4); }
+  &::-moz-range-thumb { width: 12px; height: 12px; border: none; border-radius: 50%; background: var(--brand-accent); cursor: pointer; box-shadow: 0 0 4px rgba(0,0,0,.4); }
+  &:focus-visible { box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-accent) 45%, transparent); }
+}
+
+.vp-time { font-family: var(--brand-mono); font-size: 12px; color: rgba(255,255,255,.6); white-space: nowrap; margin-left: 6px; font-variant-numeric: tabular-nums; }
+.vp-title { font-family: var(--brand-mono); font-size: 13px; font-weight: 400; color: rgba(255,255,255,.7); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 300px; display: inline-block; }

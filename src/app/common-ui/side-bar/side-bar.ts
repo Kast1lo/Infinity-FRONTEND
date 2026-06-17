@@ -31,6 +31,22 @@ export class SideBar implements OnInit {
     return this.percent() >= 80 && (plan === 'spark' || plan === 'pulse');
   });
 
+  // ── Лимиты тарифа: задачи и AI-генерации ──
+  tasks        = computed(() => this.planInfo()?.tasks ?? null);
+  ai           = computed(() => this.planInfo()?.ai ?? null);
+  tasksUnlim   = computed(() => (this.tasks()?.limit ?? -1) < 0);
+  aiUnlim      = computed(() => (this.ai()?.limit ?? -1) < 0);
+  tasksLeft    = computed(() => Math.max(0, (this.tasks()?.limit ?? 0) - (this.tasks()?.used ?? 0)));
+  aiLeft       = computed(() => Math.max(0, (this.ai()?.limit ?? 0) - (this.ai()?.used ?? 0)));
+  tasksPercent = computed(() => {
+    const t = this.tasks(); if (!t || t.limit <= 0) return 0;
+    return Math.min(100, Math.round((t.used / t.limit) * 100));
+  });
+  aiPercent = computed(() => {
+    const a = this.ai(); if (!a || a.limit <= 0) return 0;
+    return Math.min(100, Math.round((a.used / a.limit) * 100));
+  });
+
   t = computed(() => this.langService.t().sidebar);
 
   ngOnInit() {

@@ -380,6 +380,7 @@
   .sb-tools,
   .sb-spacer,
   .sb-storage,
+  .sb-limits,
   .sb-link--soon,
   .sb-label,
   .sb-id-text { display: none; }
@@ -479,6 +480,54 @@
   font-family: var(--brand-mono); font-size: 11px; font-weight: 700;
   color: var(--brand-accent);
   i { font-size: 10px !important; }
+}
+
+// ─── Лимиты тарифа (задачи / AI) ───────────────────────────
+
+.sb-limits {
+  display: flex; flex-direction: column; gap: 9px;
+  margin: 0 2px 10px;
+  padding: 11px 12px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+}
+
+.sb-limit-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; margin-bottom: 6px;
+}
+
+.sb-limit-name {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--brand-mono); font-size: 11px; font-weight: 700;
+  color: var(--text2); letter-spacing: .2px;
+  i { font-size: 11px; }
+}
+
+.sb-limit-val {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-family: var(--brand-mono); font-size: 11px;
+  color: var(--text2); font-variant-numeric: tabular-nums; flex-shrink: 0;
+  b { color: var(--text); font-weight: 700; }
+  i { font-size: 11px; }
+}
+
+.sb-inf {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text2);
+}
+
+.sb-limit-track {
+  height: 5px; border-radius: 100px;
+  background: rgba(128,128,128,.16); overflow: hidden;
+}
+
+.sb-limit-fill {
+  display: block; height: 100%; border-radius: 100px;
+  background: var(--brand-accent);
+  transition: width .4s cubic-bezier(.22,1,.36,1);
 }
 
 // ─── Напоминания (колокольчик + панель) ───────────────────

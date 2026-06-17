@@ -161,12 +161,14 @@
 .st-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-auto-rows: 1fr;          /* все карточки строки одной высоты */
   gap: 12px;
 }
 
 /* ─── Карточка ─── */
 .st-card {
   position: relative;
+  height: 100%;                 /* тянемся на всю высоту строки сетки */
   display: flex; flex-direction: column;
   padding: 14px;
   background: var(--bg3);
@@ -177,17 +179,22 @@
   &--sel { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); }
 }
 .st-check {
-  position: absolute; top: 10px; left: 10px; z-index: 2;
-  width: 22px; height: 22px;
+  position: absolute; top: 9px; left: 9px; z-index: 3;
+  width: 24px; height: 24px;
   display: flex; align-items: center; justify-content: center;
-  border: 1px solid var(--border2); border-radius: 6px;
-  background: var(--bg2); color: transparent; cursor: pointer;
-  transition: all .15s;
+  border: 1px solid rgba(255,255,255,.4);
+  border-radius: 7px;
+  background: rgba(10,10,10,.5);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+  color: transparent; cursor: pointer;
+  transition: background .15s, border-color .15s, color .15s;
   i { font-size: 11px; }
   &:hover { border-color: var(--accent); }
   &--on { background: var(--accent); border-color: var(--accent); color: var(--brand-accent-ink, #0a0a0a); }
 }
 .st-card-main {
+  flex: 1; width: 100%;
   display: flex; flex-direction: column; align-items: center; gap: 10px;
   background: none; border: none; cursor: pointer; padding: 8px 0 12px; text-align: center;
 }
@@ -219,8 +226,11 @@
 
 /* ─── Превью / Переименование ─── */
 :host ::ng-deep .st-preview {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: 0 24px 64px rgba(0,0,0,.6) !important;
   .p-dialog-header { display: none; }
-  .p-dialog-content { padding: 0; background: transparent; border-radius: 14px; overflow: hidden; }
+  .p-dialog-content { padding: 0; background: transparent; border: none; border-radius: 14px; overflow: hidden; }
 }
 .st-preview-body { background: var(--bg2); border: 1px solid var(--border2); border-radius: 14px; overflow: hidden; }
 .st-preview-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px 10px 16px; border-bottom: 1px solid var(--border); }
@@ -231,7 +241,7 @@
   &:hover { color: var(--text); }
   i { font-size: 13px; }
 }
-.st-preview-body img { display: block; max-width: 90vw; max-height: 78vh; object-fit: contain; }
+.st-preview-body img { display: block; max-width: min(90vw, 860px); max-height: 78vh; object-fit: contain; }
 
 :host ::ng-deep .st-rename .p-dialog-content { padding: 0 20px 20px; }
 .st-rename-body { display: flex; flex-direction: column; gap: 16px; }
@@ -246,4 +256,86 @@
   border: 1px solid transparent; transition: filter .15s, background .15s, color .15s;
   &--ghost { background: var(--bg3); border-color: var(--border); color: var(--text2); &:hover { color: var(--text); } }
   &--solid { background: var(--accent); color: var(--brand-accent-ink, #0a0a0a); &:hover { filter: brightness(1.08); } }
+}
+
+/* ─── Миниатюры картинок и видео (во всю ширину карточки сверху) ─── */
+.st-card-thumb {
+  position: relative;
+  align-self: stretch;
+  margin: -22px -14px 12px;          /* выходим за padding карточки (14) и card-main (8) */
+  height: 132px;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  overflow: hidden;
+  background: var(--bg4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  img, video { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .25s; }
+}
+.st-card-thumb--video video { background: #000; }
+.st-card-thumb--icon {
+  background: var(--bg4);
+  color: var(--text2);
+  i { font-size: 34px; }
+}
+.st-card-thumb--folder {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, var(--bg4));
+}
+.st-thumb-play {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  i {
+    width: 38px; height: 38px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    background: rgba(0,0,0,.55);
+    color: #fff;
+    font-size: 15px;
+    padding-left: 2px;
+  }
+}
+.st-card:hover .st-card-thumb img,
+.st-card:hover .st-card-thumb video { transform: scale(1.04); }
+
+/* ─── Кнопка «Выбрать всё» ─── */
+.st-selectall {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-left: auto;
+  padding: 7px 12px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text2);
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: color .15s, border-color .15s, background .15s;
+  i { font-size: 13px; }
+  &:hover { color: var(--text); border-color: var(--border2); }
+  &--on { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 40%, transparent); }
+}
+
+/* ─── Расширенное превью (видео / аудио / pdf) ─── */
+.st-preview-tools { display: flex; align-items: center; gap: 8px; }
+.st-preview-tools .st-preview-x { text-decoration: none; }
+.st-preview-media {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: min(90vw, 860px);
+  max-height: 78vh;
+  object-fit: contain;
+  background: #000;
+}
+.st-preview-frame { width: min(90vw, 900px); height: 78vh; border: none; background: #fff; display: block; }
+.st-preview-audio {
+  display: flex; flex-direction: column; align-items: center; gap: 18px;
+  padding: 48px 56px;
+  i { font-size: 46px; color: var(--text3); }
+  audio { width: 320px; max-width: 70vw; }
 }

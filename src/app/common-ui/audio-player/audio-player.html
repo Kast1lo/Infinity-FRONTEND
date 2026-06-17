@@ -1,0 +1,41 @@
+<div class="ap-root">
+  @if (src) {
+    <audio #audioPlayer [src]="src"
+      (loadedmetadata)="onMetaLoaded()"
+      (ended)="onEnded()">
+    </audio>
+  }
+  <div class="ap-cover">
+    <div class="ap-cover-icon" [class.ap-cover-icon--playing]="isPlaying">
+      <i class="pi pi-volume-up"></i>
+    </div>
+    <div class="ap-bars" [class.ap-bars--active]="isPlaying">
+      <span></span><span></span><span></span><span></span><span></span>
+    </div>
+  </div>
+  <div class="ap-title">{{ title }}</div>
+  <div class="ap-progress-wrap" (click)="seek($event)">
+    <div class="ap-progress-bg"></div>
+    <div class="ap-progress-fill" [style.width.%]="progress"></div>
+    <div class="ap-progress-thumb" [style.left.%]="progress"></div>
+  </div>
+  <div class="ap-time">
+    <span>{{ currentTimeStr }}</span>
+    <span>{{ durationStr }}</span>
+  </div>
+  <div class="ap-controls">
+    <button class="ap-btn ap-btn--play" (click)="togglePlay()">
+      <i [class]="isPlaying ? 'pi pi-pause' : 'pi pi-play'"></i>
+    </button>
+    <button class="ap-btn" (click)="toggleMute()">
+      <i [class]="isMuted ? 'pi pi-volume-off' : 'pi pi-volume-up'"></i>
+    </button>
+    <div class="ap-volume-wrap">
+      <input class="ap-volume" type="range" min="0" max="1" step="0.05"
+        [value]="volume" (input)="onVolumeChange($event)"/>
+    </div>
+    <button class="ap-btn" (click)="emitClose()">
+      <i class="pi pi-times"></i>
+    </button>
+  </div>
+</div>

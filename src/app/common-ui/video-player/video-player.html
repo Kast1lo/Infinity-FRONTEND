@@ -1,0 +1,34 @@
+<div class="vp-root" (mousemove)="onPlayerMouseMove()" (mouseleave)="onPlayerMouseLeave()">
+  @if (src) {
+    <video #videoPlayer class="vp-video" [src]="src" preload="metadata" playsinline
+      (loadedmetadata)="onMetaLoaded()" (ended)="onEnded()" (click)="togglePlay()"></video>
+    <div class="vp-center-btn" [class.vp-hidden]="isPlaying && controlsHidden" (click)="togglePlay()">
+      <div class="vp-center-icon">
+        <i [class]="isPlaying ? 'pi pi-pause' : 'pi pi-play'"></i>
+      </div>
+    </div>
+    <div class="vp-controls" [class.vp-hidden]="isPlaying && controlsHidden">
+      <div class="vp-progress" (click)="seek($event)">
+        <div class="vp-progress-bg"></div>
+        <div class="vp-progress-fill" [style.width.%]="progress"></div>
+        <div class="vp-progress-thumb" [style.left.%]="progress"></div>
+      </div>
+      <div class="vp-bar">
+        <div class="vp-bar-left">
+          <button class="vp-btn" (click)="togglePlay()"><i [class]="isPlaying ? 'pi pi-pause' : 'pi pi-play'"></i></button>
+          <button class="vp-btn" (click)="toggleMute()"><i [class]="isMuted ? 'pi pi-volume-off' : 'pi pi-volume-up'"></i></button>
+          <div class="vp-volume-wrap">
+            <input class="vp-volume" type="range" min="0" max="1" step="0.05" [value]="volume" (input)="onVolumeChange($event)"/>
+          </div>
+          <span class="vp-time">{{ currentTimeStr }} / {{ durationStr }}</span>
+        </div>
+        <div class="vp-bar-center"><span class="vp-title">{{ title }}</span></div>
+        <div class="vp-bar-right">
+          <button class="vp-btn" (click)="toggleFullscreen()"><i class="pi pi-window-maximize"></i></button>
+          <div class="vp-divider"></div>
+          <button class="vp-btn" (click)="emitClose()"><i class="pi pi-times"></i></button>
+        </div>
+      </div>
+    </div>
+  }
+</div>
