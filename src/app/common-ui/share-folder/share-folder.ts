@@ -10,10 +10,14 @@ import {
 import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ButtonModule } from 'primeng/button';
+import { DialogModule } from 'primeng/dialog';
 import { ProgressSpinner } from 'primeng/progressspinner';
 import { ThemeService } from '../../services/theme';
 import { LangService } from '../../services/lang';
+import { VideoPlayer } from '../video-player/video-player';
+import { AudioPlayer } from '../audio-player/audio-player';
 import { environment } from '../../../environments/environment';
 
 interface ShareFolderEntry { id: string; name: string; }
@@ -25,10 +29,11 @@ interface ShareFileEntry {
   createdAt: string;
   downloadUrl: string;
 }
+interface ShareOwner { name: string | null; avatarUrl: string | null; }
 
 @Component({
   selector:        'app-share-folder',
-  imports:         [CommonModule, ButtonModule, ProgressSpinner, RouterModule],
+  imports:         [CommonModule, ButtonModule, DialogModule, ProgressSpinner, RouterModule, VideoPlayer, AudioPlayer],
   templateUrl:     './share-folder.html',
   styleUrl:        './share-folder.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -37,6 +42,7 @@ export class ShareFolder implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly http  = inject(HttpClient);
   private readonly cdr   = inject(ChangeDetectorRef);
+  private readonly sanitizer = inject(DomSanitizer);
   private readonly themeService = inject(ThemeService);
   readonly         langService  = inject(LangService);
   private readonly apiUrl = environment.apiUrl;
@@ -56,10 +62,21 @@ export class ShareFolder implements OnInit {
   linkCopied = signal(false);
 
   rootName   = signal('');
+  owner      = signal<ShareOwner | null>(null);
   folders    = signal<ShareFolderEntry[]>([]);
   files      = signal<ShareFileEntry[]>([]);
   // Относительный путь внутри расшаренной папки (имена подпапок)
   pathStack  = signal<string[]>([]);
+
+  // Выделение файлов для массового скачивания
+  selected = signal<Set<string>>(new Set());
+
+  // Просмотр файла
+  previewVisible = signal(false);
+  previewKind    = signal<'image' | 'video' | 'audio' | 'pdf' | 'other'>('image');
+  previewUrl     = signal<string | null>(null);
+  previewSafeUrl = signal<SafeResourceUrl | null>(null);
+  previewTitle   = signal('');
 
   requiresPassword = signal(false);
   expired          = signal(false);
@@ -103,8 +120,10 @@ export class ShareFolder implements OnInit {
         } else if (response?.success && response?.data) {
           this.enteredPassword = pwd ?? null;
           this.rootName.set(response.data.rootName);
+          this.owner.set(response.data.owner ?? null);
           this.folders.set(response.data.folders ?? []);
           this.files.set(response.data.files ?? []);
+          this.selected.set(new Set());
           this.requiresPassword.set(false);
           this.expired.set(false);
         } else {
@@ -167,6 +186,78 @@ export class ShareFolder implements OnInit {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  }
+
+  // Скачать конкретную подпапку ZIP-архивом (path = текущий путь + имя подпапки).
+  downloadFolder(folder: ShareFolderEntry) {
+    const rel = [...this.pathStack(), folder.name].join('/');
+    let url = `${this.apiUrl}/file-system/share-folder/${this.slug}/download?path=${encodeURIComponent(rel)}`;
+    if (this.enteredPassword) url += `&password=${encodeURIComponent(this.enteredPassword)}`;
+    const link = document.createElement('a');
+    link.href = url; link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  // ── Выделение ──
+  isSelected(id: string) { return this.selected().has(id); }
+  toggleSelect(id: string, event?: Event) {
+    event?.stopPropagation();
+    const set = new Set(this.selected());
+    set.has(id) ? set.delete(id) : set.add(id);
+    this.selected.set(set);
+  }
+  clearSelection() { this.selected.set(new Set()); }
+  selectedCount = computed(() => this.selected().size);
+  allSelected = computed(() => this.files().length > 0 && this.selected().size >= this.files().length);
+  toggleSelectAll() {
+    if (this.allSelected()) { this.clearSelection(); return; }
+    this.selected.set(new Set(this.files().map(f => f.id)));
+  }
+  downloadSelected() {
+    const ids = this.selected();
+    this.files().filter(f => ids.has(f.id)).forEach(f => this.downloadFile(f));
+  }
+
+  // ── Просмотр файла ──
+  isVideo(m: string | null): boolean { return m?.startsWith('video/') ?? false; }
+  isAudio(m: string | null, name = ''): boolean {
+    return (m?.startsWith('audio/') ?? false) || /\.(mp3|wav|ogg|flac|aac|m4a|opus)$/i.test(name);
+  }
+  isPdf(m: string | null, name = ''): boolean {
+    return m === 'application/pdf' || /\.pdf$/i.test(name);
+  }
+  canPreview(file: ShareFileEntry): boolean {
+    return this.isImage(file.mimeType) || this.isVideo(file.mimeType)
+      || this.isAudio(file.mimeType, file.name) || this.isPdf(file.mimeType, file.name);
+  }
+
+  onFileClick(file: ShareFileEntry) {
+    if (this.canPreview(file)) this.openPreview(file);
+    else this.downloadFile(file);
+  }
+
+  openPreview(file: ShareFileEntry) {
+    const kind = this.isImage(file.mimeType) ? 'image'
+      : this.isVideo(file.mimeType) ? 'video'
+      : this.isAudio(file.mimeType, file.name) ? 'audio'
+      : this.isPdf(file.mimeType, file.name) ? 'pdf'
+      : 'other';
+    this.previewKind.set(kind);
+    this.previewUrl.set(file.downloadUrl);
+    this.previewSafeUrl.set(this.sanitizer.bypassSecurityTrustResourceUrl(file.downloadUrl));
+    this.previewTitle.set(file.name);
+    this.previewVisible.set(true);
+  }
+  closePreview() {
+    this.previewVisible.set(false);
+    this.previewUrl.set(null);
+    this.previewSafeUrl.set(null);
+  }
+
+  ownerInitials(name: string | null): string {
+    return (name ?? '').substring(0, 2).toUpperCase() || '∞';
   }
 
   copyLink() {

@@ -58,7 +58,18 @@
     <div class="sf-wrap">
 
       <header class="sf-head">
-        <span class="sf-badge"><i class="pi pi-share-alt"></i> {{ t().sharedBadge }}</span>
+        <div class="sf-head-top">
+          <span class="sf-badge"><i class="pi pi-share-alt"></i> {{ t().sharedBadge }}</span>
+          @if (owner(); as o) {
+            <div class="sf-sender" [title]="o.name || ''">
+              <span class="sf-sender-avatar">
+                @if (o.avatarUrl) { <img [src]="o.avatarUrl" [alt]="o.name || ''"/> }
+                @else { <span class="sf-sender-initials">{{ ownerInitials(o.name) }}</span> }
+              </span>
+              <span class="sf-sender-text">{{ t().sharedBy }} <b>{{ o.name || '—' }}</b></span>
+            </div>
+          }
+        </div>
 
         <div class="sf-title-row">
           <div class="sf-title-id">
@@ -86,6 +97,16 @@
         </div>
       </header>
 
+      @if (selectedCount() > 0) {
+        <div class="sf-bulk">
+          <span class="sf-bulk-info"><i class="pi pi-check-circle"></i> {{ selectedCount() }} {{ t().selected }}</span>
+          <div class="sf-bulk-actions">
+            <button class="sf-btn sf-btn--solid" (click)="downloadSelected()"><i class="pi pi-download"></i> {{ t().downloadSelected }}</button>
+            <button class="sf-btn sf-btn--ghost" (click)="clearSelection()"><i class="pi pi-times"></i> {{ t().clearSel }}</button>
+          </div>
+        </div>
+      }
+
       @if (isEmpty()) {
         <div class="sf-empty">
           <i class="pi pi-inbox"></i>
@@ -97,13 +118,15 @@
           @if (folders().length) {
             <section class="sf-section">
               <span class="sf-section-label">{{ t().foldersLabel }}</span>
-              <div class="sf-grid">
+              <div class="sf-folders">
                 @for (folder of folders(); track folder.id) {
-                  <button class="sf-card sf-card--folder" (click)="openFolder(folder)">
-                    <i class="pi pi-folder sf-card-ic"></i>
-                    <span class="sf-card-name">{{ folder.name }}</span>
-                    <i class="pi pi-angle-right sf-card-go"></i>
-                  </button>
+                  <div class="folder-card" (click)="openFolder(folder)" [title]="folder.name">
+                    <i class="pi pi-folder folder-ic"></i>
+                    <span class="folder-name">{{ folder.name }}</span>
+                    <button class="card-menu-btn" (click)="downloadFolder(folder); $event.stopPropagation()" [title]="t().downloadFolderBtn">
+                      <i class="pi pi-download"></i>
+                    </button>
+                  </div>
                 }
               </div>
             </section>
@@ -111,22 +134,51 @@
 
           @if (files().length) {
             <section class="sf-section">
-              <span class="sf-section-label">{{ t().filesLabel }}</span>
-              <div class="sf-grid">
+              <div class="sf-section-head">
+                <span class="sf-section-label">{{ t().filesLabel }}</span>
+                <button class="sf-selectall" [class.sf-selectall--on]="allSelected()" (click)="toggleSelectAll()">
+                  <i class="pi" [class.pi-check-square]="allSelected()" [class.pi-stop]="!allSelected()"></i>
+                  {{ allSelected() ? t().clearSel : t().selectAll }}
+                </button>
+              </div>
+              <div class="sf-files">
                 @for (file of files(); track file.id) {
-                  <div class="sf-card sf-card--file">
+                  <div class="file-card" [class.selected]="isSelected(file.id)" (click)="toggleSelect(file.id, $event)">
+
                     @if (isImage(file.mimeType)) {
-                      <div class="sf-thumb"><img [src]="file.downloadUrl" loading="lazy" alt=""/></div>
+                      <div class="file-preview" (click)="openPreview(file); $event.stopPropagation()">
+                        <img [src]="file.downloadUrl" loading="lazy" class="preview-img" [alt]="file.name"/>
+                      </div>
+                    } @else if (isVideo(file.mimeType)) {
+                      <div class="file-preview file-preview--video" (click)="openPreview(file); $event.stopPropagation()">
+                        <video class="video-thumb-frame" [src]="file.downloadUrl + '#t=0.1'" preload="metadata" muted playsinline></video>
+                        <div class="video-play"><i class="pi pi-play"></i></div>
+                      </div>
+                    } @else if (isAudio(file.mimeType, file.name)) {
+                      <div class="file-preview file-preview--audio" (click)="openPreview(file); $event.stopPropagation()">
+                        <div class="audio-bars"><span></span><span></span><span></span><span></span><span></span></div>
+                        <span class="preview-hint">{{ t().selectFile }}</span>
+                      </div>
+                    } @else if (isPdf(file.mimeType, file.name)) {
+                      <div class="file-preview file-preview--doc file-preview--pdf" (click)="openPreview(file); $event.stopPropagation()">
+                        <i class="pi pi-file-pdf"></i>
+                        <span class="preview-hint">{{ t().selectFile }}</span>
+                      </div>
                     } @else {
-                      <div class="sf-thumb sf-thumb--icon"><i class="pi" [ngClass]="getFileIcon(file.mimeType)"></i></div>
+                      <div class="file-preview file-preview--icon">
+                        <i [class]="'pi ' + getFileIcon(file.mimeType)"></i>
+                      </div>
                     }
-                    <div class="sf-card-meta">
-                      <span class="sf-card-name" [title]="file.name">{{ file.name }}</span>
-                      <span class="sf-card-size">{{ formatSize(file.size) }}</span>
+
+                    <div class="file-foot">
+                      <i [class]="'pi file-foot-ic ' + getFileIcon(file.mimeType)"></i>
+                      <span class="file-name" [title]="file.name">{{ file.name }}</span>
+                      <button class="card-menu-btn" (click)="downloadFile(file); $event.stopPropagation()" [title]="t().downloadBtn">
+                        <i class="pi pi-download"></i>
+                      </button>
                     </div>
-                    <button class="sf-card-dl" (click)="downloadFile(file)" [title]="t().downloadBtn">
-                      <i class="pi pi-download"></i>
-                    </button>
+
+                    @if (isSelected(file.id)) { <i class="pi pi-check-circle sf-sel-badge"></i> }
                   </div>
                 }
               </div>
@@ -138,3 +190,41 @@
     </div>
   }
 </main>
+
+<p-dialog [(visible)]="previewVisible" [modal]="true" [closable]="false" [draggable]="false"
+  [dismissableMask]="true"
+  [style]="previewKind() === 'video' ? { width: '900px', maxWidth: '96vw' } : { width: 'auto', maxWidth: '90vw' }"
+  styleClass="sf-preview" (onHide)="closePreview()">
+  <ng-template pTemplate="header"><span></span></ng-template>
+
+  @if (previewKind() === 'video') {
+    <app-video-player [src]="previewUrl()" [title]="previewTitle()" (close)="closePreview()"/>
+  } @else if (previewKind() === 'audio') {
+    <app-audio-player [src]="previewUrl()" [title]="previewTitle()" (close)="closePreview()"/>
+  } @else {
+    <div class="sf-preview-body">
+      <div class="sf-preview-bar">
+        <span class="sf-preview-title">{{ previewTitle() }}</span>
+        <div class="sf-preview-tools">
+          <a class="sf-preview-x" [href]="previewUrl()" target="_blank" rel="noopener" download [title]="t().downloadBtn"><i class="pi pi-download"></i></a>
+          <button class="sf-preview-x" (click)="closePreview()"><i class="pi pi-times"></i></button>
+        </div>
+      </div>
+      @if (previewUrl()) {
+        @switch (previewKind()) {
+          @case ('image') { <img class="sf-preview-media" [src]="previewUrl()!" [alt]="previewTitle()"/> }
+          @case ('pdf')   { <iframe class="sf-preview-frame" [src]="previewSafeUrl()" title="PDF"></iframe> }
+          @default {
+            <div class="sf-preview-fallback">
+              <i class="pi" [ngClass]="getFileIcon(null)"></i>
+              <p class="sf-preview-fallback-name">{{ previewTitle() }}</p>
+              <a class="sf-btn sf-btn--solid" [href]="previewUrl()" target="_blank" rel="noopener" download>
+                <i class="pi pi-download"></i> {{ t().downloadBtn }}
+              </a>
+            </div>
+          }
+        }
+      }
+    </div>
+  }
+</p-dialog>

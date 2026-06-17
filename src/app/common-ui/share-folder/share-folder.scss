@@ -132,8 +132,8 @@
 // ─── контент ───
 
 .sf-wrap {
-  width: 100%; max-width: 960px;
-  margin: 0 auto; padding: 28px 24px 48px;
+  width: 100%;
+  margin: 0; padding: 28px 32px 48px;
   display: flex; flex-direction: column; gap: 22px;
 }
 
@@ -197,7 +197,13 @@
   span { font-size: 13px; }
 }
 
-.sf-listing { display: flex; flex-direction: column; gap: 22px; }
+.sf-listing {
+  display: flex; flex-direction: column; gap: 22px;
+  padding: 18px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
 .sf-section { display: flex; flex-direction: column; gap: 10px; }
 .sf-section-label {
   font-family: var(--brand-mono); font-size: 11px; font-weight: 700;
@@ -213,7 +219,7 @@
 .sf-card {
   display: flex; align-items: center; gap: 12px;
   padding: 10px 12px;
-  background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-md);
+  background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-md);
   text-align: left; min-width: 0;
   transition: border-color .15s, background .15s;
   &:hover { border-color: var(--border2); }
@@ -222,14 +228,14 @@
     cursor: pointer; width: 100%;
     .sf-card-ic { font-size: 20px; color: var(--brand-accent); flex-shrink: 0; }
     .sf-card-go { margin-left: auto; color: var(--text3); font-size: 14px; }
-    &:hover { background: var(--bg3); }
+    &:hover { background: var(--bg4); }
   }
 }
 
 .sf-thumb {
   width: 42px; height: 42px; flex-shrink: 0;
   border-radius: var(--radius-sm); overflow: hidden;
-  background: var(--bg3); border: 1px solid var(--border);
+  background: var(--bg4); border: 1px solid var(--border);
   display: flex; align-items: center; justify-content: center;
   img { width: 100%; height: 100%; object-fit: cover; display: block; }
   &--icon i { font-size: 18px; color: var(--text2); }
@@ -252,8 +258,246 @@
   &:hover { color: var(--brand-accent); background: rgba(128,128,128,.1); }
 }
 
+// ═══════════ Карточки как в хранилище (file-manager) ═══════════
+
+.sf-folders { display: flex; flex-wrap: wrap; gap: 10px; }
+
+.folder-card {
+  position: relative;
+  display: flex; align-items: center; gap: 10px;
+  width: 220px; max-width: 100%;
+  padding: 11px 10px 11px 14px;
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  border-radius: var(--radius-md);
+  cursor: pointer; user-select: none;
+  transition: background .2s, border-color .2s;
+  &:hover { background: var(--bg4); border-color: var(--brand-accent); }
+}
+.folder-ic { font-size: 1.05rem !important; color: var(--brand-accent) !important; flex-shrink: 0; }
+.folder-name {
+  flex: 1; min-width: 0;
+  font-family: var(--brand-mono); font-size: 13px; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.card-menu-btn {
+  flex-shrink: 0; width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 6px; border: 1px solid transparent; background: transparent;
+  color: var(--text3); cursor: pointer;
+  transition: color .15s, background .15s, border-color .15s;
+  i { font-size: 13px !important; color: inherit !important; }
+  &:hover { color: var(--brand-accent); background: rgba(128,128,128,.12); border-color: var(--border2); }
+}
+
+.sf-files {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(192px, 1fr));
+  gap: 12px; align-items: start;
+}
+
+.file-card {
+  position: relative;
+  display: flex; flex-direction: column;
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  border-radius: var(--radius-md);
+  overflow: hidden; cursor: pointer;
+  transition: border-color .2s, background .2s, transform .15s, box-shadow .2s;
+  &:hover { background: var(--bg4); border-color: var(--brand-accent); transform: translateY(-2px); }
+  &.selected { border-color: var(--brand-accent); box-shadow: 0 0 0 1px var(--brand-accent); }
+}
+
+.sf-sel-badge {
+  position: absolute; top: 7px; left: 7px; z-index: 4;
+  font-size: 15px !important; color: var(--brand-accent) !important;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,.4)); pointer-events: none;
+}
+
+.file-preview {
+  position: relative; height: 150px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg2); border-bottom: 1px solid var(--border);
+  overflow: hidden;
+  i { font-size: 3.4rem !important; color: var(--text3) !important; transition: color .2s, transform .2s; }
+  &:not(.file-preview--icon) { cursor: pointer; }
+}
+.preview-img { width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; }
+.preview-hint {
+  position: absolute; bottom: 10px; left: 0; right: 0; text-align: center;
+  font-family: var(--brand-mono); font-size: 11px; color: var(--text2);
+  opacity: 0; transform: translateY(6px); transition: opacity .2s, transform .2s; pointer-events: none;
+}
+.file-preview--doc {
+  &:hover i { transform: translateY(-8px); }
+  &:hover .preview-hint { opacity: 1; transform: none; }
+}
+.file-preview--pdf { i { color: rgba(231,76,60,.55) !important; } &:hover i { color: rgba(231,76,60,.9) !important; } }
+
+.file-preview--video {
+  background: #000;
+  &:hover .video-play { background: rgba(0,0,0,.12); }
+  &:hover .video-play i { transform: scale(1.08); background: rgba(255,255,255,.2); }
+}
+.video-thumb-frame { width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; pointer-events: none; }
+.video-play {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,.28); transition: background .2s;
+  i {
+    display: flex; align-items: center; justify-content: center;
+    width: 46px; height: 46px; border-radius: 50%;
+    background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.25);
+    -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+    color: #fff !important; font-size: .95rem !important; margin-left: 3px;
+    transition: transform .2s, background .2s;
+  }
+}
+
+.file-preview--audio {
+  background: var(--bg2);
+  &:hover .audio-bars span {
+    background: var(--text2); animation: audioBar .8s ease-in-out infinite alternate;
+    &:nth-child(1) { animation-delay: 0s; }
+    &:nth-child(2) { animation-delay: .15s; }
+    &:nth-child(3) { animation-delay: .3s; }
+    &:nth-child(4) { animation-delay: .45s; }
+    &:nth-child(5) { animation-delay: .6s; }
+  }
+  &:hover .preview-hint { opacity: 1; transform: none; }
+}
+.audio-bars {
+  display: flex; align-items: flex-end; gap: 5px; height: 48px;
+  span {
+    display: block; width: 5px; border-radius: 3px; background: var(--text3); transition: background .25s;
+    &:nth-child(1) { height: 20px; }
+    &:nth-child(2) { height: 34px; }
+    &:nth-child(3) { height: 48px; }
+    &:nth-child(4) { height: 28px; }
+    &:nth-child(5) { height: 16px; }
+  }
+}
+@keyframes audioBar { 0% { transform: scaleY(.4); } 100% { transform: scaleY(1); } }
+
+.file-foot {
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px 8px 9px 11px;
+}
+.file-foot-ic { font-size: 13px !important; color: var(--text2) !important; flex-shrink: 0; }
+.file-name {
+  flex: 1; min-width: 0;
+  font-family: var(--brand-mono); font-size: 12.5px; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+// ─── Отправитель ───
+.sf-head-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.sf-sender { display: inline-flex; align-items: center; gap: 9px; }
+.sf-sender-avatar {
+  width: 30px; height: 30px; border-radius: 50%;
+  overflow: hidden; flex-shrink: 0;
+  background: var(--bg3); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  img { width: 100%; height: 100%; object-fit: cover; }
+}
+.sf-sender-initials { font-size: 11px; font-weight: 700; color: var(--text2); }
+.sf-sender-text {
+  font-family: var(--brand-mono); font-size: 12px; color: var(--text2);
+  b { color: var(--text); font-weight: 700; }
+}
+
+// ─── Bulk-панель ───
+.sf-bulk {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  padding: 10px 14px; margin-bottom: 4px;
+  background: color-mix(in srgb, var(--brand-accent) 8%, var(--bg2));
+  border: 1px solid color-mix(in srgb, var(--brand-accent) 40%, transparent);
+  border-radius: var(--radius-md);
+}
+.sf-bulk-info {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--brand-mono); font-size: 13px; font-weight: 700; color: var(--text);
+  i { color: var(--brand-accent); }
+}
+.sf-bulk-actions { display: flex; gap: 8px; }
+
+// ─── Заголовок секции файлов + выбрать всё ───
+.sf-section-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.sf-selectall {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 11px; border-radius: var(--radius-sm);
+  background: transparent; border: 1px solid var(--border2);
+  color: var(--text2); font-family: var(--brand-mono); font-size: 11.5px; cursor: pointer;
+  transition: color .15s, border-color .15s;
+  i { font-size: 12px; }
+  &:hover { color: var(--text); border-color: var(--text3); }
+  &--on { color: var(--brand-accent); border-color: color-mix(in srgb, var(--brand-accent) 45%, transparent); }
+}
+
+// ─── Файловая карточка: кликабельность + выбор ───
+.sf-card--file {
+  position: relative;
+  cursor: pointer;
+  &.sf-card--sel { border-color: var(--brand-accent); background: color-mix(in srgb, var(--brand-accent) 8%, transparent); }
+}
+.sf-check {
+  flex-shrink: 0; width: 22px; height: 22px;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border2); border-radius: 6px;
+  background: var(--bg4); color: transparent; cursor: pointer;
+  transition: all .15s;
+  i { font-size: 11px; }
+  &:hover { border-color: var(--brand-accent); }
+  &--on { background: var(--brand-accent); border-color: var(--brand-accent); color: #0a0a0a; }
+}
+
+// ─── Видео-миниатюра ───
+.sf-thumb--video {
+  position: relative;
+  video { width: 100%; height: 100%; object-fit: cover; display: block; background: #000; }
+}
+.sf-thumb-play {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none;
+  i {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: rgba(0,0,0,.55); color: #fff; font-size: 9px;
+    display: flex; align-items: center; justify-content: center; padding-left: 1px;
+  }
+}
+
+// ─── Превью-диалог ───
+:host ::ng-deep .sf-preview {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: 0 24px 64px rgba(0,0,0,.6) !important;
+  .p-dialog-header { display: none; }
+  .p-dialog-content { padding: 0; background: transparent; border: none; border-radius: 14px; overflow: hidden; }
+}
+.sf-preview-body { background: var(--bg2); border: 1px solid var(--border2); border-radius: 14px; overflow: hidden; }
+.sf-preview-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px 10px 16px; border-bottom: 1px solid var(--border); }
+.sf-preview-title { font-family: var(--brand-mono); font-size: 13px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sf-preview-tools { display: flex; align-items: center; gap: 8px; }
+.sf-preview-x {
+  width: 30px; height: 30px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border2); background: var(--bg3); border-radius: 8px; color: var(--text2); cursor: pointer; text-decoration: none;
+  &:hover { color: var(--text); }
+  i { font-size: 13px; }
+}
+.sf-preview-media { display: block; max-width: min(90vw, 860px); max-height: 78vh; object-fit: contain; }
+.sf-preview-frame { width: min(90vw, 900px); height: 78vh; border: none; background: #fff; display: block; }
+.sf-preview-fallback {
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+  padding: 48px 40px; text-align: center;
+  > .pi { font-size: 50px; color: var(--text3); }
+  .sf-preview-fallback-name { font-family: var(--brand-mono); font-size: 13px; color: var(--text); word-break: break-all; max-width: 340px; }
+}
+
 @media (max-width: 600px) {
   .sf-wrap { padding: 20px 14px 36px; }
-  .sf-grid { grid-template-columns: 1fr; }
+  .sf-files { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+  .folder-card { width: 100%; }
   .sf-head-actions { width: 100%; .sf-btn { flex: 1; justify-content: center; } }
 }
