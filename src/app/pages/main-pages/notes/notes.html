@@ -1,0 +1,109 @@
+<div class="nt-root">
+
+  <!-- Список заметок -->
+  <aside class="nt-list">
+    <div class="nt-list-head">
+      <div class="nt-list-title">
+        <span class="nt-eyebrow"><i class="pi pi-file-edit"></i>{{ t().eyebrow }}</span>
+        <h1 class="nt-title">{{ t().title }}</h1>
+      </div>
+      <button class="nt-new" (click)="createNote()"><i class="pi pi-plus"></i> {{ t().newBtn }}</button>
+    </div>
+
+    <div class="nt-search">
+      <i class="pi pi-search"></i>
+      <input type="text" [ngModel]="search()" (ngModelChange)="search.set($event)" [placeholder]="t().searchPlaceholder"/>
+    </div>
+
+    <div class="nt-items">
+      @if (loading()) {
+        <div class="nt-empty-sm">{{ t().loading }}</div>
+      } @else if (notes().length === 0) {
+        <div class="nt-empty-sm">{{ t().empty }}</div>
+      } @else if (filteredNotes().length === 0) {
+        <div class="nt-empty-sm">{{ t().noMatches }}</div>
+      } @else {
+        @for (note of filteredNotes(); track note.id) {
+          <button class="nt-item" [class.nt-item--active]="note.id === selectedId()" (click)="select(note)">
+            @if (note.isPinned) { <i class="pi pi-bookmark-fill nt-item-pin"></i> }
+            <div class="nt-item-top">
+              <span class="nt-item-title">{{ note.title || t().untitled }}</span>
+            </div>
+            <div class="nt-item-snippet">
+              @if (hasImage(note)) { <i class="pi pi-image"></i> }
+              {{ snippet(note) || t().noText }}
+            </div>
+            <span class="nt-item-date">{{ formatDate(note.updatedAt) }}</span>
+            <div class="nt-item-actions">
+              <button class="nt-mini" [class.nt-mini--on]="note.isPinned" (click)="togglePin(note, $event)" [title]="t().pin">
+                <i class="pi" [class.pi-bookmark-fill]="note.isPinned" [class.pi-bookmark]="!note.isPinned"></i>
+              </button>
+              <button class="nt-mini nt-mini--del" (click)="askDelete(note, $event)" [title]="t().delete">
+                <i class="pi pi-trash"></i>
+              </button>
+            </div>
+          </button>
+        }
+      }
+    </div>
+  </aside>
+
+  <!-- Редактор -->
+  <main class="nt-editor-pane">
+    @if (selectedNoteArr(); as arr) {
+      @if (arr.length === 0) {
+        <div class="nt-empty">
+          <div class="nt-empty-ic"><i class="pi pi-file-edit"></i></div>
+          <h2>{{ t().emptyTitle }}</h2>
+          <p>{{ t().emptyDesc }}</p>
+          <button class="nt-new" (click)="createNote()"><i class="pi pi-plus"></i> {{ t().newBtn }}</button>
+        </div>
+      } @else {
+        <div class="nt-editor-head">
+          <input #titleInput class="nt-title-input" [ngModel]="editTitle()" (ngModelChange)="onTitleInput($event)"
+            [placeholder]="t().titlePlaceholder"/>
+          <div class="nt-editor-head-right">
+            <span class="nt-savestate" [class.nt-savestate--on]="saveState() !== 'idle'">
+              @switch (saveState()) {
+                @case ('saving') { <i class="pi pi-spin pi-spinner"></i> {{ t().saving }} }
+                @case ('saved')  { <i class="pi pi-check"></i> {{ t().saved }} }
+              }
+            </span>
+            @for (note of arr; track note.id) {
+              <button class="nt-mini" [class.nt-mini--on]="note.isPinned" (click)="togglePin(note)" [title]="t().pin">
+                <i class="pi" [class.pi-bookmark-fill]="note.isPinned" [class.pi-bookmark]="!note.isPinned"></i>
+              </button>
+              <button class="nt-mini nt-mini--del" (click)="askDelete(note)" [title]="t().delete">
+                <i class="pi pi-trash"></i>
+              </button>
+            }
+          </div>
+        </div>
+
+        @for (note of arr; track note.id) {
+          <app-rich-editor class="nt-editor"
+            [value]="note.content"
+            [placeholder]="t().contentPlaceholder"
+            [uploadImage]="uploadImageFn"
+            (valueChange)="onContentChange($event)"/>
+        }
+      }
+    }
+  </main>
+</div>
+
+<p-dialog [visible]="!!confirmDelete()" [modal]="true" [closable]="false" [draggable]="false"
+  [style]="{ width: '380px' }" styleClass="nt-confirm" (onHide)="confirmDelete.set(null)">
+  <ng-template pTemplate="header"><span></span></ng-template>
+  <div class="nt-confirm-body">
+    <div class="nt-confirm-ic"><i class="pi pi-exclamation-triangle"></i></div>
+    <h3>{{ t().deleteTitle }}</h3>
+    <p>{{ t().deleteMsg }}</p>
+    <div class="nt-confirm-actions">
+      <button class="nt-btn nt-btn--ghost" (click)="confirmDelete.set(null)">{{ t().cancel }}</button>
+      <button class="nt-btn nt-btn--danger" (click)="confirmDeleteNote()">{{ t().delete }}</button>
+    </div>
+  </div>
+</p-dialog>
+
+<p-toast position="bottom-right" key="nt"></p-toast>

@@ -1,0 +1,37 @@
+<div class="re-root">
+  <div class="re-toolbar">
+    <button type="button" class="re-btn re-btn--b" (click)="exec('bold')" title="Жирный">B</button>
+    <button type="button" class="re-btn re-btn--i" (click)="exec('italic')" title="Курсив">I</button>
+    <button type="button" class="re-btn re-btn--u" (click)="exec('underline')" title="Подчёркнутый">U</button>
+    <button type="button" class="re-btn re-btn--s" (click)="exec('strikeThrough')" title="Зачёркнутый">S</button>
+
+    <span class="re-sep"></span>
+
+    <button type="button" class="re-btn" (click)="heading('h1')" title="Заголовок 1">H1</button>
+    <button type="button" class="re-btn" (click)="heading('h2')" title="Заголовок 2">H2</button>
+    <button type="button" class="re-btn" (click)="heading('h3')" title="Заголовок 3">H3</button>
+    <button type="button" class="re-btn" (click)="heading('p')" title="Обычный текст">¶</button>
+
+    <span class="re-sep"></span>
+
+    <button type="button" class="re-btn" (click)="exec('insertUnorderedList')" title="Маркированный список"><i class="pi pi-list"></i></button>
+    <button type="button" class="re-btn" (click)="exec('insertOrderedList')" title="Нумерованный список"><i class="pi pi-sort-numeric-down"></i></button>
+    <button type="button" class="re-btn" (click)="heading('blockquote')" title="Цитата"><i class="pi pi-comment"></i></button>
+
+    <span class="re-sep"></span>
+
+    <button type="button" class="re-btn" (click)="createLink()" title="Ссылка"><i class="pi pi-link"></i></button>
+    @if (uploadImage) {
+      <button type="button" class="re-btn" (click)="onImageBtn()" [disabled]="uploading" title="Картинка">
+        @if (uploading) { <i class="pi pi-spin pi-spinner"></i> } @else { <i class="pi pi-image"></i> }
+      </button>
+    }
+    <button type="button" class="re-btn" (click)="exec('removeFormat')" title="Очистить формат"><i class="pi pi-eraser"></i></button>
+  </div>
+
+  <div #editor class="re-editor" contenteditable="true"
+    [attr.data-placeholder]="placeholder"
+    (input)="onInput()"></div>
+
+  <input #imageInput type="file" accept="image/*" hidden (change)="onImageSelected($event)"/>
+</div>

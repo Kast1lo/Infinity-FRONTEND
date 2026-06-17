@@ -15,6 +15,7 @@ import { SharedWithMe } from './pages/main-pages/shared-with-me/shared-with-me';
 import { ShareFile } from './common-ui/share-file/share-file';
 import { ShareFolder } from './common-ui/share-folder/share-folder';
 import { Privacy } from './pages/legal/privacy/privacy';
+import { Notes } from './pages/main-pages/notes/notes';
 import { MainPage } from './common-ui/main-page/main-page';
 import { UiKit } from './common-ui/ui-kit/ui-kit';
 import { Shell } from './common-ui/shell/shell';
@@ -70,6 +71,7 @@ export const routes: Routes = [
             { path: 'shared',              component: Shared },
             { path: 'shared-with-me',      component: SharedWithMe },
             { path: 'starred',             component: Starred },
+            { path: 'notes',               component: Notes },
         ],
     },
     { path: '**', redirectTo: 'file-system' }
