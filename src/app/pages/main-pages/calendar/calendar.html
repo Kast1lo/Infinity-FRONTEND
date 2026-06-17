@@ -1,0 +1,89 @@
+<div class="cal-root" [class.cal-root--day]="selectedDate()">
+
+  <!-- Сетка месяца -->
+  <section class="cal-main">
+    <header class="cal-head">
+      <div class="cal-head-left">
+        <span class="cal-eyebrow"><i class="pi pi-calendar"></i>{{ t().eyebrow }}</span>
+        <h1 class="cal-title">{{ monthTitle() }}</h1>
+      </div>
+      <div class="cal-nav">
+        <button class="cal-navbtn" (click)="prevMonth()" [title]="t().prev"><i class="pi pi-chevron-left"></i></button>
+        <button class="cal-today" (click)="goToday()">{{ t().today }}</button>
+        <button class="cal-navbtn" (click)="nextMonth()" [title]="t().next"><i class="pi pi-chevron-right"></i></button>
+      </div>
+    </header>
+
+    <div class="cal-grid">
+      <div class="cal-weekdays">
+        @for (wd of weekdays(); track $index) { <span class="cal-weekday">{{ wd }}</span> }
+      </div>
+
+      @for (week of weeks(); track $index) {
+        <div class="cal-week">
+          @for (cell of week; track cell.dateStr) {
+            <button class="cal-day"
+              [class.cal-day--out]="!cell.inMonth"
+              [class.cal-day--today]="cell.isToday"
+              [class.cal-day--sel]="cell.dateStr === selectedDate()"
+              (click)="selectDay(cell.dateStr)">
+              <span class="cal-day-num">{{ cell.day }}</span>
+              <span class="cal-day-marks">
+                @if (hasNote(cell.dateStr)) { <i class="pi pi-file-edit cal-mark-note"></i> }
+                @if (taskInfo(cell.dateStr); as ti) {
+                  <span class="cal-mark-tasks" [class.cal-mark-tasks--done]="ti.done === ti.total">
+                    <i class="pi pi-check-square"></i>{{ ti.done }}/{{ ti.total }}
+                  </span>
+                }
+              </span>
+            </button>
+          }
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- Панель дня -->
+  @if (selectedDate()) {
+    <aside class="cal-day-panel">
+      <div class="cal-panel-head">
+        <h2 class="cal-panel-date">{{ selectedHuman() }}</h2>
+        <button class="cal-mini" (click)="closeDay()" [title]="t().close"><i class="pi pi-times"></i></button>
+      </div>
+
+      <!-- Задачи дня -->
+      <div class="cal-panel-section">
+        <div class="cal-section-label"><i class="pi pi-check-square"></i> {{ t().tasksLabel }}</div>
+        <div class="cal-task-add">
+          <input type="text" [ngModel]="newTaskTitle()" (ngModelChange)="newTaskTitle.set($event)"
+            (keyup.enter)="addTask()" [placeholder]="t().taskPlaceholder"/>
+          <button class="cal-add-btn" (click)="addTask()" [disabled]="!newTaskTitle().trim()"><i class="pi pi-plus"></i></button>
+        </div>
+        <div class="cal-tasks">
+          @for (task of dayTasks(); track task.id) {
+            <div class="cal-task" [class.cal-task--done]="task.isCompleted">
+              <button class="cal-check" [class.cal-check--on]="task.isCompleted" (click)="toggleTask(task.id, task.isCompleted)">
+                @if (task.isCompleted) { <i class="pi pi-check"></i> }
+              </button>
+              <span class="cal-task-title">{{ task.title }}</span>
+              <button class="cal-task-del" (click)="deleteTask(task.id)" [title]="t().delete"><i class="pi pi-trash"></i></button>
+            </div>
+          }
+          @if (dayTasks().length === 0) { <div class="cal-empty-sm">{{ t().noTasks }}</div> }
+        </div>
+      </div>
+
+      <!-- Мини-заметка -->
+      <div class="cal-panel-section cal-panel-section--note">
+        <div class="cal-section-label">
+          <span><i class="pi pi-pencil"></i> {{ t().noteLabel }}</span>
+          @if (noteSaving()) { <span class="cal-saving"><i class="pi pi-spin pi-spinner"></i></span> }
+        </div>
+        <textarea class="cal-note" [ngModel]="noteText()" (ngModelChange)="onNoteInput($event)"
+          [placeholder]="t().notePlaceholder"></textarea>
+      </div>
+    </aside>
+  }
+</div>
+
+<p-toast position="bottom-right" key="cal"></p-toast>
