@@ -23,8 +23,28 @@
       }
     </div>
     <div class="toolbar-actions">
-      <p-button [label]="tp().membersTooltip" icon="pi pi-users" severity="secondary" [outlined]="true"
-        (onClick)="openMembersDialog()"/>
+      @if (members().length) {
+        <button type="button" class="member-stack" (click)="openMembersDialog()"
+          [pTooltip]="tp().membersTooltip" tooltipPosition="bottom">
+          @for (m of visibleMembers(); track m.userId) {
+            <span class="member-avatar" [title]="m.username || m.email">
+              @if (m.avatarUrl) {
+                <img [src]="m.avatarUrl" [alt]="m.username || m.email"/>
+              } @else {
+                <span class="member-avatar-initials">{{ memberInitials(m) }}</span>
+              }
+            </span>
+          }
+          @if (extraMembersCount()) {
+            <span class="member-avatar member-avatar--more">+{{ extraMembersCount() }}</span>
+          }
+        </button>
+      } @else {
+        <p-button [label]="tp().membersTooltip" icon="pi pi-users" severity="secondary" [outlined]="true"
+          (onClick)="openMembersDialog()"/>
+      }
+      <p-button [label]="t().projectFilesBtn" icon="pi pi-paperclip" severity="secondary" [outlined]="true"
+        (onClick)="openProjectFiles()"/>
       @if (canEdit()) {
         <p-button label="AI-генерация задач" icon="pi pi-sparkles" severity="secondary"
           (onClick)="openAiDialog()"/>
@@ -53,6 +73,15 @@
             <div class="col-head-left">
               <h2 class="name-columns">{{ column.name }}</h2>
               <span class="col-count">{{ (column.tasks || []).length }}</span>
+              @if (columnFileCount(column); as fileCount) {
+                <span class="col-files" [pTooltip]="fileCount + ' ' + t().filesWord" tooltipPosition="top">
+                  <i class="pi pi-paperclip"></i>
+                  <span class="col-files-count">{{ fileCount }}</span>
+                  @for (icon of columnFileIcons(column); track icon) {
+                    <i class="col-files-type" [class]="icon"></i>
+                  }
+                </span>
+              }
             </div>
             @if (canEdit()) {
               <div>
@@ -75,14 +104,21 @@
                     <div class="info-task">
                       <div class="task-main">
                         <h2 class="task-title" [class.task-completed]="task.isCompleted">{{ task.title }}</h2>
-                        @if (task.dueDate) {
-                          <div class="task-due"
-                            [class.task-due--soon]="isDueSoon(task.dueDate)"
-                            [class.task-due--overdue]="isOverdue(task.dueDate)">
-                            <i class="pi pi-calendar"></i>
-                            <span>{{ formatDueDate(task.dueDate) }}</span>
-                          </div>
-                        }
+                        <div class="task-badges">
+                          @if (task.dueDate) {
+                            <div class="task-due"
+                              [class.task-due--soon]="isDueSoon(task.dueDate)"
+                              [class.task-due--overdue]="isOverdue(task.dueDate)">
+                              <i class="pi pi-calendar"></i>
+                              <span>{{ formatDueDate(task.dueDate) }}</span>
+                            </div>
+                          }
+                          @if (attachmentCount(task); as ac) {
+                            <div class="task-attach-badge">
+                              <i class="pi pi-paperclip"></i><span>{{ ac }}</span>
+                            </div>
+                          }
+                        </div>
                       </div>
                       @if (canEdit()) {
                         <p-button icon="pi pi-trash" text size="small"
@@ -197,11 +233,54 @@
         [placeholder]="t().descPlaceholder" autoResize fluid></textarea>
     </div>
 
+    <div class="dialog-field">
+      <label>
+        {{ t().attachmentsLabel }}
+        @if (newTaskAttachCount()) { <span class="attach-count">{{ newTaskAttachCount() }}</span> }
+      </label>
+
+      @if (newTaskAttachCount()) {
+        <div class="attach-chips">
+          @for (f of newTaskStorageFiles(); track f.id) {
+            <div class="attach-chip">
+              <i [class]="fileIcon(f.mimeType)"></i>
+              <span class="attach-chip-name" [title]="f.name">{{ f.name }}</span>
+              <button type="button" (click)="removeNewStorageFile(f.id)"><i class="pi pi-times"></i></button>
+            </div>
+          }
+          @for (f of newTaskFiles(); track $index) {
+            <div class="attach-chip">
+              <i [class]="fileIcon(f.type)"></i>
+              <span class="attach-chip-name" [title]="f.name">{{ f.name }}</span>
+              <button type="button" (click)="removeNewFile($index)"><i class="pi pi-times"></i></button>
+            </div>
+          }
+        </div>
+      }
+
+      <div class="attach-dropzone attach-dropzone--sm"
+        [class.attach-dropzone--over]="dragOverCreate()"
+        (drop)="onCreateDrop($event)"
+        (dragover)="onCreateDragOver($event)"
+        (dragleave)="onCreateDragLeave()">
+        <span class="attach-drop-hint"><i class="pi pi-cloud-upload"></i> {{ t().attachDropHint }}</span>
+        <div class="attach-actions">
+          <button type="button" class="attach-btn attach-btn--primary" (click)="createAttachInput.click()">
+            <i class="pi pi-upload"></i>{{ t().attachUploadBtn }}
+          </button>
+          <button type="button" class="attach-btn" (click)="openStoragePicker('create')">
+            <i class="pi pi-folder-open"></i>{{ t().attachFromStorage }}
+          </button>
+        </div>
+        <input #createAttachInput type="file" multiple hidden (change)="onCreateAttachInput($event)"/>
+      </div>
+    </div>
+
   </div>
   <ng-template pTemplate="footer">
-    <p-button [label]="t().cancelBtn" severity="secondary" text (onClick)="showCreateTaskDialog.set(false)"/>
-    <p-button [label]="t().createBtn" icon="pi pi-check"
-      [disabled]="!newTask().title.trim()" (onClick)="createTask()"/>
+    <p-button [label]="t().cancelBtn" severity="secondary" text [disabled]="creatingTaskBusy()" (onClick)="showCreateTaskDialog.set(false)"/>
+    <p-button [label]="t().createBtn" icon="pi pi-check" [loading]="creatingTaskBusy()"
+      [disabled]="!newTask().title.trim() || creatingTaskBusy()" (onClick)="createTask()"/>
   </ng-template>
 </p-dialog>
 
@@ -314,6 +393,69 @@
             </div>
           </ng-template>
         </p-inplace>
+        }
+      </div>
+
+      <div class="detail-attachments">
+        <div class="detail-attach-header">
+          <span class="meta-label"><i class="pi pi-paperclip"></i>{{ t().attachmentsLabel }}</span>
+          @if (taskAttachments().length) {
+            <span class="attach-count">{{ taskAttachments().length }}</span>
+          }
+        </div>
+
+        @if (taskAttachments().length) {
+          <div class="attach-grid">
+            @for (a of taskAttachments(); track a.fileId) {
+              <div class="attach-item">
+                <button type="button" class="attach-thumb" [title]="a.name" (click)="openPreview(a)">
+                  @if (isImageAttachment(a)) {
+                    <img [src]="a.downloadUrl" [alt]="a.name"/>
+                  } @else {
+                    <i [class]="fileIcon(a.mimeType)"></i>
+                  }
+                  <span class="attach-thumb-eye"><i class="pi pi-eye"></i></span>
+                </button>
+                <div class="attach-meta">
+                  <span class="attach-name" [title]="a.name">{{ a.name }}</span>
+                  <span class="attach-size">{{ formatBytes(a.size) }}</span>
+                </div>
+                <a class="attach-dl" [href]="a.downloadUrl" target="_blank" rel="noopener" download
+                  [title]="t().attachDownload"><i class="pi pi-download"></i></a>
+                @if (canEdit()) {
+                  <button type="button" class="attach-remove" (click)="removeAttachment(a.fileId)"
+                    [title]="t().attachRemove">
+                    <i class="pi pi-times"></i>
+                  </button>
+                }
+              </div>
+            }
+          </div>
+        }
+
+        @if (canEdit()) {
+          <div class="attach-dropzone"
+            [class.attach-dropzone--over]="dragOverDrop()"
+            (drop)="onAttachmentDrop($event)"
+            (dragover)="onDropDragOver($event)"
+            (dragleave)="onDropDragLeave()">
+            @if (uploadingAttachment()) {
+              <i class="pi pi-spin pi-spinner"></i>
+              <span class="attach-drop-hint">{{ t().attachUploading }}</span>
+            } @else {
+              <i class="pi pi-cloud-upload attach-drop-icon"></i>
+              <span class="attach-drop-hint">{{ t().attachDropHint }}</span>
+              <div class="attach-actions">
+                <button type="button" class="attach-btn attach-btn--primary" (click)="attachInput.click()">
+                  <i class="pi pi-upload"></i>{{ t().attachUploadBtn }}
+                </button>
+                <button type="button" class="attach-btn" (click)="openStoragePicker('detail')">
+                  <i class="pi pi-folder-open"></i>{{ t().attachFromStorage }}
+                </button>
+              </div>
+              <input #attachInput type="file" multiple hidden (change)="onAttachmentInput($event)"/>
+            }
+          </div>
         }
       </div>
 
@@ -451,6 +593,121 @@
   </div>
   <ng-template pTemplate="footer">
     <p-button [label]="t().cancelBtn" severity="secondary" text (onClick)="showMembersDialog.set(false)"/>
+  </ng-template>
+</p-dialog>
+
+<p-dialog [header]="t().storagePickerTitle" [(visible)]="showStoragePicker" [modal]="true"
+  [style]="{width: '560px'}" [dismissableMask]="true">
+  <div class="storage-picker">
+    <input pInputText [(ngModel)]="storageSearch" [placeholder]="t().storageSearchPlaceholder" fluid/>
+    @if (storageFilesLoading()) {
+      <div class="storage-empty"><i class="pi pi-spin pi-spinner"></i></div>
+    } @else if (filteredStorageFiles().length === 0) {
+      <div class="storage-empty">{{ t().storageEmpty }}</div>
+    } @else {
+      <div class="storage-list">
+        @for (f of filteredStorageFiles(); track f.id) {
+          <div class="storage-row" [class.storage-row--active]="selectedStorageIds().has(f.id)"
+            (click)="toggleStorageFile(f.id)">
+            <span class="storage-check">
+              @if (selectedStorageIds().has(f.id)) { <i class="pi pi-check"></i> }
+            </span>
+            <span class="storage-thumb">
+              @if (f.mimeType.startsWith('image/')) {
+                <img [src]="f.downloadUrl" [alt]="f.name"/>
+              } @else {
+                <i [class]="fileIcon(f.mimeType)"></i>
+              }
+            </span>
+            <span class="storage-name" [title]="f.name">{{ f.name }}</span>
+            <button type="button" class="storage-eye" (click)="openStoragePreview(f, $event)" [title]="t().attachPreview">
+              <i class="pi pi-eye"></i>
+            </button>
+          </div>
+        }
+      </div>
+    }
+  </div>
+  <ng-template pTemplate="footer">
+    <p-button [label]="t().cancelBtn" severity="secondary" text (onClick)="showStoragePicker.set(false)"/>
+    <p-button [label]="t().attachLinkBtn" icon="pi pi-check"
+      [disabled]="selectedStorageIds().size === 0" (onClick)="confirmLinkStorage()"/>
+  </ng-template>
+</p-dialog>
+
+<p-dialog [header]="t().projectFilesTitle" [(visible)]="showProjectFilesDialog" [modal]="true"
+  [style]="{width: '640px'}" [dismissableMask]="true">
+  <div class="project-files">
+    @if (projectFilesLoading()) {
+      <div class="storage-empty"><i class="pi pi-spin pi-spinner"></i></div>
+    } @else if (projectFiles().length === 0) {
+      <div class="storage-empty">{{ t().projectFilesEmpty }}</div>
+    } @else {
+      <div class="attach-grid">
+        @for (a of projectFiles(); track a.id) {
+          <div class="attach-item">
+            <button type="button" class="attach-thumb" [title]="a.name" (click)="openPreview(a)">
+              @if (isImageAttachment(a)) {
+                <img [src]="a.downloadUrl" [alt]="a.name"/>
+              } @else {
+                <i [class]="fileIcon(a.mimeType)"></i>
+              }
+              <span class="attach-thumb-eye"><i class="pi pi-eye"></i></span>
+            </button>
+            <div class="attach-meta">
+              <span class="attach-name" [title]="a.name">{{ a.name }}</span>
+              <span class="attach-size"><i class="pi pi-check-square"></i> {{ a.taskTitle }}</span>
+            </div>
+            <a class="attach-dl" [href]="a.downloadUrl" target="_blank" rel="noopener" download
+              [title]="t().attachDownload"><i class="pi pi-download"></i></a>
+          </div>
+        }
+      </div>
+    }
+  </div>
+  <ng-template pTemplate="footer">
+    <p-button [label]="t().closeBtn" severity="secondary" (onClick)="showProjectFilesDialog.set(false)"/>
+  </ng-template>
+</p-dialog>
+
+<p-dialog [(visible)]="previewVisible" [modal]="true" [dismissableMask]="true" [maximizable]="true"
+  [style]="{width: '80vw', maxWidth: '1000px'}" styleClass="file-preview-dialog">
+  <ng-template pTemplate="header">
+    <div class="preview-header">
+      <i [class]="fileIcon(previewItem()?.mimeType)"></i>
+      <span class="preview-title" [title]="previewItem()?.name">{{ previewItem()?.name }}</span>
+    </div>
+  </ng-template>
+
+  @if (previewItem(); as p) {
+    <div class="preview-body">
+      @switch (previewKind(p.mimeType, p.name)) {
+        @case ('image') { <img class="preview-media" [src]="p.downloadUrl" [alt]="p.name"/> }
+        @case ('video') { <video class="preview-media" [src]="p.downloadUrl" controls autoplay></video> }
+        @case ('audio') {
+          <div class="preview-audio">
+            <i class="pi pi-volume-up"></i>
+            <audio [src]="p.downloadUrl" controls autoplay></audio>
+          </div>
+        }
+        @case ('pdf') {
+          <iframe class="preview-frame" [src]="previewSafeUrl()" title="PDF"></iframe>
+        }
+        @default {
+          <div class="preview-fallback">
+            <i [class]="fileIcon(p.mimeType)"></i>
+            <p class="preview-fallback-name">{{ p.name }}</p>
+            <p class="preview-fallback-hint">{{ t().previewNoInline }}</p>
+          </div>
+        }
+      }
+    </div>
+  }
+
+  <ng-template pTemplate="footer">
+    <a class="attach-btn attach-btn--primary preview-dl" [href]="previewItem()?.downloadUrl"
+      target="_blank" rel="noopener" download><i class="pi pi-download"></i>{{ t().attachDownload }}</a>
+    <p-button [label]="t().closeBtn" severity="secondary" (onClick)="previewVisible.set(false)"/>
   </ng-template>
 </p-dialog>
 

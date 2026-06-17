@@ -2,7 +2,8 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { catchError, finalize, Observable, tap, throwError } from 'rxjs';
 
-import { Task, Subtask } from '../interfaces/infinity-life/tasks.model';
+import { Task, Subtask, TaskAttachment } from '../interfaces/infinity-life/tasks.model';
+import { FileItem } from '../interfaces/file-system-interfeces/file-item.model';
 import { Reminder } from '../interfaces/infinity-life/reminder.model';
 import { SearchTask } from '../interfaces/search/search-results.model';
 import { UpdateTask } from '../interfaces/infinity-life/update-task.model';
@@ -173,6 +174,50 @@ export class InfinityLife {
       catchError(err => this.handleError(err, 'Ошибка удаления подзадачи')),
       finalize(() => this.isLoading.set(false))
     );
+  }
+
+  // ─────────────────────────── Вложения файлов к задачам ───────────────────────────
+
+  getTaskAttachments(taskId: string): Observable<TaskAttachment[]> {
+    return this.http.get<TaskAttachment[]>(
+      `${this.baseUrl}/infinity-life/tasks/${taskId}/attachments`, { withCredentials: true }
+    ).pipe(catchError(err => this.handleError(err, 'Не удалось загрузить вложения')));
+  }
+
+  // Прикрепить уже существующие в хранилище файлы.
+  linkAttachments(taskId: string, fileIds: string[]): Observable<TaskAttachment[]> {
+    return this.http.post<TaskAttachment[]>(
+      `${this.baseUrl}/infinity-life/tasks/${taskId}/attachments/link`, { fileIds }, { withCredentials: true }
+    ).pipe(catchError(err => this.handleError(err, 'Не удалось прикрепить файлы')));
+  }
+
+  // Загрузить внешние файлы (сохранятся в хранилище) и прикрепить к задаче.
+  uploadAttachments(taskId: string, files: File[]): Observable<TaskAttachment[]> {
+    const form = new FormData();
+    for (const f of files) form.append('file', f);
+    return this.http.post<TaskAttachment[]>(
+      `${this.baseUrl}/infinity-life/tasks/${taskId}/attachments/upload`, form, { withCredentials: true }
+    ).pipe(catchError(err => this.handleError(err, 'Не удалось загрузить файлы')));
+  }
+
+  unlinkAttachment(taskId: string, fileId: string): Observable<{ success: boolean }> {
+    return this.http.delete<{ success: boolean }>(
+      `${this.baseUrl}/infinity-life/tasks/${taskId}/attachments/${fileId}`, { withCredentials: true }
+    ).pipe(catchError(err => this.handleError(err, 'Не удалось открепить файл')));
+  }
+
+  // Все файлы, прикреплённые к задачам проекта.
+  getProjectFiles(projectId: string): Observable<TaskAttachment[]> {
+    return this.http.get<TaskAttachment[]>(
+      `${this.baseUrl}/infinity-life/project-files`, { params: { projectId }, withCredentials: true }
+    ).pipe(catchError(err => this.handleError(err, 'Не удалось загрузить файлы проекта')));
+  }
+
+  // Плоский список всех файлов пользователя — для пикера «прикрепить из хранилища».
+  getStorageFiles(): Observable<FileItem[]> {
+    return this.http.get<FileItem[]>(
+      `${this.baseUrl}/file-system/files`, { withCredentials: true }
+    ).pipe(catchError(err => this.handleError(err, 'Не удалось загрузить файлы хранилища')));
   }
 
   private handleError(error: HttpErrorResponse, defaultMessage: string): Observable<never> {

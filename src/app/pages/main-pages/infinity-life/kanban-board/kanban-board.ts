@@ -10,14 +10,16 @@ import {
   signal,
 } from '@angular/core';
 import { Router } from '@angular/router';
-import { finalize } from 'rxjs';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { finalize, forkJoin } from 'rxjs';
 import { InfinityLife } from '../../../../services/infinity-life';
 import { ProjectService } from '../../../../services/project';
 import { ProjectMember } from '../../../../interfaces/project/project.model';
 import { MessageService, ConfirmationService, MenuItem } from 'primeng/api';
 import { CdkDragDrop, moveItemInArray, transferArrayItem, DragDropModule } from '@angular/cdk/drag-drop';
-import { Subtask, Task } from '../../../../interfaces/infinity-life/tasks.model';
+import { Subtask, Task, TaskAttachment } from '../../../../interfaces/infinity-life/tasks.model';
 import { CreateTaskDto } from '../../../../interfaces/infinity-life/create-task.model';
+import { FileItem } from '../../../../interfaces/file-system-interfeces/file-item.model';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
@@ -69,6 +71,7 @@ export class KanbanBoard implements OnInit {
   private messageService = inject(MessageService);
   private cdr = inject(ChangeDetectorRef);
   private router = inject(Router);
+  private sanitizer = inject(DomSanitizer);
   readonly langService = inject(LangService);
 
   readonly projectId   = input.required<string>();
@@ -94,7 +97,6 @@ export class KanbanBoard implements OnInit {
   inviting       = signal(false);
 
   openMembersDialog() {
-    this.members.set([]);
     this.inviteEmail.set('');
     this.inviteRole.set('EDITOR');
     this.showMembersDialog.set(true);
@@ -162,6 +164,48 @@ export class KanbanBoard implements OnInit {
   newSubtaskTitle = signal('');
   creatingSubtask = signal(false);
 
+  // ─── Вложения файлов ───
+  taskAttachments    = signal<TaskAttachment[]>([]);
+  uploadingAttachment = signal(false);
+  dragOverDrop       = signal(false);
+
+  showStoragePicker   = signal(false);
+  storageFiles        = signal<FileItem[]>([]);
+  storageFilesLoading = signal(false);
+  storageSearch       = signal('');
+  selectedStorageIds  = signal<Set<string>>(new Set());
+  // 'detail' — прикрепляем к открытой задаче; 'create' — копим выбор для новой задачи.
+  pickerMode          = signal<'detail' | 'create'>('detail');
+
+  // Файлы, выбранные при создании задачи (ещё нет taskId — копим, прикрепим после создания).
+  newTaskFiles        = signal<File[]>([]);            // внешние файлы с устройства
+  newTaskStorageFiles = signal<FileItem[]>([]);        // файлы из хранилища
+  creatingTaskBusy    = signal(false);
+  dragOverCreate      = signal(false);
+
+  // Просмотр файла (полноценный вьюер).
+  previewVisible = signal(false);
+  previewItem    = signal<{ name: string; mimeType: string | null; downloadUrl: string } | null>(null);
+  previewSafeUrl = signal<SafeResourceUrl | null>(null);
+
+  showProjectFilesDialog = signal(false);
+  projectFiles           = signal<TaskAttachment[]>([]);
+  projectFilesLoading    = signal(false);
+
+  // Файлы хранилища, ещё не прикреплённые (с учётом режима и поиска).
+  filteredStorageFiles = computed(() => {
+    const excludedIds = this.pickerMode() === 'create'
+      ? new Set(this.newTaskStorageFiles().map(f => f.id))
+      : new Set(this.taskAttachments().map(a => a.fileId));
+    const q = this.storageSearch().trim().toLowerCase();
+    return this.storageFiles().filter(f =>
+      !excludedIds.has(f.id) && (!q || f.name.toLowerCase().includes(q)),
+    );
+  });
+
+  // Сколько вложений будет у новой задачи (для счётчика в диалоге создания).
+  newTaskAttachCount = computed(() => this.newTaskFiles().length + this.newTaskStorageFiles().length);
+
   newTaskDueDate = signal<Date | null>(null);
   detailDueDate = signal<Date | null>(null);
 
@@ -213,7 +257,18 @@ export class KanbanBoard implements OnInit {
   constructor() {
     effect(() => {
       const id = this.projectId();
-      if (id) this.loadBoard();
+      if (id) {
+        this.loadBoard();
+        this.loadMembersStack();
+      }
+    });
+  }
+
+  // Загружает участников для стопки аватарок в тулбаре (независимо от диалога).
+  private loadMembersStack() {
+    this.projectService.listMembers(this.projectId()).subscribe({
+      next: (m) => { this.members.set(m); this.cdr.markForCheck(); },
+      error: () => {},
     });
   }
 
@@ -390,30 +445,275 @@ export class KanbanBoard implements OnInit {
       color:     null,
     });
     this.newTaskDueDate.set(null);
+    this.newTaskFiles.set([]);
+    this.newTaskStorageFiles.set([]);
     this.showCreateTaskDialog.set(true);
   }
 
   openTaskDetail(task: Task) {
     this.selectedTask.set({ ...task, progress: this.calculateProgress(task.subtasks) });
     this.detailDueDate.set(this.isoToDate(task.dueDate));
+    // Сразу показываем уже известные вложения (пришли с доски), затем тихо обновляем.
+    this.taskAttachments.set(task.attachments ?? []);
     this.showTaskDetailDialog.set(true);
+    this.tasksService.getTaskAttachments(task.id).subscribe({
+      next: (list) => { this.taskAttachments.set(list); this.syncTaskAttachments(task.id, list); this.cdr.markForCheck(); },
+      error: () => {},
+    });
+  }
+
+  // ─────────────────────────── Вложения файлов ───────────────────────────
+
+  // Синхронизирует список вложений в открытой задаче и на доске (для бейджей).
+  private syncTaskAttachments(taskId: string, list: TaskAttachment[]) {
+    const current = this.selectedTask();
+    if (current?.id === taskId) this.selectedTask.set({ ...current, attachments: list });
+    this.updateTaskInBoard(taskId, t => ({ ...t, attachments: list }));
+  }
+
+  private applyAttachments(list: TaskAttachment[]) {
+    const task = this.selectedTask();
+    if (!task) return;
+    this.taskAttachments.set(list);
+    this.syncTaskAttachments(task.id, list);
+  }
+
+  // Загрузка внешних файлов через скрытый input.
+  onAttachmentInput(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files?.length) this.uploadAttachmentFiles(Array.from(input.files));
+    input.value = '';
+  }
+
+  onAttachmentDrop(event: DragEvent) {
+    event.preventDefault();
+    this.dragOverDrop.set(false);
+    const files = event.dataTransfer?.files;
+    if (files?.length) this.uploadAttachmentFiles(Array.from(files));
+  }
+
+  onDropDragOver(event: DragEvent) { event.preventDefault(); this.dragOverDrop.set(true); }
+  onDropDragLeave() { this.dragOverDrop.set(false); }
+
+  private uploadAttachmentFiles(files: File[]) {
+    const task = this.selectedTask();
+    if (!task || this.uploadingAttachment()) return;
+    this.uploadingAttachment.set(true);
+    this.tasksService.uploadAttachments(task.id, files)
+      .pipe(finalize(() => this.uploadingAttachment.set(false)))
+      .subscribe({
+        next: (list) => { this.applyAttachments(list); this.toast(this.t().attachUploaded, true); },
+        error: (err) => this.toast(err?.message ?? this.t().attachUploadFailed),
+      });
+  }
+
+  removeAttachment(fileId: string) {
+    const task = this.selectedTask();
+    if (!task) return;
+    this.tasksService.unlinkAttachment(task.id, fileId).subscribe({
+      next: () => this.applyAttachments(this.taskAttachments().filter(a => a.fileId !== fileId)),
+      error: (err) => this.toast(err?.message ?? this.t().attachRemoveFailed),
+    });
+  }
+
+  // ─── Пикер «прикрепить из хранилища» ───
+  openStoragePicker(mode: 'detail' | 'create' = 'detail') {
+    this.pickerMode.set(mode);
+    this.selectedStorageIds.set(new Set());
+    this.storageSearch.set('');
+    this.showStoragePicker.set(true);
+    this.storageFilesLoading.set(true);
+    this.tasksService.getStorageFiles()
+      .pipe(finalize(() => this.storageFilesLoading.set(false)))
+      .subscribe({
+        next: (files) => { this.storageFiles.set(files ?? []); this.cdr.markForCheck(); },
+        error: () => {},
+      });
+  }
+
+  toggleStorageFile(id: string) {
+    this.selectedStorageIds.update(set => {
+      const next = new Set(set);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
+
+  confirmLinkStorage() {
+    const ids = Array.from(this.selectedStorageIds());
+    if (ids.length === 0) return;
+
+    // Режим создания: просто добавляем выбранные файлы в стейджинг новой задачи.
+    if (this.pickerMode() === 'create') {
+      const chosen = this.storageFiles().filter(f => ids.includes(f.id));
+      this.newTaskStorageFiles.update(list => {
+        const existing = new Set(list.map(f => f.id));
+        return [...list, ...chosen.filter(f => !existing.has(f.id))];
+      });
+      this.showStoragePicker.set(false);
+      return;
+    }
+
+    const task = this.selectedTask();
+    if (!task) return;
+    this.tasksService.linkAttachments(task.id, ids).subscribe({
+      next: (list) => {
+        this.applyAttachments(list);
+        this.showStoragePicker.set(false);
+        this.toast(this.t().attachLinked, true);
+      },
+      error: (err) => this.toast(err?.message ?? this.t().attachLinkFailed),
+    });
+  }
+
+  // ─────────────────────────── Просмотр файла ───────────────────────────
+  previewKind(mime: string | null | undefined, name = ''): 'image' | 'video' | 'audio' | 'pdf' | 'other' {
+    const m = mime ?? '';
+    const n = name.toLowerCase();
+    if (m.startsWith('image/')) return 'image';
+    if (m.startsWith('video/')) return 'video';
+    if (m.startsWith('audio/') || /\.(mp3|wav|ogg|flac|aac|m4a|opus)$/.test(n)) return 'audio';
+    if (m === 'application/pdf' || n.endsWith('.pdf')) return 'pdf';
+    return 'other';
+  }
+
+  openPreview(a: { name: string; mimeType: string | null; downloadUrl: string }) {
+    this.previewItem.set(a);
+    this.previewSafeUrl.set(this.sanitizer.bypassSecurityTrustResourceUrl(a.downloadUrl));
+    this.previewVisible.set(true);
+  }
+
+  // Открыть превью для файла из хранилища (в пикере).
+  openStoragePreview(f: FileItem, event: Event) {
+    event.stopPropagation();
+    this.openPreview({ name: f.name, mimeType: f.mimeType, downloadUrl: f.downloadUrl });
+  }
+
+  // ─── Файлы проекта ───
+  openProjectFiles() {
+    this.showProjectFilesDialog.set(true);
+    this.projectFilesLoading.set(true);
+    this.tasksService.getProjectFiles(this.projectId())
+      .pipe(finalize(() => this.projectFilesLoading.set(false)))
+      .subscribe({
+        next: (files) => { this.projectFiles.set(files ?? []); this.cdr.markForCheck(); },
+        error: () => {},
+      });
+  }
+
+  // ─── Хелперы файлов ───
+  isImageAttachment(a: { mimeType: string | null }): boolean {
+    return !!a.mimeType && a.mimeType.startsWith('image/');
+  }
+
+  fileIcon(mime: string | null | undefined): string {
+    const m = mime ?? '';
+    if (m.startsWith('image/')) return 'pi pi-image';
+    if (m.startsWith('video/')) return 'pi pi-video';
+    if (m.startsWith('audio/')) return 'pi pi-volume-up';
+    if (m.includes('pdf')) return 'pi pi-file-pdf';
+    if (m.includes('word') || m.includes('document')) return 'pi pi-file-word';
+    if (m.includes('sheet') || m.includes('excel') || m.includes('csv')) return 'pi pi-file-excel';
+    if (m.includes('zip') || m.includes('rar') || m.includes('compressed')) return 'pi pi-folder';
+    return 'pi pi-file';
+  }
+
+  formatBytes(bytes: number): string {
+    if (!bytes) return '0 Б';
+    const units = ['Б', 'КБ', 'МБ', 'ГБ'];
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    return `${(bytes / Math.pow(1024, i)).toFixed(i ? 1 : 0)} ${units[i]}`;
+  }
+
+  // Кол-во и типы файлов в колонке (для бейджа в шапке колонки).
+  columnFileCount(column: any): number {
+    return (column.tasks || []).reduce((sum: number, t: Task) => sum + (t.attachments?.length ?? 0), 0);
+  }
+
+  columnFileIcons(column: any): string[] {
+    const mimes = new Set<string>();
+    for (const t of (column.tasks || []) as Task[]) {
+      for (const a of t.attachments ?? []) mimes.add(this.fileIcon(a.mimeType));
+    }
+    return Array.from(mimes).slice(0, 4);
+  }
+
+  attachmentCount(task: Task): number {
+    return task.attachments?.length ?? 0;
+  }
+
+  // Аватарки участников: до 4 в стопке, остальные — счётчиком.
+  visibleMembers = computed(() => this.members().slice(0, 4));
+  extraMembersCount = computed(() => Math.max(0, this.members().length - 4));
+
+  memberInitials(m: { username: string | null; email: string }): string {
+    const base = m.username || m.email || '';
+    return base.substring(0, 2).toUpperCase() || '∞';
   }
 
   createTask() {
     const task = this.newTask();
-    if (!task.title?.trim()) {
-      this.toast(this.langService.t().pages.kanban.taskTitleRequired);
+    if (!task.title?.trim() || this.creatingTaskBusy()) {
+      if (!task.title?.trim()) this.toast(this.langService.t().pages.kanban.taskTitleRequired);
       return;
     }
     const dto = { ...task, projectId: this.projectId(), dueDate: this.dateToIso(this.newTaskDueDate()) };
+    this.creatingTaskBusy.set(true);
     this.tasksService.createTask(dto).subscribe({
-      next: () => {
-        this.toast(this.langService.t().pages.kanban.taskCreated, true);
+      next: (created) => this.attachStagedToNewTask(created.id),
+      error: () => { this.creatingTaskBusy.set(false); this.toast(this.langService.t().pages.kanban.taskCreateFailed); },
+    });
+  }
+
+  // После создания задачи прикрепляем накопленные файлы (с устройства + из хранилища).
+  private attachStagedToNewTask(taskId: string) {
+    const files = this.newTaskFiles();
+    const storageIds = this.newTaskStorageFiles().map(f => f.id);
+    const ops = [];
+    if (files.length)      ops.push(this.tasksService.uploadAttachments(taskId, files));
+    if (storageIds.length) ops.push(this.tasksService.linkAttachments(taskId, storageIds));
+
+    const done = () => {
+      this.creatingTaskBusy.set(false);
+      this.toast(this.langService.t().pages.kanban.taskCreated, true);
+      this.loadBoard();
+      this.showCreateTaskDialog.set(false);
+    };
+
+    if (ops.length === 0) { done(); return; }
+    forkJoin(ops).subscribe({
+      next: done,
+      error: () => {
+        // Задача создана, но часть файлов не прикрепилась — не теряем задачу.
+        this.creatingTaskBusy.set(false);
+        this.toast(this.langService.t().pages.kanban.attachUploadFailed);
         this.loadBoard();
         this.showCreateTaskDialog.set(false);
       },
-      error: () => this.toast(this.langService.t().pages.kanban.taskCreateFailed),
     });
+  }
+
+  // ─── Стейджинг файлов при создании задачи ───
+  onCreateAttachInput(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files?.length) this.newTaskFiles.update(list => [...list, ...Array.from(input.files!)]);
+    input.value = '';
+  }
+
+  onCreateDrop(event: DragEvent) {
+    event.preventDefault();
+    this.dragOverCreate.set(false);
+    const files = event.dataTransfer?.files;
+    if (files?.length) this.newTaskFiles.update(list => [...list, ...Array.from(files)]);
+  }
+  onCreateDragOver(event: DragEvent) { event.preventDefault(); this.dragOverCreate.set(true); }
+  onCreateDragLeave() { this.dragOverCreate.set(false); }
+
+  removeNewFile(index: number) {
+    this.newTaskFiles.update(list => list.filter((_, i) => i !== index));
+  }
+  removeNewStorageFile(id: string) {
+    this.newTaskStorageFiles.update(list => list.filter(f => f.id !== id));
   }
 
   saveTaskField(field: 'dueDate' | 'color', value: any) {

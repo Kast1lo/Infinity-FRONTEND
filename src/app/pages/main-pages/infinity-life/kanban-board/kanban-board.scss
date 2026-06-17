@@ -1371,3 +1371,432 @@
 
   .p-button-icon { font-size: 12px !important; }
 }
+
+/* ─────────────────────────── Стопка аватарок участников ─────────────────────────── */
+.member-stack {
+  display: flex;
+  align-items: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  padding-left: 10px;
+}
+.member-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  margin-left: -10px;
+  border: 2px solid var(--bg2);
+  background: var(--bg3);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform .15s, margin .15s;
+
+  img { width: 100%; height: 100%; object-fit: cover; }
+}
+.member-avatar-initials {
+  font-family: var(--brand-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text2);
+}
+.member-avatar--more {
+  font-family: var(--brand-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--brand-accent);
+}
+.member-stack:hover .member-avatar { margin-left: -6px; }
+.member-stack:hover .member-avatar:first-child { margin-left: 0; }
+
+/* ─────────────────────────── Бейдж файлов в шапке колонки ─────────────────────────── */
+.col-files {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--tint-soft);
+  border: 1px solid var(--border);
+  color: var(--text2);
+  font-family: var(--brand-mono);
+  font-size: 11px;
+
+  .pi { font-size: 11px; }
+  .col-files-count { font-weight: 600; color: var(--text); }
+  .col-files-type { color: var(--text3); }
+}
+
+/* ─────────────────────────── Бейджи на карточке задачи ─────────────────────────── */
+.task-badges { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.task-attach-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-family: var(--brand-mono);
+  font-size: 11px;
+  color: var(--text2);
+  .pi { font-size: 11px; }
+}
+
+/* ─────────────────────────── Вложения в диалоге задачи ─────────────────────────── */
+.detail-attachments {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+.detail-attach-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+
+  .attach-count {
+    font-family: var(--brand-mono);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text);
+    background: var(--tint-2);
+    border-radius: 999px;
+    padding: 1px 8px;
+  }
+}
+.attach-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 10px;
+}
+.attach-item {
+  position: relative;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: border-color .15s;
+
+  &:hover { border-color: var(--border2); }
+  &:hover .attach-remove { opacity: 1; }
+}
+.attach-thumb {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 80px;
+  background: var(--bg4);
+  color: var(--text2);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  overflow: hidden;
+
+  img { width: 100%; height: 100%; object-fit: cover; }
+  > .pi { font-size: 28px; }
+}
+.attach-thumb-eye {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,.45);
+  color: #fff;
+  opacity: 0;
+  transition: opacity .15s;
+  .pi { font-size: 20px; }
+}
+.attach-thumb:hover .attach-thumb-eye { opacity: 1; }
+.attach-dl {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(0,0,0,.6);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity .15s, background .15s;
+  text-decoration: none;
+  .pi { font-size: 11px; }
+  &:hover { background: var(--brand-accent); color: var(--brand-accent-ink, #0a0a0a); }
+}
+.attach-item:hover .attach-dl { opacity: 1; }
+.attach-meta {
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.attach-name {
+  font-size: 12px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.attach-size {
+  font-family: var(--brand-mono);
+  font-size: 10px;
+  color: var(--text3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.attach-remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0,0,0,.6);
+  color: #fff;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity .15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  .pi { font-size: 11px; }
+  &:hover { background: #e05555; }
+}
+.attach-dropzone {
+  margin-top: 12px;
+  border: 1.5px dashed var(--border2);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: var(--text2);
+  transition: border-color .15s, background .15s;
+
+  &--over { border-color: var(--brand-accent); background: var(--tint-soft); }
+  > .pi { font-size: 22px; }
+}
+.attach-drop-icon { font-size: 22px; color: var(--text3); }
+.attach-drop-hint { font-size: 12px; display: inline-flex; align-items: center; gap: 6px; }
+.attach-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+
+/* Кнопки загрузки — в фирменном моно-стиле, а не дефолтные PrimeNG */
+.attach-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border2);
+  background: var(--bg2);
+  color: var(--text);
+  font-family: var(--brand-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: .01em;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background .15s, border-color .15s, transform .05s;
+
+  .pi { font-size: 12px; }
+  &:hover { background: var(--bg3); border-color: var(--text3); }
+  &:active { transform: translateY(1px); }
+}
+.attach-btn--primary {
+  background: var(--brand-accent);
+  border-color: var(--brand-accent);
+  color: var(--brand-accent-ink, #0a0a0a);
+  &:hover { background: var(--brand-accent-hover, #e06b00); border-color: var(--brand-accent-hover, #e06b00); }
+}
+
+.attach-dropzone--sm {
+  padding: 12px;
+  gap: 6px;
+  > .attach-drop-hint { color: var(--text2); }
+}
+
+/* Чипы выбранных файлов в диалоге создания задачи */
+.attach-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.attach-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 220px;
+  padding: 4px 6px 4px 10px;
+  border-radius: 999px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text);
+
+  .pi { font-size: 11px; color: var(--text2); }
+  .attach-chip-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border: none;
+    border-radius: 50%;
+    background: var(--bg4);
+    color: var(--text2);
+    cursor: pointer;
+    .pi { font-size: 9px; }
+    &:hover { background: #e05555; color: #fff; }
+  }
+}
+.attach-count {
+  font-family: var(--brand-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--tint-2);
+  border-radius: 999px;
+  padding: 1px 8px;
+  margin-left: 4px;
+}
+
+.storage-eye {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text2);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  .pi { font-size: 13px; }
+  &:hover { background: var(--tint-2); color: var(--text); }
+}
+
+/* ─────────────────────────── Вьюер файла ─────────────────────────── */
+.preview-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  .pi { color: var(--text2); }
+}
+.preview-title {
+  font-family: var(--brand-display);
+  font-size: 15px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.preview-body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  max-height: 72vh;
+  background: var(--bg);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.preview-media { max-width: 100%; max-height: 72vh; display: block; }
+.preview-frame { width: 100%; height: 72vh; border: none; background: #fff; }
+.preview-audio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  padding: 40px;
+  .pi { font-size: 46px; color: var(--text3); }
+  audio { width: 320px; max-width: 70vw; }
+}
+.preview-fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 48px 24px;
+  color: var(--text2);
+  text-align: center;
+  .pi { font-size: 52px; color: var(--text3); }
+  .preview-fallback-name { font-size: 14px; color: var(--text); word-break: break-all; }
+  .preview-fallback-hint { font-size: 12px; max-width: 340px; }
+}
+.preview-dl {
+  /* ссылка-кнопка в футере вьюера */
+  margin-right: auto;
+}
+
+/* ─────────────────────────── Пикер файлов из хранилища ─────────────────────────── */
+.storage-picker { display: flex; flex-direction: column; gap: 12px; }
+.storage-empty {
+  text-align: center;
+  color: var(--text2);
+  padding: 28px;
+  font-size: 13px;
+}
+.storage-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 360px;
+  overflow-y: auto;
+}
+.storage-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition: background .12s, border-color .12s;
+
+  &:hover { background: var(--tint-soft); }
+  &--active { background: var(--tint-2); border-color: var(--brand-accent); }
+}
+.storage-check {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: 1px solid var(--border2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  .pi { font-size: 11px; color: var(--brand-accent); }
+}
+.storage-row--active .storage-check { border-color: var(--brand-accent); }
+.storage-thumb {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  background: var(--bg4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+  color: var(--text2);
+  img { width: 100%; height: 100%; object-fit: cover; }
+}
+.storage-name {
+  font-size: 13px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.project-files { min-height: 80px; }

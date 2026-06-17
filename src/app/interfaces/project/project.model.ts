@@ -19,11 +19,12 @@ export interface Project {
 }
 
 export interface ProjectMember {
-  userId:   string;
-  username: string | null;
-  email:    string;
-  role:     ProjectRole;
-  isOwner:  boolean;
+  userId:    string;
+  username:  string | null;
+  email:     string;
+  avatarUrl?: string | null;
+  role:      ProjectRole;
+  isOwner:   boolean;
 }
 
 export interface CreateProjectDto {
